@@ -275,4 +275,4 @@ ISC
 
 ## 👨‍💻 Autor
 
-Desenvolvido com ❤️ por Julio e colaboradores, usando GitHub Copilot
+Desenvolvido por Julio
