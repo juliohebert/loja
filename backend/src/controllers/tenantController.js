@@ -1,4 +1,5 @@
 const { sequelize } = require('../config/database');
+const { Op } = require('sequelize');
 const User = require('../models/User');
 
 /**
@@ -21,7 +22,7 @@ const getAllTenants = async (req, res) => {
         [sequelize.fn('DISTINCT', sequelize.col('tenant_id')), 'tenantId']
       ],
       where: {
-        tenantId: { [sequelize.Op.ne]: null }
+        tenantId: { [Op.ne]: null }
       },
       raw: true
     });
