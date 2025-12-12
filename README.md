@@ -206,11 +206,11 @@ products (
   brand VARCHAR(100),
   category VARCHAR(100),
   description TEXT,
-  price_cost DECIMAL(10,2),
-  price_sale DECIMAL(10,2),
-  active BOOLEAN,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
+price_cost DECIMAL(10,2),
+price_sale DECIMAL(10,2),
+active BOOLEAN,
+created_at TIMESTAMP,
+updated_at TIMESTAMP
 )
 
 variations (

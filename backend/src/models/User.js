@@ -40,7 +40,7 @@ const User = sequelize.define('User', {
     }
   },
   funcao: {
-    type: DataTypes.ENUM('admin', 'vendedor', 'gerente'),
+    type: DataTypes.ENUM('super-admin', 'admin', 'vendedor', 'gerente'),
     defaultValue: 'vendedor',
     allowNull: false,
     field: 'funcao'
@@ -79,7 +79,7 @@ const User = sequelize.define('User', {
   },
   tenantId: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true, // Permitir NULL para super-admin
     field: 'tenant_id'
   }
 }, {

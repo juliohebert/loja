@@ -5,6 +5,7 @@ const tenantMiddleware = (req, res, next) => {
       '/api/users/register',
       '/api/auth/register',
       '/api/auth/login',
+      '/api/tenants', // Rotas de super-admin
       '/health',
       '/api-docs'
     ];

@@ -72,9 +72,15 @@ export default function Login() {
         
         // Salvar token e dados do usuário
         localStorage.setItem('token', data.token);
-        localStorage.setItem('usuario', JSON.stringify(data.user));
+        localStorage.setItem('user', JSON.stringify(data.user));
         
-        navigate('/dashboard');
+        // Verificar se é super-admin
+        if (data.user.funcao === 'super-admin') {
+          console.log('👑 Super-admin detectado - redirecionando para seleção de lojas');
+          navigate('/selecionar-loja');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         const error = await response.json();
         setError(error.message || 'E-mail ou senha incorretos');

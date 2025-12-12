@@ -16,6 +16,7 @@ const supplierRoutes = require('./routes/supplierRoutes');
 const purchaseOrderRoutes = require('./routes/purchaseOrderRoutes');
 const accountPayableRoutes = require('./routes/accountPayableRoutes');
 const accountReceivableRoutes = require('./routes/accountReceivableRoutes');
+const tenantRoutes = require('./routes/tenantRoutes');
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
@@ -47,6 +48,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 
 // Rotas
 app.use('/api/auth', authRoutes);
+app.use('/api/tenants', tenantRoutes);
 app.use('/api', productRoutes);
 app.use('/api', customerRoutes);
 app.use('/api/cash-registers', cashRegisterRoutes);
