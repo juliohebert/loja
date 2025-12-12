@@ -430,7 +430,7 @@ exports.registerStore = async (req, res) => {
       nome: responsavel || nomeLoja,
       email,
       senha: senhaHash,
-      tipo_usuario: 'admin',
+      funcao: 'admin', // campo correto para role
       ativo: true,
       tenantId
     });
@@ -442,10 +442,10 @@ exports.registerStore = async (req, res) => {
       { 
         id: usuario.id, 
         email: usuario.email,
-        tipo_usuario: usuario.tipo_usuario,
+        funcao: usuario.funcao, // garantir que o token traga o campo correto
         tenantId: usuario.tenantId
       },
-      process.env.JWT_SECRET || 'seu_secret_key_aqui',
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -457,8 +457,9 @@ exports.registerStore = async (req, res) => {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
-        tipo_usuario: usuario.tipo_usuario,
-        tenantId: usuario.tenantId
+        funcao: usuario.funcao,
+        tenantId: usuario.tenantId,
+        nomeLoja: nomeLoja // garantir que o frontend saiba o nome da clínica
       }
     });
   } catch (error) {

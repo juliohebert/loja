@@ -3,6 +3,9 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 require('dotenv').config();
+console.log('📂 Diretório atual:', process.cwd());
+console.log('🔑 JWT_SECRET carregado:', process.env.JWT_SECRET ? '[DEFINIDO]' : '[NÃO DEFINIDO]');
+console.log('🔑 JWT_SECRET carregado:', process.env.JWT_SECRET ? '[DEFINIDO]' : '[NÃO DEFINIDO]');
 
 const { sequelize } = require('./models/Schema');
 const productRoutes = require('./routes/productRoutes');
