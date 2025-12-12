@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'seu_secret_super_seguro_aqui';
+
 const tenantMiddleware = (req, res, next) => {
   try {
     // Rotas públicas que não precisam de tenantId
@@ -5,6 +8,7 @@ const tenantMiddleware = (req, res, next) => {
       '/api/users/register',
       '/api/auth/register',
       '/api/auth/login',
+      '/api/tenants', // Rotas de super-admin
       '/health',
       '/api-docs'
     ];
@@ -18,7 +22,25 @@ const tenantMiddleware = (req, res, next) => {
       return next();
     }
 
-    // Capturar o tenantId do cabeçalho ou subdomínio
+    // Tentar extrair tenantId do token JWT primeiro (para super-admin)
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      const parts = authHeader.split(' ');
+      if (parts.length === 2 && parts[0] === 'Bearer') {
+        try {
+          const token = parts[1];
+          const decoded = jwt.verify(token, JWT_SECRET);
+          if (decoded.tenantId) {
+            req.tenantId = decoded.tenantId;
+            return next();
+          }
+        } catch (err) {
+          // Se falhar ao decodificar, continua para tentar pegar do header
+        }
+      }
+    }
+
+    // Prioridade 2: Capturar o tenantId do cabeçalho
     const tenantId = req.headers['x-tenant-id'];
 
     if (!tenantId) {

@@ -19,6 +19,7 @@ import Trocas from './components/Trocas';
 import Fornecedores from './components/Fornecedores';
 import OrdensCompra from './components/OrdensCompra';
 import ContasPagarReceber from './components/ContasPagarReceber';
+import SelecionarLoja from './components/SelecionarLoja';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/login" element={<Entrar />} />
         <Route path="/register" element={<Registrar />} />
         <Route path="/forgot-password" element={<EsqueciSenha />} />
+        <Route path="/selecionar-loja" element={<SelecionarLoja />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/products" element={<CriarProduto />} />
         <Route path="/products/editar/:id" element={<CriarProduto />} />

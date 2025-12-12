@@ -34,8 +34,18 @@ const authMiddleware = (req, res, next) => {
       req.user = {
         id: decoded.id,
         email: decoded.email,
-        funcao: decoded.funcao || decoded.tipo_usuario || decoded.role // suporte para tokens antigos
+        funcao: decoded.funcao || decoded.tipo_usuario || decoded.role, // suporte para tokens antigos
+        tenantId: decoded.tenantId, // Incluir tenantId do token
+        isSuperAdminAccess: decoded.isSuperAdminAccess || false // Flag de acesso super-admin
       };
+
+      console.log('✅ Token verificado com sucesso:', {
+        id: decoded.id,
+        email: decoded.email,
+        funcao: decoded.funcao || decoded.tipo_usuario || decoded.role,
+        tenantId: decoded.tenantId,
+        isSuperAdminAccess: decoded.isSuperAdminAccess || false
+      });
 
       // Adicionar tenantId do token ao req (sobrescreve o do middleware de tenant se existir)
       if (decoded.tenantId) {

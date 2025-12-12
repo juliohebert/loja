@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth Headers</title>
+</head>
+<body>
+    <h1>Test Authentication Headers</h1>
+    <button onclick="testAuth()">Test getAuthHeaders()</button>
+    <pre id="output"></pre>
+
+    <script>
+        // Copiar as funções do auth.js
+        const decodeToken = (token) => {
+          try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split('')
+                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+            );
+            return JSON.parse(jsonPayload);
+          } catch (error) {
+            console.error('Erro ao decodificar token:', error);
+            return null;
+          }
+        };
+
+        const getTenantId = () => {
+          const token = localStorage.getItem('token');
+          if (!token) return null;
+          
+          const decoded = decodeToken(token);
+          return decoded?.tenantId || null;
+        };
+
+        const getAuthHeaders = () => {
+          const token = localStorage.getItem('token');
+          const tenantId = getTenantId();
+          
+          const headers = {
+            'Content-Type': 'application/json'
+          };
+          
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+          
+          if (tenantId) {
+            headers['x-tenant-id'] = tenantId;
+          }
+          
+          return headers;
+        };
+
+        function testAuth() {
+            const token = localStorage.getItem('token');
+            const output = document.getElementById('output');
+            
+            if (!token) {
+                output.textContent = '❌ Nenhum token encontrado no localStorage!\nFaça login primeiro.';
+                return;
+            }
+
+            const decoded = decodeToken(token);
+            const tenantId = getTenantId();
+            const headers = getAuthHeaders();
+
+            output.textContent = JSON.stringify({
+                'Token presente': !!token,
+                'Token (primeiros 50 chars)': token.substring(0, 50) + '...',
+                'Token decodificado': decoded,
+                'TenantId extraído': tenantId,
+                'Headers gerados': headers
+            }, null, 2);
+        }
+
+        // Auto-test on load
+        window.onload = testAuth;
+    </script>
+</body>
+</html>
