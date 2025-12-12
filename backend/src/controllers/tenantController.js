@@ -6,7 +6,7 @@ const User = require('../models/User');
  * @route GET /api/tenants
  * @access Super Admin only
  */
-exports.getAllTenants = async (req, res) => {
+const getAllTenants = async (req, res) => {
   try {
     // Verificar se é super-admin
     if (req.user.funcao !== 'super-admin') {
@@ -73,7 +73,7 @@ exports.getAllTenants = async (req, res) => {
  * @route GET /api/tenants/:tenantId
  * @access Super Admin only
  */
-exports.getTenantById = async (req, res) => {
+const getTenantById = async (req, res) => {
   try {
     // Verificar se é super-admin
     if (req.user.funcao !== 'super-admin') {
@@ -123,7 +123,7 @@ exports.getTenantById = async (req, res) => {
  * @route POST /api/tenants/:tenantId/access
  * @access Super Admin only
  */
-exports.accessTenant = async (req, res) => {
+const accessTenant = async (req, res) => {
   try {
     // Verificar se é super-admin
     if (req.user.funcao !== 'super-admin') {
@@ -174,4 +174,9 @@ exports.accessTenant = async (req, res) => {
   }
 };
 
-module.exports = exports;
+module.exports = {
+  getAllTenants,
+  getTenantById,
+  accessTenant
+};
+
