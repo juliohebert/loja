@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 
@@ -59,13 +60,8 @@ const CriarProduto = () => {
   const carregarProduto = async (id) => {
     try {
       setCarregando(true);
-      const token = localStorage.getItem('token');
-      
       const response = await fetch(`http://localhost:3001/api/products/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -417,10 +413,7 @@ const CriarProduto = () => {
 
       const response = await fetch('http://localhost:3001/api/products', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(produtoData)
       });
 

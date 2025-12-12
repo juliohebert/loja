@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import { Users, Plus, Edit, Trash2, CheckCircle, XCircle, Shield, Search, Eye, EyeOff } from 'lucide-react';
 import ModalConfirmacao from './ModalConfirmacao';
 import Toast from './Toast';
@@ -41,12 +42,8 @@ const Usuarios = () => {
   const buscarUsuarios = async () => {
     try {
       setCarregando(true);
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao buscar usuários');

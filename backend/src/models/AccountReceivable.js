@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 
 const AccountReceivable = sequelize.define('AccountReceivable', {
   id: {
@@ -66,6 +66,12 @@ const AccountReceivable = sequelize.define('AccountReceivable', {
   },
   comprovante: {
     type: DataTypes.STRING
+  },
+  tenantId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'accounts_receivable',

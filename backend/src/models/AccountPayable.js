@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 const Supplier = require('./Supplier');
 const PurchaseOrder = require('./PurchaseOrder');
 
@@ -69,6 +69,12 @@ const AccountPayable = sequelize.define('AccountPayable', {
   },
   comprovante: {
     type: DataTypes.STRING
+  },
+  tenantId: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'accounts_payable',

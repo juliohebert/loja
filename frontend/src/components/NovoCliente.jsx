@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 
 const NovoCliente = () => {
   const navigate = useNavigate();
@@ -38,12 +39,8 @@ const NovoCliente = () => {
 
   const carregarCliente = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/customers/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {

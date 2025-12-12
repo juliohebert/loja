@@ -26,6 +26,7 @@ const authMiddleware = (req, res, next) => {
     // Verificar token
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
       if (err) {
+        console.error('❌ Erro ao verificar token:', err.message);
         return res.status(401).json({ error: 'Token inválido ou expirado' });
       }
 
@@ -33,8 +34,13 @@ const authMiddleware = (req, res, next) => {
       req.user = {
         id: decoded.id,
         email: decoded.email,
-        funcao: decoded.funcao || decoded.role // suporte para tokens antigos
+        funcao: decoded.funcao || decoded.tipo_usuario || decoded.role // suporte para tokens antigos
       };
+
+      // Adicionar tenantId do token ao req (sobrescreve o do middleware de tenant se existir)
+      if (decoded.tenantId) {
+        req.tenantId = decoded.tenantId;
+      }
 
       next();
     });

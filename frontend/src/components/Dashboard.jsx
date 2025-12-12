@@ -1,16 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Sidebar from './Sidebar';
+
 // Função utilitária para formatar valores monetários no padrão brasileiro
 const formatarPreco = (valor) => {
   return valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'R$ 0,00';
 };
-import { useNavigate, useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [forceUpdate, setForceUpdate] = useState(0);
-  const [filtro, setFiltro] = useState('hoje'); // 'hoje' ou '7dias'
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [diasRestantes, setDiasRestantes] = useState(14);
+  const [filtro, setFiltro] = useState('hoje');
+  const [carregando, setCarregando] = useState(true);
   const [estatisticas, setEstatisticas] = useState({
     vendasDia: 0,
     pedidosRealizados: 0,
@@ -23,258 +26,54 @@ const Dashboard = () => {
   });
   const [produtosBaixoEstoque, setProdutosBaixoEstoque] = useState([]);
   const [produtosMaisVendidos, setProdutosMaisVendidos] = useState([]);
-  const [vendasSemanais, setVendasSemanais] = useState([0, 0, 0, 0, 0, 0, 0]);
-  const [carregando, setCarregando] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  // Verificar se deve mostrar o modal de trial
   useEffect(() => {
-    // Verificar se usuário está autenticado
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      navigate('/login');
-      return;
+    const lojaInfo = JSON.parse(localStorage.getItem('lojaInfo') || '{}');
+    if (lojaInfo.isInTrial && location.state?.showTrialModal) {
+      setShowTrialModal(true);
+      const diasRestantesCalc = Math.ceil((new Date(lojaInfo.trialEndDate) - new Date()) / (1000 * 60 * 60 * 24));
+      setDiasRestantes(diasRestantesCalc > 0 ? diasRestantesCalc : 0);
+      // Limpar o state para não mostrar novamente
+      navigate(location.pathname, { replace: true, state: {} });
     }
+  }, [location, navigate]);
 
-    // ...existing code...
-    
-    // Carregar dados sempre que o componente montar
+  // Carregar dados do dashboard
+  useEffect(() => {
     carregarDashboard();
+  }, [filtro]);
 
-    // Verificar se há flag de atualização pendente
-    const flagAtualizar = localStorage.getItem('dashboard_atualizar');
-    if (flagAtualizar) {
-      // ...existing code...
-      localStorage.removeItem('dashboard_atualizar');
-      setForceUpdate(prev => prev + 1);
-    }
-
-    // Atualizar automaticamente a cada 10 segundos
-    const interval = setInterval(() => {
-      // ...existing code...
-      carregarDashboard();
-    }, 10000);
-
-    // Listener para evento customizado de venda realizada
-    const handleVendaRealizada = () => {
-      // ...existing code...
-      setTimeout(() => carregarDashboard(), 500);
-    };
-
-    window.addEventListener('vendaRealizada', handleVendaRealizada);
-
-    // Cleanup
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('vendaRealizada', handleVendaRealizada);
-    };
-  }, [navigate, filtro]);
+  const normalizarNome = (nome) => {
+    return nome?.toLowerCase().trim() || '';
+  };
 
   const carregarDashboard = async () => {
-          // Função para normalizar nomes para comparação
-          const normalizarNome = (nome) => {
-            return nome
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/\p{Diacritic}/gu, '')
-              .replace(/\s+/g, ' ')
-              .trim();
-          };
+    setCarregando(true);
     try {
-      setCarregando(true);
-      const token = localStorage.getItem('token');
-      
-      // ...existing code...
-
-      // Buscar clientes da API
-      const responseClientes = await fetch('http://localhost:3001/api/customers', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      let clientes = [];
-      let clientesComDebito = [];
-      let totalDebitos = 0;
-      let clientesHoje = [];
-
-      if (responseClientes.ok) {
-        const dataClientes = await responseClientes.json();
-        clientes = dataClientes.data || [];
-        
-        clientesHoje = clientes.filter(c => {
-          const dataCriacao = new Date(c.createdAt);
-          const hoje = new Date();
-          return dataCriacao.toDateString() === hoje.toDateString();
-        });
-
-        clientesComDebito = clientes.filter(c => c.debito > 0);
-        totalDebitos = clientesComDebito.reduce((acc, c) => acc + parseFloat(c.debito), 0);
-      }
-
-      // Buscar lançamentos financeiros
+      // Carregar dados do localStorage
       const lancamentos = JSON.parse(localStorage.getItem('lancamentos') || '[]');
-      // ...existing code...
-      
-      const hoje = new Date();
-      const hojeFmt = hoje.toISOString().split('T')[0];
-      // ...existing code...
-      
-      // Calcular data de início baseado no filtro
-      const dataInicio = new Date();
-      if (filtro === '7dias') {
-        dataInicio.setDate(dataInicio.getDate() - 6); // Últimos 7 dias incluindo hoje
-      }
-      const dataInicioFmt = dataInicio.toISOString().split('T')[0];
-      
-      const lancamentosPeriodo = lancamentos.filter(l => {
-        if (filtro === 'hoje') {
-          return l.data === hojeFmt && l.tipo === 'receita';
-        } else {
-          return l.data >= dataInicioFmt && l.data <= hojeFmt && l.tipo === 'receita';
-        }
-      });
-      const vendasPeriodo = lancamentosPeriodo.reduce((acc, l) => acc + l.valor, 0);
-      
-      // ...existing code...
+      const produtos = JSON.parse(localStorage.getItem('products') || '[]');
+      const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+      let vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
 
-      // Calcular vendas dos últimos 7 dias para o gráfico
-      const vendasPorDia = [0, 0, 0, 0, 0, 0, 0];
-      let totalVendas7Dias = 0;
-
-      for (let i = 6; i >= 0; i--) {
-        const data = new Date();
-        data.setDate(data.getDate() - i);
-        const dataFmt = data.toISOString().split('T')[0];
-        const vendasDia = lancamentos
-          .filter(l => l.data === dataFmt && l.tipo === 'receita')
-          .reduce((acc, l) => acc + l.valor, 0);
-        vendasPorDia[6 - i] = vendasDia;
-        totalVendas7Dias += vendasDia;
-      }
-
-      setVendasSemanais(vendasPorDia);
-
-      // Buscar produtos com estoque baixo
-      const responseStock = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      let dataProdutos = null;
-
-      if (responseStock.ok) {
-        const data = await responseStock.json();
-        dataProdutos = data; // Guardar para usar depois
-        
-        // ...existing code...
-        
-        // Transformar dados e filtrar produtos com estoque baixo
-        const produtosBaixos = [];
-        
-        if (data.data && Array.isArray(data.data)) {
-          data.data.forEach((produto, idx) => {
-            // Usar 'nome' em vez de 'name' e 'variacoes' em vez de 'variations'
-            const nomeProduto = produto.nome || produto.name;
-            const variacoes = produto.variacoes || produto.variations;
-            
-            // ...existing code...
-            
-            // Se o produto não tem variações mas tem quantidade diretamente
-            if (!variacoes || !Array.isArray(variacoes) || variacoes.length === 0) {
-              const quantidade = produto.quantidade || produto.stock?.quantity || 0;
-              const limiteMinimo = produto.estoque_minimo || produto.stock?.min_limit || 10;
-              
-              // ...existing code...
-              
-              if (quantidade > 0) { // Só processar se tiver quantidade definida
-                let status = 'em-estoque';
-                if (quantidade === 0) {
-                  status = 'esgotado';
-                } else if (quantidade <= limiteMinimo) {
-                  status = 'estoque-baixo';
-                }
-
-                if (status === 'estoque-baixo' || status === 'esgotado') {
-                  produtosBaixos.push({
-                    nome: nomeProduto,
-                    cor: '-',
-                    quantidade: quantidade,
-                    status: status
-                  });
-                  // ...existing code...
-                }
-              }
-            } else if (variacoes && Array.isArray(variacoes)) {
-              variacoes.forEach(variacao => {
-                const quantidade = variacao.estoque?.quantidade || 0;
-                const limiteMinimo = variacao.estoque?.limiteMinimo || 10;
-                
-                // ...existing code...
-                
-                let status = 'em-estoque';
-                if (quantidade === 0) {
-                  status = 'esgotado';
-                } else if (quantidade <= limiteMinimo) {
-                  status = 'estoque-baixo';
-                }
-
-                // ...existing code...
-
-                // Adicionar apenas produtos com estoque baixo ou esgotado
-                if (status === 'estoque-baixo' || status === 'esgotado') {
-                  produtosBaixos.push({
-                    nome: `${nomeProduto} (${variacao.tamanho || variacao.size})`,
-                    cor: variacao.cor || variacao.color,
-                    quantidade: quantidade,
-                    status: status
-                  });
-                  // ...existing code...
-                } else {
-                  // ...existing code...
-                }
-              });
-            }
-          });
-        }
-
-        // Limitar a 5 produtos e ordenar por quantidade (menor primeiro)
-        const produtosOrdenados = produtosBaixos
-          .sort((a, b) => a.quantidade - b.quantidade)
-          .slice(0, 5);
-        
-        setProdutosBaixoEstoque(produtosOrdenados);
-        // ...existing code...
-      }
-
-      // Buscar produtos mais vendidos baseado nas vendas reais
-      const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
-      // ...existing code...
-      
-      // Criar mapa de produtos para buscar imagens (usando nome normalizado)
+      // Criar mapa de produtos por nome normalizado para buscar imagens
       const produtosPorNome = {};
-      if (dataProdutos && dataProdutos.data && Array.isArray(dataProdutos.data)) {
-        dataProdutos.data.forEach(produto => {
-          const nome = produto.nome || produto.name;
-          const imagem = produto.imagens && produto.imagens.length > 0 ? produto.imagens[0] : null;
-          if (nome) {
-            produtosPorNome[normalizarNome(nome)] = imagem;
-          }
-        });
-      }
-      console.log('🗺️ Mapa de produtos criado:', Object.keys(produtosPorNome).length, 'produtos');
-      console.log('🗺️ produtosPorNome:', produtosPorNome);
-      
-      // Se não houver vendas, tentar migrar dos lançamentos antigos
+      produtos.forEach(prod => {
+        const nomeNormalizado = normalizarNome(prod.name);
+        if (prod.images && prod.images[0]) {
+          produtosPorNome[nomeNormalizado] = prod.images[0];
+        }
+      });
+
+      // Migração: se não há vendas mas há lançamentos de receita, migrar
       if (vendas.length === 0 && lancamentos.length > 0) {
-        // ...existing code...
         const vendasMigradas = [];
         
         lancamentos.forEach((lanc, index) => {
           if (lanc.tipo === 'receita' && lanc.descricao && lanc.descricao.startsWith('Venda #')) {
-            // Extrair itens da descrição (ex: "Venda #0001 - 2x Produto A, 1x Produto B")
             const descricaoParts = lanc.descricao.split(' - ');
             if (descricaoParts.length > 1) {
               const itensTexto = descricaoParts[1];
@@ -287,7 +86,7 @@ const Dashboard = () => {
                     sku: 'N/A',
                     quantidade: parseInt(match[1]),
                     preco: lanc.valor / parseInt(match[1]),
-                    imagem: produtosPorNome[match[2]] || null
+                    imagem: produtosPorNome[normalizarNome(match[2])] || null
                   };
                 }
                 return null;
@@ -315,24 +114,64 @@ const Dashboard = () => {
         
         if (vendasMigradas.length > 0) {
           localStorage.setItem('vendas', JSON.stringify(vendasMigradas));
-          // ...existing code...
+          vendas = vendasMigradas;
         }
       }
-      
-      // Recarregar vendas após possível migração
-      const vendasAtualizadas = JSON.parse(localStorage.getItem('vendas') || '[]');
-      // ...existing code...
-      
-      // Contar quantidades vendidas por produto
+
+      // Filtrar por período
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const seteDiasAtras = new Date(hoje);
+      seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+
+      const lancamentosPeriodo = lancamentos.filter(lanc => {
+        const dataLanc = new Date(lanc.data);
+        if (filtro === 'hoje') {
+          return dataLanc >= hoje && lanc.tipo === 'receita';
+        } else {
+          return dataLanc >= seteDiasAtras && lanc.tipo === 'receita';
+        }
+      });
+
+      const vendasPeriodo = lancamentosPeriodo.reduce((acc, lanc) => acc + (lanc.valor || 0), 0);
+
+      // Vendas dos últimos 7 dias
+      const lancamentos7Dias = lancamentos.filter(lanc => {
+        const dataLanc = new Date(lanc.data);
+        return dataLanc >= seteDiasAtras && lanc.tipo === 'receita';
+      });
+      const totalVendas7Dias = lancamentos7Dias.reduce((acc, lanc) => acc + (lanc.valor || 0), 0);
+
+      // Clientes
+      const clientesHoje = clientes.filter(c => {
+        const dataCad = new Date(c.dataCadastro);
+        return dataCad >= hoje;
+      });
+
+      const clientesComDebito = clientes.filter(c => (c.debito || 0) > 0);
+      const totalDebitos = clientesComDebito.reduce((acc, c) => acc + (c.debito || 0), 0);
+
+      // Produtos com baixo estoque
+      const alertasEstoque = produtos.filter(prod => {
+        const qtd = prod.quantity || 0;
+        const limite = prod.minLimit || 5;
+        return qtd <= limite;
+      }).map(prod => ({
+        nome: prod.name,
+        quantidade: prod.quantity || 0,
+        status: (prod.quantity || 0) === 0 ? 'esgotado' : 'baixo'
+      }));
+      setProdutosBaixoEstoque(alertasEstoque);
+
+      // Produtos mais vendidos
       const vendasPorProduto = {};
-      vendasAtualizadas.forEach(venda => {
+      vendas.forEach(venda => {
         if (venda.itens && Array.isArray(venda.itens)) {
           venda.itens.forEach(item => {
             const chave = item.nome || item.produto;
-            const chaveNormalizada = chave ? normalizarNome(chave) : '';
+            const chaveNormalizada = normalizarNome(chave);
             if (chave) {
               if (!vendasPorProduto[chave]) {
-                // Busca imagem usando nome normalizado
                 let imagemEncontrada = null;
                 if (item.imagem && item.imagem.trim() !== '') {
                   imagemEncontrada = item.imagem;
@@ -353,28 +192,12 @@ const Dashboard = () => {
           });
         }
       });
-      // Log para análise dos nomes buscados e imagens
-      Object.keys(vendasPorProduto).forEach(nome => {
-        console.log(`🔍 Produto vendido: '${nome}' | Imagem encontrada:`, vendasPorProduto[nome].imagem);
-        if (!vendasPorProduto[nome].imagem) {
-          console.log(`⚠️ Imagem não encontrada para '${nome}'. Tente verificar se o nome está igual ao do banco.`);
-        }
-      });
-      // Log para análise dos nomes buscados e imagens
-      Object.keys(vendasPorProduto).forEach(nome => {
-        console.log(`🔍 Produto vendido: '${nome}' | Imagem encontrada:`, vendasPorProduto[nome].imagem);
-        if (!vendasPorProduto[nome].imagem) {
-          console.log(`⚠️ Imagem não encontrada para '${nome}'. Tente verificar se o nome está igual ao do banco.`);
-        }
-      });
 
-      // Converter para array e ordenar
       const produtosComVendas = Object.values(vendasPorProduto);
       const topProdutos = produtosComVendas
         .sort((a, b) => b.quantidadeVendida - a.quantidadeVendida)
         .slice(0, 3);
       
-      console.log('🏆 Top 3 produtos mais vendidos:', topProdutos);
       setProdutosMaisVendidos(topProdutos);
 
       setEstatisticas({
@@ -394,12 +217,32 @@ const Dashboard = () => {
     }
   };
 
+  // Modal de 14 dias gratuitos
+  const renderTrialModal = () => (
+    <Modal isOpen={showTrialModal} onClose={() => setShowTrialModal(false)} size="md">
+      <div className="p-6 flex flex-col items-center">
+        <h2 className="text-2xl font-bold mb-2 text-primary">Bem-vindo(a) ao período gratuito!</h2>
+        <p className="text-gray-700 dark:text-gray-200 text-center mb-4">
+          Você tem <span className="font-semibold">{diasRestantes} dias</span> de acesso gratuito ao sistema.<br/>
+          Aproveite todas as funcionalidades sem restrições!
+        </p>
+        <p className="text-gray-500 text-sm text-center mb-4">
+          Ao final do período, você poderá escolher um plano e assinar o software para continuar utilizando normalmente.
+        </p>
+        <button
+          className="mt-2 px-6 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition"
+          onClick={() => setShowTrialModal(false)}
+        >
+          Entendi
+        </button>
+      </div>
+    </Modal>
+  );
+
   return (
     <div className="flex flex-row min-h-screen bg-background-light">
-      {/* Sidebar */}
+      {renderTrialModal()}
       <Sidebar />
-
-      {/* Conteúdo Principal */}
       <main className="flex-1 p-6 overflow-y-auto">
         <div className="flex flex-col w-full">
           {/* Cabeçalho */}
@@ -434,7 +277,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Cards de Estatísticas - ajustar título do primeiro card */}
+          {/* Cards de Estatísticas */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             <div className="flex items-center gap-4 bg-white px-4 py-5 rounded-xl border border-gray-200">
               <div className="text-gray-800 flex items-center justify-center rounded-full bg-center bg-no-repeat aspect-square bg-gray-100 w-10 shrink-0">
@@ -448,21 +291,6 @@ const Dashboard = () => {
                   Vendas {filtro === 'hoje' ? 'de Hoje' : '(7 dias)'}
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Cards de Estatísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200">
-              <p className="text-gray-600 text-sm font-medium leading-normal">
-                Vendas {filtro === 'hoje' ? 'do Dia' : '(7 dias)'}
-              </p>
-              <p className="text-gray-800 text-2xl font-bold leading-tight">
-                {carregando ? '...' : formatarPreco(estatisticas.vendasDia)}
-              </p>
-              <p className="text-green-600 text-sm font-medium leading-normal">
-                {estatisticas.pedidosRealizados} pedidos
-              </p>
             </div>
             <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200">
               <p className="text-gray-600 text-sm font-medium leading-normal">Ticket Médio</p>

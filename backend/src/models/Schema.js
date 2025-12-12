@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 const User = require('./User');
 const Sale = require('./Sale');
 const Supplier = require('./Supplier');
@@ -77,6 +77,12 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'ativo'
+  },
+  tenant_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true, // Temporariamente NULL para migração
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'produtos',
@@ -307,6 +313,12 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'ativo'
+  },
+  tenant_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true, // Temporariamente NULL para migração
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'clientes',
@@ -436,6 +448,12 @@ const CashRegister = sequelize.define('CashRegister', {
     type: DataTypes.TEXT,
     allowNull: true,
     field: 'observacoes'
+  },
+  tenant_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true, // Temporariamente NULL para migração
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'caixas',
@@ -455,7 +473,6 @@ const Configuration = sequelize.define('Configuration', {
   chave: {
     type: DataTypes.STRING(100),
     allowNull: false,
-    unique: true,
     field: 'chave'
   },
   valor: {
@@ -473,12 +490,26 @@ const Configuration = sequelize.define('Configuration', {
     type: DataTypes.TEXT,
     allowNull: true,
     field: 'descricao'
+  },
+  tenantId: {
+    type: DataTypes.STRING,
+    allowNull: true, // Temporariamente NULL para migração
+    defaultValue: 'default',
+    field: 'tenant_id', // Coluna no banco é tenant_id
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'configuracoes',
   timestamps: true,
   createdAt: 'criado_em',
-  updatedAt: 'atualizado_em'
+  updatedAt: 'atualizado_em',
+  indexes: [
+    {
+      unique: true,
+      fields: ['chave', 'tenant_id'], // Usar nome da coluna no banco
+      name: 'configuracoes_chave_tenant_unique'
+    }
+  ]
 });
 
 // 10. Define CashRegister Associations

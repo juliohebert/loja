@@ -5,6 +5,7 @@ const formatarPreco = (valor) => {
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalConfirmacao from './ModalConfirmacao';
@@ -54,19 +55,13 @@ const ContasPagarReceber = () => {
 
   const carregarDados = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const headers = getAuthHeaders();
       const [ano, mes] = mesAtual.split('-');
       
       const [pagarRes, receberRes, fornecedoresRes] = await Promise.all([
-        fetch(`http://localhost:3001/api/accounts-payable?mes=${mes}&ano=${ano}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`http://localhost:3001/api/accounts-receivable?mes=${mes}&ano=${ano}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch('http://localhost:3001/api/suppliers?ativo=true', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        fetch(`http://localhost:3001/api/accounts-payable?mes=${mes}&ano=${ano}`, { headers }),
+        fetch(`http://localhost:3001/api/accounts-receivable?mes=${mes}&ano=${ano}`, { headers }),
+        fetch('http://localhost:3001/api/suppliers?ativo=true', { headers })
       ]);
 
       const pagarData = await pagarRes.json();
@@ -98,17 +93,13 @@ const ContasPagarReceber = () => {
     };
 
     try {
-      const token = localStorage.getItem('token');
       const url = formulario.tipo === 'pagar' 
         ? 'http://localhost:3001/api/accounts-payable'
         : 'http://localhost:3001/api/accounts-receivable';
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(payload)
       });
 
@@ -131,7 +122,6 @@ const ContasPagarReceber = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
       const endpoint = aba === 'pagar' ? 'pay' : 'receive';
       const url = aba === 'pagar'
         ? `http://localhost:3001/api/accounts-payable/${modalPagamento.conta.id}/${endpoint}`
@@ -139,10 +129,7 @@ const ContasPagarReceber = () => {
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           [aba === 'pagar' ? 'valorPago' : 'valorRecebido']: parseFloat(modalPagamento.valor),
           [aba === 'pagar' ? 'dataPagamento' : 'dataRecebimento']: new Date().toISOString().split('T')[0],
@@ -171,17 +158,13 @@ const ContasPagarReceber = () => {
 
   const confirmarCancelamento = async (id) => {
     try {
-      const token = localStorage.getItem('token');
       const url = aba === 'pagar'
         ? `http://localhost:3001/api/accounts-payable/${id}/cancel`
         : `http://localhost:3001/api/accounts-receivable/${id}/cancel`;
 
       const response = await fetch(url, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao cancelar conta');

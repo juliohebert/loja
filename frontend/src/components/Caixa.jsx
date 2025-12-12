@@ -4,6 +4,7 @@ const formatarPreco = (valor) => {
 };
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuthHeaders } from '../utils/auth';
 import { FaCashRegister, FaLock, FaUnlock, FaHistory, FaPlus, FaMinus } from 'react-icons/fa';
 import Sidebar from './Sidebar';
 import ModalConfirmacao from './ModalConfirmacao';
@@ -37,7 +38,7 @@ export default function Caixa() {
     carregarHistorico();
   }, [navigate]);
 
-  const calcularVendasDoCaixa = () => {
+  const calcularVendasDoCaixa = async () => {
     console.log('🔄 Calculando vendas do caixa...');
     console.log('📦 Caixa aberto:', caixaAberto);
     
@@ -47,164 +48,150 @@ export default function Caixa() {
       return;
     }
 
-    // Buscar lançamentos do localStorage
-    const lancamentos = JSON.parse(localStorage.getItem('lancamentos') || '[]');
-    console.log('💰 Total de lançamentos:', lancamentos.length);
-    console.log('📋 Lançamentos:', lancamentos);
-    
-    // Usar data e HORA completa da abertura do caixa para filtrar corretamente
-    const dataHoraAbertura = new Date(caixaAberto.dataAbertura);
-    console.log('📅 Data/Hora abertura caixa:', dataHoraAbertura.toISOString());
-    
-    const vendasDoCaixaAtual = lancamentos.filter(l => {
-      if (l.tipo !== 'receita') return false;
-      
-      // Se não tem dataHora, a venda é antiga e não deve ser contabilizada neste caixa
-      if (!l.dataHora) {
-        console.log(`  Venda sem dataHora ignorada: ${l.data}`);
-        return false;
+    try {
+      // Buscar vendas da API ao invés do localStorage
+      const response = await fetch('http://localhost:3001/api/sales', {
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar vendas');
       }
-      
-      const dataHoraLancamento = new Date(l.dataHora);
-      const resultado = dataHoraLancamento >= dataHoraAbertura;
-      console.log(`  Venda: ${dataHoraLancamento.toISOString()} >= ${dataHoraAbertura.toISOString()}? ${resultado}`);
-      return resultado;
-    });
 
-    console.log('✅ Vendas do caixa atual:', vendasDoCaixaAtual.length);
-    const totalVendas = vendasDoCaixaAtual.reduce((acc, l) => acc + parseFloat(l.valor), 0);
-    console.log('💵 Total vendas:', totalVendas);
-    
-    setVendasDoCaixa({
-      total: totalVendas,
-      quantidade: vendasDoCaixaAtual.length
-    });
-
-    // Calcular resumo por forma de pagamento
-    const resumo = {};
-    vendasDoCaixaAtual.forEach(venda => {
-      // Tentar obter forma de pagamento do campo direto ou extrair das observações
-      let formaPagamento = venda.formaPagamento;
+      const data = await response.json();
+      const vendas = data.data || [];
+      console.log('💰 Total de vendas da API:', vendas.length);
       
-      // Se não tiver o campo, tentar extrair das observações (vendas antigas)
-      if (!formaPagamento && venda.observacoes) {
-        const match = venda.observacoes.match(/Forma de pagamento:\s*([^|]+)/);
-        if (match) {
-          formaPagamento = match[1].trim();
+      // Usar data e HORA completa da abertura do caixa para filtrar corretamente
+      const dataHoraAbertura = new Date(caixaAberto.dataAbertura);
+      console.log('📅 Data/Hora abertura caixa:', dataHoraAbertura.toISOString());
+      
+      const vendasDoCaixaAtual = vendas.filter(venda => {
+        // Filtrar vendas que foram criadas após abertura do caixa
+        const dataVenda = new Date(venda.criadoEm || venda.data);
+        const resultado = dataVenda >= dataHoraAbertura;
+        console.log(`  Venda: ${dataVenda.toISOString()} >= ${dataHoraAbertura.toISOString()}? ${resultado}`);
+        return resultado;
+      });
+
+      console.log('✅ Vendas do caixa atual:', vendasDoCaixaAtual.length);
+      const totalVendas = vendasDoCaixaAtual.reduce((acc, venda) => acc + parseFloat(venda.total || 0), 0);
+      console.log('💵 Total vendas:', totalVendas);
+      
+      setVendasDoCaixa({
+        total: totalVendas,
+        quantidade: vendasDoCaixaAtual.length
+      });
+
+      // Calcular resumo por forma de pagamento
+      const resumo = {};
+      vendasDoCaixaAtual.forEach(venda => {
+        const formaPagamento = venda.formaPagamento || 'Não informado';
+        
+        if (!resumo[formaPagamento]) {
+          resumo[formaPagamento] = { quantidade: 0, total: 0 };
         }
-      }
-      
-      // Se ainda não tiver, usar "Não informado"
-      if (!formaPagamento) {
-        formaPagamento = 'Não informado';
-      }
-      
-      if (!resumo[formaPagamento]) {
-        resumo[formaPagamento] = { quantidade: 0, total: 0 };
-      }
-      resumo[formaPagamento].quantidade++;
-      resumo[formaPagamento].total += parseFloat(venda.valor);
-    });
-    setResumoPagamentos(resumo);
+        resumo[formaPagamento].quantidade++;
+        resumo[formaPagamento].total += parseFloat(venda.total || 0);
+      });
+      setResumoPagamentos(resumo);
+    } catch (error) {
+      console.error('❌ Erro ao calcular vendas:', error);
+      setVendasDoCaixa({ total: 0, quantidade: 0 });
+    }
   };
 
-  const abrirModalVendas = () => {
+  const abrirModalVendas = async () => {
     if (!caixaAberto) return;
 
-    const lancamentos = JSON.parse(localStorage.getItem('lancamentos') || '[]');
-    const dataHoraAbertura = new Date(caixaAberto.dataAbertura);
-    
-    const vendasDoCaixaAtual = lancamentos.filter(l => {
-      if (l.tipo !== 'receita') return false;
-      
-      // Só contabilizar vendas que têm dataHora (vendas novas) feitas após a abertura
-      if (!l.dataHora) return false;
-      
-      const dataHoraLancamento = new Date(l.dataHora);
-      return dataHoraLancamento >= dataHoraAbertura;
-    });
+    try {
+      const response = await fetch('http://localhost:3001/api/sales', {
+        headers: getAuthHeaders()
+      });
 
-    setModalVendas({ isOpen: true, vendas: vendasDoCaixaAtual });
+      if (!response.ok) throw new Error('Erro ao buscar vendas');
+
+      const data = await response.json();
+      const vendas = data.data || [];
+      const dataHoraAbertura = new Date(caixaAberto.dataAbertura);
+      
+      const vendasDoCaixaAtual = vendas.filter(venda => {
+        const dataVenda = new Date(venda.criadoEm || venda.data);
+        return dataVenda >= dataHoraAbertura;
+      });
+
+      setModalVendas({ isOpen: true, vendas: vendasDoCaixaAtual });
+    } catch (error) {
+      console.error('Erro ao buscar vendas:', error);
+    }
   };
 
-  const abrirDetalhesCaixaFechado = (caixa) => {
-    const lancamentos = JSON.parse(localStorage.getItem('lancamentos') || '[]');
-    console.log('📦 Caixa selecionado:', caixa);
-    console.log('💰 Total de lançamentos:', lancamentos.length);
-    
-    const dataAbertura = new Date(caixa.dataAbertura);
-    const dataFechamento = caixa.dataFechamento ? new Date(caixa.dataFechamento) : new Date();
-    
-    // Normalizar datas para comparação apenas de dia
-    const dataAberturaNormalizada = new Date(dataAbertura.getFullYear(), dataAbertura.getMonth(), dataAbertura.getDate());
-    const dataFechamentoNormalizada = new Date(dataFechamento.getFullYear(), dataFechamento.getMonth(), dataFechamento.getDate());
-    
-    console.log('📅 Período do caixa:');
-    console.log('  Abertura:', dataAberturaNormalizada.toISOString().split('T')[0]);
-    console.log('  Fechamento:', dataFechamentoNormalizada.toISOString().split('T')[0]);
-    
-    // Filtrar vendas do período do caixa
-    const vendasDoCaixa = lancamentos.filter(l => {
-      if (l.tipo !== 'receita') return false;
-      const dataLancamento = new Date(l.data + 'T00:00:00');
-      const resultado = dataLancamento >= dataAberturaNormalizada && dataLancamento <= dataFechamentoNormalizada;
-      console.log(`  Venda ${l.data}: ${resultado ? '✅' : '❌'}`);
-      return resultado;
-    });
+  const abrirDetalhesCaixaFechado = async (caixa) => {
+    try {
+      const response = await fetch('http://localhost:3001/api/sales', {
+        headers: getAuthHeaders()
+      });
 
-    console.log('✅ Vendas encontradas:', vendasDoCaixa.length);
+      if (!response.ok) throw new Error('Erro ao buscar vendas');
 
-    // Calcular resumo por forma de pagamento
-    const resumo = {};
-    vendasDoCaixa.forEach(venda => {
-      let formaPagamento = venda.formaPagamento;
-      if (!formaPagamento && venda.observacoes) {
-        const match = venda.observacoes.match(/Forma de pagamento:\s*([^|]+)/);
-        if (match) formaPagamento = match[1].trim();
-      }
-      if (!formaPagamento) formaPagamento = 'Não informado';
+      const data = await response.json();
+      const vendas = data.data || [];
       
-      if (!resumo[formaPagamento]) {
-        resumo[formaPagamento] = { quantidade: 0, total: 0 };
-      }
-      resumo[formaPagamento].quantidade++;
-      resumo[formaPagamento].total += parseFloat(venda.valor);
-    });
+      console.log('📦 Caixa selecionado:', caixa);
+      console.log('💰 Total de vendas:', vendas.length);
+      
+      const dataAbertura = new Date(caixa.dataAbertura);
+      const dataFechamento = caixa.dataFechamento ? new Date(caixa.dataFechamento) : new Date();
+      
+      console.log('📅 Período do caixa:');
+      console.log('  Abertura:', dataAbertura.toISOString());
+      console.log('  Fechamento:', dataFechamento.toISOString());
+      
+      // Filtrar vendas do período do caixa
+      const vendasDoCaixa = vendas.filter(venda => {
+        const dataVenda = new Date(venda.criadoEm || venda.data);
+        const resultado = dataVenda >= dataAbertura && dataVenda <= dataFechamento;
+        console.log(`  Venda ${dataVenda.toISOString()}: ${resultado ? '✅' : '❌'}`);
+        return resultado;
+      });
 
-    setModalDetalhesCaixa({ isOpen: true, caixa, vendas: vendasDoCaixa, resumo });
+      console.log('✅ Vendas encontradas:', vendasDoCaixa.length);
+
+      // Calcular resumo por forma de pagamento
+      const resumo = {};
+      vendasDoCaixa.forEach(venda => {
+        const formaPagamento = venda.formaPagamento || 'Não informado';
+        
+        if (!resumo[formaPagamento]) {
+          resumo[formaPagamento] = { quantidade: 0, total: 0 };
+        }
+        resumo[formaPagamento].quantidade++;
+        resumo[formaPagamento].total += parseFloat(venda.total || 0);
+      });
+
+      setModalDetalhesCaixa({ isOpen: true, caixa, vendas: vendasDoCaixa, resumo });
+    } catch (error) {
+      console.error('Erro ao buscar detalhes do caixa:', error);
+    }
   };
 
   useEffect(() => {
-    calcularVendasDoCaixa();
-
-    // Listener para atualizar quando uma venda for realizada
-    const handleStorageChange = (e) => {
-      if (e.key === 'lancamentos') {
-        console.log('🔔 Detectada mudança nos lançamentos, recalculando...');
-        calcularVendasDoCaixa();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Também escutar mudanças diretas no localStorage (mesma aba)
-    const interval = setInterval(() => {
+    if (caixaAberto) {
       calcularVendasDoCaixa();
-    }, 2000); // Atualiza a cada 2 segundos
+      
+      // Atualizar vendas periodicamente
+      const interval = setInterval(() => {
+        calcularVendasDoCaixa();
+      }, 5000); // Atualiza a cada 5 segundos
 
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
+      return () => clearInterval(interval);
+    }
   }, [caixaAberto]);
 
   const carregarCaixaAberto = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/cash-registers/open/current', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
@@ -220,11 +207,8 @@ export default function Caixa() {
 
   const carregarHistorico = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/cash-registers?limit=10', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
@@ -239,13 +223,9 @@ export default function Caixa() {
   const abrirCaixa = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/cash-registers/open', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           saldoInicial: parseFloat(modalAbrir.saldoInicial)
         })
@@ -271,13 +251,9 @@ export default function Caixa() {
   const fecharCaixa = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/cash-registers/${caixaAberto.id}/close`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        method: 'PATCH',
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           saldoFinal: parseFloat(modalFechar.saldoFinal),
           observacoes: modalFechar.observacoes

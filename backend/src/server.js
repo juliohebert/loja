@@ -17,6 +17,8 @@ const purchaseOrderRoutes = require('./routes/purchaseOrderRoutes');
 const accountPayableRoutes = require('./routes/accountPayableRoutes');
 const accountReceivableRoutes = require('./routes/accountReceivableRoutes');
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
+const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
+const tenantMiddleware = require('./middleware/tenantMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -29,8 +31,13 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware de log
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Body:', JSON.stringify(req.body));
+  console.log('Headers:', JSON.stringify(req.headers));
   next();
 });
+
+// Middleware para capturar o tenantId
+app.use(tenantMiddleware);
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -74,15 +81,45 @@ app.use((err, req, res, next) => {
   });
 });
 
+const createDatabaseIfNotExists = async (databaseName) => {
+  const client = new Client({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT || 5432,
+  });
+
+  try {
+    await client.connect();
+    const res = await client.query(`SELECT 1 FROM pg_database WHERE datname = $1`, [databaseName]);
+    if (res.rowCount === 0) {
+      console.log(`🛠️  Criando banco de dados: ${databaseName}`);
+      await client.query(`CREATE DATABASE ${databaseName}`);
+      console.log(`✅ Banco de dados ${databaseName} criado com sucesso!`);
+    } else {
+      console.log(`📂 Banco de dados ${databaseName} já existe.`);
+    }
+  } catch (error) {
+    console.error(`❌ Erro ao verificar/criar banco de dados: ${error.message}`);
+    throw error;
+  } finally {
+    await client.end();
+  }
+};
+
 // Sincronizar banco de dados e iniciar servidor
 const startServer = async () => {
   try {
+    // Verificar e criar banco de dados, se necessário
+    const databaseName = process.env.DB_NAME;
+    await createDatabaseIfNotExists(databaseName);
+
     // Sincronizar modelos (usar force: true apenas em desenvolvimento para recriar tabelas)
     await sequelize.sync({ alter: true });
     console.log('✅ Modelos sincronizados com o banco de dados');
     
-    // Inicializar configurações padrão
-    await initializeDefaultConfigurations();
+    // Inicializar configurações padrão com tenantId padrão
+    await initializeDefaultConfigurations({ tenantId: 'default' });
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);

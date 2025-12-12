@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getAuthHeaders } from '../utils/auth';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -27,13 +28,8 @@ const Sidebar = () => {
 
   const carregarConfiguracoes = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
       const response = await fetch('http://localhost:3001/api/configurations', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {

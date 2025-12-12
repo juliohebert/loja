@@ -16,7 +16,12 @@ exports.createCustomer = async (req, res) => {
     }
 
     // Verificar se CPF já existe
-    const clienteExistente = await Customer.findOne({ where: { cpf } });
+    const clienteExistente = await Customer.findOne({ 
+      where: { 
+        cpf,
+        tenant_id: req.tenantId 
+      } 
+    });
     if (clienteExistente) {
       return res.status(400).json({ 
         error: 'CPF já cadastrado' 
@@ -35,7 +40,8 @@ exports.createCustomer = async (req, res) => {
       cep: cep || null,
       debito: 0,
       limiteCredito: limiteCredito || 0,
-      observacoes: observacoes || null
+      observacoes: observacoes || null,
+      tenant_id: req.tenantId
     });
 
     res.status(201).json({
@@ -57,7 +63,10 @@ exports.createCustomer = async (req, res) => {
 exports.getAllCustomers = async (req, res) => {
   try {
     const clientes = await Customer.findAll({
-      where: { ativo: true },
+      where: { 
+        ativo: true,
+        tenant_id: req.tenantId 
+      },
       order: [['nome', 'ASC']],
       include: [{
         model: CustomerTransaction,
@@ -87,7 +96,11 @@ exports.getCustomerById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const cliente = await Customer.findByPk(id, {
+    const cliente = await Customer.findOne({
+      where: { 
+        id,
+        tenant_id: req.tenantId 
+      },
       include: [{
         model: CustomerTransaction,
         as: 'transacoes',
@@ -120,7 +133,12 @@ exports.updateCustomer = async (req, res) => {
     const { id } = req.params;
     const { nome, cpf, telefone, email, endereco, cidade, estado, cep, limiteCredito, observacoes } = req.body;
 
-    const cliente = await Customer.findByPk(id);
+    const cliente = await Customer.findOne({ 
+      where: { 
+        id,
+        tenant_id: req.tenantId 
+      } 
+    });
     
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente não encontrado' });
@@ -131,6 +149,7 @@ exports.updateCustomer = async (req, res) => {
       const cpfExistente = await Customer.findOne({ 
         where: { 
           cpf,
+          tenant_id: req.tenantId,
           id: { [Op.ne]: id }
         } 
       });
@@ -226,7 +245,12 @@ exports.addTransaction = async (req, res) => {
       });
     }
 
-    const cliente = await Customer.findByPk(id);
+    const cliente = await Customer.findOne({ 
+      where: { 
+        id,
+        tenant_id: req.tenantId 
+      } 
+    });
     
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente não encontrado' });
@@ -300,7 +324,12 @@ exports.getCustomerTransactions = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const cliente = await Customer.findByPk(id);
+    const cliente = await Customer.findOne({ 
+      where: { 
+        id,
+        tenant_id: req.tenantId 
+      } 
+    });
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente não encontrado' });
     }

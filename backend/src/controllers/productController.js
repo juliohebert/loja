@@ -38,7 +38,8 @@ exports.createProduct = async (req, res) => {
       categoria: categoria || 'Geral',
       precoCusto: parseFloat(precoCusto),
       precoVenda: parseFloat(precoVenda),
-      imagens: imagens || []
+      imagens: imagens || [],
+      tenant_id: req.tenantId // Associar ao tenant
     }, { transaction: t });
 
     // 2. Iterate over 'variacoes' array and create Variation + Stock
@@ -123,6 +124,7 @@ exports.createProduct = async (req, res) => {
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.findAll({
+      where: { tenant_id: req.tenantId }, // Filtrar por tenant
       include: [
         {
           model: Variation,
@@ -157,7 +159,11 @@ exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByPk(id, {
+    const product = await Product.findOne({
+      where: { 
+        id,
+        tenant_id: req.tenantId // Filtrar por tenant
+      },
       include: [
         {
           model: Variation,
@@ -192,6 +198,20 @@ exports.updateStock = async (req, res) => {
   try {
     const { variationId } = req.params;
     const { quantity, operation } = req.body; // operation: 'add' or 'subtract'
+
+    // Buscar variação com filtro de tenantId
+    const variation = await Variation.findOne({
+      where: { id: variationId },
+      include: [{
+        model: Product,
+        as: 'produto',
+        where: { tenant_id: req.tenantId }
+      }]
+    });
+
+    if (!variation) {
+      return res.status(404).json({ error: 'Variação não encontrada' });
+    }
 
     const stock = await Stock.findOne({ where: { variacao_id: variationId } });
 
@@ -231,7 +251,12 @@ exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByPk(id);
+    const product = await Product.findOne({ 
+      where: { 
+        id, 
+        tenant_id: req.tenantId 
+      } 
+    });
 
     if (!product) {
       return res.status(404).json({ error: 'Produto não encontrado' });
@@ -264,8 +289,12 @@ exports.updateProduct = async (req, res) => {
     const { id } = req.params;
     const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens } = req.body;
 
-    // Buscar produto existente
-    const product = await Product.findByPk(id, {
+    // Buscar produto existente com filtro de tenantId
+    const product = await Product.findOne({
+      where: { 
+        id, 
+        tenant_id: req.tenantId 
+      },
       include: [{
         model: Variation,
         as: 'variacoes',

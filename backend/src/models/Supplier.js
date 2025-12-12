@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 
 const Supplier = sequelize.define('Supplier', {
   id: {
@@ -73,6 +73,12 @@ const Supplier = sequelize.define('Supplier', {
   avaliacaoPontualidade: {
     type: DataTypes.INTEGER, // 1 a 5 estrelas
     defaultValue: 0
+  },
+  tenantId: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'suppliers',

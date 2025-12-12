@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalConfirmacao from './ModalConfirmacao';
@@ -53,12 +54,8 @@ const Fornecedores = () => {
 
   const carregarFornecedores = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/suppliers', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao buscar fornecedores');

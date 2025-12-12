@@ -13,7 +13,8 @@ exports.openCashRegister = async (req, res) => {
     const caixaAberto = await CashRegister.findOne({
       where: {
         usuarioId,
-        status: 'aberto'
+        status: 'aberto',
+        tenant_id: req.tenantId
       }
     });
 
@@ -28,6 +29,7 @@ exports.openCashRegister = async (req, res) => {
     const novoCaixa = await CashRegister.create({
       usuarioId,
       saldoInicial: saldoInicial || 0,
+      tenant_id: req.tenantId,
       observacoes
     });
 
@@ -58,7 +60,8 @@ exports.closeCashRegister = async (req, res) => {
       where: {
         id,
         usuarioId,
-        status: 'aberto'
+        status: 'aberto',
+        tenant_id: req.tenantId
       }
     });
 
@@ -99,13 +102,9 @@ exports.getOpenCashRegister = async (req, res) => {
     const caixaAberto = await CashRegister.findOne({
       where: {
         usuarioId,
-        status: 'aberto'
+        status: 'aberto',
+        tenant_id: req.tenantId // Usar nome do campo no banco: tenant_id
       },
-      include: [{
-        model: User,
-        as: 'usuario',
-        attributes: ['id', 'nome', 'email']
-      }],
       order: [['dataAbertura', 'DESC']]
     });
 
@@ -137,7 +136,9 @@ exports.getAllCashRegisters = async (req, res) => {
     const { status, dataInicio, dataFim, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    const where = {};
+    const where = {
+      tenant_id: req.tenantId // FILTRO DE MULTITENANCY
+    };
 
     // Filtro por status
     if (status) {
@@ -193,7 +194,11 @@ exports.getCashRegisterById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const caixa = await CashRegister.findByPk(id, {
+    const caixa = await CashRegister.findOne({
+      where: { 
+        id: id,
+        tenant_id: req.tenantId 
+      },
       include: [{
         model: User,
         as: 'usuario',

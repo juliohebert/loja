@@ -13,7 +13,13 @@ export default function Register() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    nomeLoja: '',
+    cnpj: '',
+    telefone: '',
+    endereco: '',
+    responsavel: '',
+    plano: '' // removido do formulário, mas mantido no estado para compatibilidade futura
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -21,11 +27,35 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
+
+  // Máscara para CNPJ
+  const formatCNPJ = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
+      .slice(0, 18);
+  };
+
+  // Máscara para telefone
+  const formatPhone = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d)/, '$1-$2')
+      .slice(0, 15);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let formattedValue = value;
+    if (name === 'cnpj') formattedValue = formatCNPJ(value);
+    if (name === 'telefone') formattedValue = formatPhone(value);
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: formattedValue
     }));
     // Limpar erro do campo ao digitar
     if (errors[name]) {
@@ -36,28 +66,43 @@ export default function Register() {
   const validateForm = () => {
     const newErrors = {};
 
+    if (!formData.nomeLoja.trim()) {
+      newErrors.nomeLoja = 'Nome da loja é obrigatório';
+    }
     if (!formData.name.trim()) {
       newErrors.name = 'Nome completo é obrigatório';
     }
-
+    if (!formData.cnpj.trim()) {
+      newErrors.cnpj = 'CNPJ é obrigatório';
+    } else if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(formData.cnpj)) {
+      newErrors.cnpj = 'CNPJ inválido (formato: 00.000.000/0000-00)';
+    }
+    if (!formData.telefone.trim()) {
+      newErrors.telefone = 'Telefone é obrigatório';
+    } else if (!/^\(\d{2}\) \d{5}-\d{4}$/.test(formData.telefone)) {
+      newErrors.telefone = 'Telefone inválido (formato: (99) 99999-9999)';
+    }
+    if (!formData.endereco.trim()) {
+      newErrors.endereco = 'Endereço é obrigatório';
+    }
+    if (!formData.responsavel.trim()) {
+      newErrors.responsavel = 'Responsável é obrigatório';
+    }
     if (!formData.email.trim()) {
       newErrors.email = 'E-mail é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'E-mail inválido';
     }
-
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
     }
-
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Confirmação de senha é obrigatória';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'As senhas não coincidem';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -75,15 +120,19 @@ export default function Register() {
     try {
       console.log('📤 Criando conta:', { name: formData.name, email: formData.email });
 
-      const response = await fetch('http://localhost:3001/api/auth/register', {
+      const response = await fetch('http://localhost:3001/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: formData.name,
+          nomeLoja: formData.nomeLoja,
           email: formData.email,
-          password: formData.password
+          senha: formData.password,
+          cnpj: formData.cnpj,
+          telefone: formData.telefone,
+          endereco: formData.endereco,
+          responsavel: formData.responsavel
         })
       });
 
@@ -100,7 +149,18 @@ export default function Register() {
         }
 
         // Limpar formulário
-        setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          nomeLoja: '',
+          cnpj: '',
+          telefone: '',
+          endereco: '',
+          responsavel: '',
+          plano: ''
+        });
         
         // Redirecionar para produtos
         setTimeout(() => navigate('/products'), 2000);
@@ -153,6 +213,24 @@ export default function Register() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           
+          {/* Nome da Loja */}
+          <label className="flex flex-col">
+            <p className="text-[#111318] dark:text-gray-300 text-base font-medium leading-normal pb-2">
+              Nome da Loja
+            </p>
+            <input
+              className={`w-full rounded-lg border ${errors.nomeLoja ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-background-dark/50 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 px-4 text-base text-[#111318] dark:text-white placeholder:text-[#616f89] dark:placeholder:text-gray-400 transition-colors`}
+              name="nomeLoja"
+              placeholder="Digite o nome da loja"
+              type="text"
+              value={formData.nomeLoja}
+              onChange={handleChange}
+            />
+            {errors.nomeLoja && (
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.nomeLoja}</p>
+            )}
+          </label>
+
           {/* Nome Completo */}
           <label className="flex flex-col">
             <p className="text-[#111318] dark:text-gray-300 text-base font-medium leading-normal pb-2">
@@ -173,6 +251,80 @@ export default function Register() {
               <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.name}</p>
             )}
           </label>
+
+          {/* CNPJ */}
+          <label className="flex flex-col">
+            <p className="text-[#111318] dark:text-gray-300 text-base font-medium leading-normal pb-2">
+              CNPJ
+            </p>
+            <input
+              className={`w-full rounded-lg border ${errors.cnpj ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-background-dark/50 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 px-4 text-base text-[#111318] dark:text-white placeholder:text-[#616f89] dark:placeholder:text-gray-400 transition-colors`}
+              name="cnpj"
+              placeholder="Digite o CNPJ da loja"
+              type="text"
+              value={formData.cnpj}
+              onChange={handleChange}
+            />
+            {errors.cnpj && (
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.cnpj}</p>
+            )}
+          </label>
+
+          {/* Telefone */}
+          <label className="flex flex-col">
+            <p className="text-[#111318] dark:text-gray-300 text-base font-medium leading-normal pb-2">
+              Telefone
+            </p>
+            <input
+              className={`w-full rounded-lg border ${errors.telefone ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-background-dark/50 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 px-4 text-base text-[#111318] dark:text-white placeholder:text-[#616f89] dark:placeholder:text-gray-400 transition-colors`}
+              name="telefone"
+              placeholder="Digite o telefone da loja"
+              type="text"
+              value={formData.telefone}
+              onChange={handleChange}
+            />
+            {errors.telefone && (
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.telefone}</p>
+            )}
+          </label>
+
+          {/* Endereço */}
+          <label className="flex flex-col">
+            <p className="text-[#111318] dark:text-gray-300 text-base font-medium leading-normal pb-2">
+              Endereço
+            </p>
+            <input
+              className={`w-full rounded-lg border ${errors.endereco ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-background-dark/50 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 px-4 text-base text-[#111318] dark:text-white placeholder:text-[#616f89] dark:placeholder:text-gray-400 transition-colors`}
+              name="endereco"
+              placeholder="Digite o endereço da loja"
+              type="text"
+              value={formData.endereco}
+              onChange={handleChange}
+            />
+            {errors.endereco && (
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.endereco}</p>
+            )}
+          </label>
+
+          {/* Responsável */}
+          <label className="flex flex-col">
+            <p className="text-[#111318] dark:text-gray-300 text-base font-medium leading-normal pb-2">
+              Responsável
+            </p>
+            <input
+              className={`w-full rounded-lg border ${errors.responsavel ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-background-dark/50 focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 px-4 text-base text-[#111318] dark:text-white placeholder:text-[#616f89] dark:placeholder:text-gray-400 transition-colors`}
+              name="responsavel"
+              placeholder="Nome do responsável pela loja"
+              type="text"
+              value={formData.responsavel}
+              onChange={handleChange}
+            />
+            {errors.responsavel && (
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.responsavel}</p>
+            )}
+          </label>
+
+
 
           {/* E-mail */}
           <label className="flex flex-col">

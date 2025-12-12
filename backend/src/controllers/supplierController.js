@@ -37,7 +37,12 @@ exports.getSuppliers = async (req, res) => {
 // Buscar fornecedor por ID
 exports.getSupplierById = async (req, res) => {
   try {
-    const supplier = await Supplier.findByPk(req.params.id);
+    const supplier = await Supplier.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!supplier) {
       return res.status(404).json({ success: false, message: 'Fornecedor não encontrado' });
@@ -53,7 +58,12 @@ exports.getSupplierById = async (req, res) => {
 // Atualizar fornecedor
 exports.updateSupplier = async (req, res) => {
   try {
-    const supplier = await Supplier.findByPk(req.params.id);
+    const supplier = await Supplier.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!supplier) {
       return res.status(404).json({ success: false, message: 'Fornecedor não encontrado' });
@@ -70,7 +80,12 @@ exports.updateSupplier = async (req, res) => {
 // Deletar fornecedor (soft delete)
 exports.deleteSupplier = async (req, res) => {
   try {
-    const supplier = await Supplier.findByPk(req.params.id);
+    const supplier = await Supplier.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!supplier) {
       return res.status(404).json({ success: false, message: 'Fornecedor não encontrado' });
@@ -89,7 +104,12 @@ exports.deleteSupplier = async (req, res) => {
 exports.updateRating = async (req, res) => {
   try {
     const { avaliacaoQualidade, avaliacaoPontualidade } = req.body;
-    const supplier = await Supplier.findByPk(req.params.id);
+    const supplier = await Supplier.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!supplier) {
       return res.status(404).json({ success: false, message: 'Fornecedor não encontrado' });

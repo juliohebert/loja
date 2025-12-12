@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 const Supplier = require('./Supplier');
 const User = require('./User');
 
@@ -28,6 +28,12 @@ const PurchaseOrder = sequelize.define('PurchaseOrder', {
       model: 'usuarios',
       key: 'id'
     }
+  },
+  tenantId: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   },
   dataPedido: {
     type: DataTypes.DATEONLY,
@@ -71,7 +77,13 @@ const PurchaseOrder = sequelize.define('PurchaseOrder', {
   }
 }, {
   tableName: 'purchase_orders',
-  timestamps: true
+  timestamps: true,
+  scopes: {
+    withDeleted: {
+      where: {},
+      paranoid: false
+    }
+  }
 });
 
 PurchaseOrder.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'fornecedor' });

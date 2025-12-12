@@ -3,10 +3,12 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { authMiddleware } = require('../middleware/auth');
 
-// Middleware de autenticação para todas as rotas
-router.use(authMiddleware);
 
-// Rotas de usuários
+// Rota pública para registro de lojas
+router.post('/register', userController.registerStore);
+
+// Rotas protegidas
+router.use(authMiddleware);
 router.get('/', userController.getAllUsers);
 router.get('/roles/permissions', userController.getRolePermissions);
 router.get('/:id', userController.getUserById);

@@ -5,6 +5,7 @@ const formatarPreco = (valor) => {
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalConfirmacao from './ModalConfirmacao';
@@ -49,18 +50,12 @@ const OrdensCompra = () => {
 
   const carregarDados = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const headers = getAuthHeaders();
       
       const [pedidosRes, fornecedoresRes, produtosRes] = await Promise.all([
-        fetch('http://localhost:3001/api/purchase-orders', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch('http://localhost:3001/api/suppliers?ativo=true', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch('http://localhost:3001/api/products', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        fetch('http://localhost:3001/api/purchase-orders', { headers }),
+        fetch('http://localhost:3001/api/suppliers?ativo=true', { headers }),
+        fetch('http://localhost:3001/api/products', { headers })
       ]);
 
       const pedidosData = await pedidosRes.json();
@@ -179,10 +174,7 @@ const OrdensCompra = () => {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/purchase-orders', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(payload)
       });
 
@@ -217,10 +209,7 @@ const OrdensCompra = () => {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/purchase-orders/${pedido.id}/receive`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           dataEntrega: new Date().toISOString().split('T')[0],
           itensRecebidos: pedido.itens.map(item => ({
@@ -250,13 +239,9 @@ const OrdensCompra = () => {
 
   const confirmarCancelamento = async (id) => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3001/api/purchase-orders/${id}/cancel`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao cancelar pedido');

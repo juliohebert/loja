@@ -6,6 +6,7 @@ const { Sale, User, Customer } = require('../models/Schema');
 const getAllSales = async (req, res) => {
   try {
     const sales = await Sale.findAll({
+      where: { tenant_id: req.tenantId },
       include: [
         {
           model: User,
@@ -41,7 +42,11 @@ const getSaleById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const sale = await Sale.findByPk(id, {
+    const sale = await Sale.findOne({
+      where: { 
+        id: id,
+        tenant_id: req.tenantId 
+      },
       include: [
         {
           model: User,
@@ -106,20 +111,8 @@ const createSale = async (req, res) => {
     }
 
     const sale = await Sale.create({
-      numeroVenda,
-      usuarioId: req.user.id,
-      vendedor: vendedor || req.user.nome,
-      clienteId: clienteId || null,
-      caixaId: caixaId || null,
-      itens,
-      formaPagamento,
-      subtotal: subtotal || 0,
-      desconto: desconto || 0,
-      total: total || 0,
-      troco: troco || 0,
-      observacoes: observacoes || null,
-      data: data || new Date().toISOString().split('T')[0],
-      dataHora: dataHora || new Date()
+      ...req.body,
+      tenant_id: req.tenantId // Associar tenantId à venda
     });
 
     res.status(201).json({
@@ -149,6 +142,8 @@ const getSalesByPeriod = async (req, res) => {
         [require('sequelize').Op.between]: [dataInicio, dataFim]
       };
     }
+
+    where.tenant_id = req.tenantId;
 
     const sales = await Sale.findAll({
       where,
@@ -188,7 +183,8 @@ const getSalesByVendedor = async (req, res) => {
     const { vendedor } = req.params;
 
     const sales = await Sale.findAll({
-      where: { vendedor },
+      where: { 
+        tenant_id: req.tenantId, vendedor },
       order: [['dataHora', 'DESC']]
     });
 

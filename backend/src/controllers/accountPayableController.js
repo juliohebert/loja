@@ -80,7 +80,12 @@ exports.getAccountPayableById = async (req, res) => {
 exports.payAccount = async (req, res) => {
   try {
     const { valorPago, dataPagamento, formaPagamento, comprovante } = req.body;
-    const account = await AccountPayable.findByPk(req.params.id);
+    const account = await AccountPayable.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!account) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
@@ -111,7 +116,12 @@ exports.payAccount = async (req, res) => {
 // Cancelar conta
 exports.cancelAccount = async (req, res) => {
   try {
-    const account = await AccountPayable.findByPk(req.params.id);
+    const account = await AccountPayable.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!account) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });

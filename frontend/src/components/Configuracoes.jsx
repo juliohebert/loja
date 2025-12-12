@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaCog, FaSave, FaUndo, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import Sidebar from './Sidebar';
 import Toast from './Toast';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function Configuracoes() {
   const navigate = useNavigate();
@@ -24,11 +25,8 @@ export default function Configuracoes() {
 
   const carregarConfiguracoes = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/configurations', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
@@ -73,7 +71,6 @@ export default function Configuracoes() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       let erros = 0;
       let sucesso = 0;
 
@@ -81,10 +78,7 @@ export default function Configuracoes() {
         const config = configs.find(c => c.chave === chave);
         const response = await fetch('http://localhost:3001/api/configurations', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             chave,
             valor: valor.toString(),

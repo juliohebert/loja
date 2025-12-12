@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 
 /**
  * Model de Usuário
@@ -76,6 +76,11 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
     field: 'ultimo_login'
+  },
+  tenantId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    field: 'tenant_id'
   }
 }, {
   tableName: 'usuarios',

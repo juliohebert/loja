@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database');
 
 const Sale = sequelize.define('Sale', {
   id: {
@@ -85,6 +85,12 @@ const Sale = sequelize.define('Sale', {
     type: DataTypes.DATE,
     allowNull: false,
     field: 'data_hora'
+  },
+  tenantId: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'tenant_id',
+    comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
   tableName: 'vendas',

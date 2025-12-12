@@ -57,9 +57,23 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Login bem-sucedido:', data);
-        // Salvar token e redirecionar
+        
+        // Limpar TODOS os dados do localStorage exceto configurações essenciais
+        const keysParaManter = ['theme', 'language'];
+        const todasKeys = Object.keys(localStorage);
+        
+        todasKeys.forEach(key => {
+          if (!keysParaManter.includes(key)) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        console.log('🧹 localStorage limpo completamente');
+        
+        // Salvar token e dados do usuário
         localStorage.setItem('token', data.token);
         localStorage.setItem('usuario', JSON.stringify(data.user));
+        
         navigate('/dashboard');
       } else {
         const error = await response.json();

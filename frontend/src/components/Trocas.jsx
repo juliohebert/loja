@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
@@ -49,10 +50,7 @@ const Trocas = () => {
 
       // Carregar produtos da API
       const response = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
@@ -132,11 +130,8 @@ const Trocas = () => {
         );
         if (variacaoAntiga) {
           await fetch(`http://localhost:3001/api/products/stock/${variacaoAntiga.id}`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
+        method: 'PATCH',
+        headers: getAuthHeaders(),
             body: JSON.stringify({
               operation: 'add',
               quantity: produtoDevolver.quantidade

@@ -1,5 +1,11 @@
 const User = require('../models/User');
+const MasterStore = require('../models/MasterStore');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { createTenantDatabase } = require('../config/database');
+const { exec } = require('child_process');
+const transporter = require('../config/mailer');
+const sendResendEmail = require('../config/resend');
 
 /**
  * Definição de permissões por role
@@ -47,6 +53,7 @@ const PERMISSIONS = {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
+      where: { tenant_id: req.tenantId }, // Filtrar pelo tenantId
       attributes: ['id', 'nome', 'email', 'funcao', 'telefone', 'ativo', 'ultimoLogin', 'criado_em'],
       order: [['criado_em', 'DESC']]
     });
@@ -393,6 +400,81 @@ exports.getRolePermissions = async (req, res) => {
     res.status(500).json({ 
       success: false,
       error: 'Erro ao buscar permissões' 
+    });
+  }
+};
+
+/**
+ * Registrar uma nova loja
+ * @route POST /api/users/register
+ */
+exports.registerStore = async (req, res) => {
+  try {
+    console.log('📥 Recebendo dados de registro:', req.body);
+    const { nomeLoja, email, senha, cnpj, telefone, endereco, responsavel, plano } = req.body;
+
+    // Validação básica
+    if (!nomeLoja || !email || !senha) {
+      console.log('❌ Validação falhou:', { nomeLoja, email, senha: !!senha });
+      return res.status(400).json({ success: false, error: 'Nome da loja, email e senha são obrigatórios' });
+    }
+
+    // Gerar tenantId único baseado no nome da loja
+    const tenantId = `tenant_${nomeLoja.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}`;
+    
+    // Hash da senha
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    // Criar usuário administrador da loja
+    const usuario = await User.create({
+      nome: responsavel || nomeLoja,
+      email,
+      senha: senhaHash,
+      tipo_usuario: 'admin',
+      ativo: true,
+      tenantId
+    });
+
+    console.log('✅ Usuário criado:', { id: usuario.id, email: usuario.email, tenantId });
+
+    // Gerar token JWT
+    const token = jwt.sign(
+      { 
+        id: usuario.id, 
+        email: usuario.email,
+        tipo_usuario: usuario.tipo_usuario,
+        tenantId: usuario.tenantId
+      },
+      process.env.JWT_SECRET || 'seu_secret_key_aqui',
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: `Loja ${nomeLoja} registrada com sucesso!`,
+      token,
+      user: {
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        tipo_usuario: usuario.tipo_usuario,
+        tenantId: usuario.tenantId
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro ao registrar loja:', error);
+    
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email já está em uso' 
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erro ao registrar loja',
+      details: error.message 
     });
   }
 };

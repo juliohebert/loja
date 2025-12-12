@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import { Search, ShoppingBag, CreditCard, Banknote, QrCode, Receipt, Trash2, Plus, Minus, User } from 'lucide-react';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
 
@@ -62,11 +63,8 @@ const PDV = () => {
 
   const carregarConfiguracoes = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/configurations/exigir_caixa_aberto', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
@@ -80,11 +78,8 @@ const PDV = () => {
 
   const verificarCaixaAberto = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/cash-registers/open/current', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       if (response.ok) {
@@ -107,12 +102,9 @@ const PDV = () => {
 
   const buscarVendedores = async () => {
     try {
-      const token = localStorage.getItem('token');
       console.log('🔍 Buscando vendedores...');
       const response = await fetch('http://localhost:3001/api/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: getAuthHeaders()
       });
 
       console.log('📡 Response status:', response.status);
@@ -148,12 +140,8 @@ const PDV = () => {
   const buscarProdutos = async () => {
     try {
       setCarregando(true);
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao buscar produtos');
@@ -349,7 +337,6 @@ const PDV = () => {
     
     // Dar baixa no estoque de cada item
     try {
-      const token = localStorage.getItem('token');
       
       for (const item of carrinho) {
         if (!item.variacaoId) {
@@ -360,10 +347,7 @@ const PDV = () => {
         // Atualizar estoque usando a rota correta
         const responseEstoque = await fetch(`http://localhost:3001/api/products/stock/${item.variacaoId}`, {
           method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             quantity: item.quantidade,
             operation: 'subtract'
@@ -489,13 +473,9 @@ const PDV = () => {
 
     // Salvar venda no backend (banco de dados)
     try {
-      const token = localStorage.getItem('token');
       const responseSale = await fetch('http://localhost:3001/api/sales', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(vendaCompleta)
       });
 

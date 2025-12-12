@@ -127,14 +127,15 @@ exports.login = async (req, res) => {
     // Atualizar último login
     await user.update({ ultimoLogin: new Date() });
 
-    // Gerar token JWT com permissões
+    // Gerar token JWT com permissões e tenantId
     const token = jwt.sign(
       { 
         id: user.id, 
         email: user.email, 
         funcao: user.funcao,
         permissoes: user.permissoes,
-        ativo: user.ativo
+        ativo: user.ativo,
+        tenantId: user.tenantId
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }

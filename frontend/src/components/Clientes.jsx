@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import { Edit, Trash2, DollarSign, Plus, Search } from 'lucide-react';
 
 const Clientes = () => {
@@ -19,13 +20,9 @@ const Clientes = () => {
   const carregarClientes = async () => {
     try {
       setCarregando(true);
-      const token = localStorage.getItem('token');
       
       const response = await fetch('http://localhost:3001/api/customers', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -56,13 +53,9 @@ const Clientes = () => {
 
     if (confirm('Deseja realmente remover este cliente?')) {
       try {
-        const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:3001/api/customers/${clienteId}`, {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+          headers: getAuthHeaders()
         });
 
         if (!response.ok) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import { Package, TrendingDown, TrendingUp, Search, MoreHorizontal, ChevronLeft, ChevronRight, ShoppingBag, Edit, Trash2 } from 'lucide-react';
 import ModalConfirmacao from './ModalConfirmacao';
 import Toast from './Toast';
@@ -67,12 +68,8 @@ const ControleEstoque = () => {
       setCarregando(true);
       setErro(null);
       
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {

@@ -97,7 +97,12 @@ exports.getPurchaseOrderById = async (req, res) => {
 exports.updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const order = await PurchaseOrder.findByPk(req.params.id);
+    const order = await PurchaseOrder.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!order) {
       return res.status(404).json({ success: false, message: 'Ordem de compra não encontrada' });
@@ -121,7 +126,12 @@ exports.receiveOrder = async (req, res) => {
   const transaction = await sequelize.transaction();
   
   try {
-    const order = await PurchaseOrder.findByPk(req.params.id);
+    const order = await PurchaseOrder.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!order) {
       return res.status(404).json({ success: false, message: 'Ordem de compra não encontrada' });
@@ -169,7 +179,12 @@ exports.receiveOrder = async (req, res) => {
 // Cancelar ordem de compra
 exports.cancelOrder = async (req, res) => {
   try {
-    const order = await PurchaseOrder.findByPk(req.params.id);
+    const order = await PurchaseOrder.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
     
     if (!order) {
       return res.status(404).json({ success: false, message: 'Ordem de compra não encontrada' });

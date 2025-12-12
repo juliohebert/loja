@@ -5,6 +5,7 @@ const formatarPreco = (valor) => {
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 import { FileText, Download, Calendar, TrendingUp, Package, DollarSign, Filter, X, PieChart, Award, Users, ArrowUp, ArrowDown } from 'lucide-react';
 
 const Relatorios = () => {
@@ -266,10 +267,7 @@ const Relatorios = () => {
       
       // Buscar vendas do backend
       const response = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -316,12 +314,8 @@ const Relatorios = () => {
 
   const gerarRelatorioEstoque = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao buscar produtos');
@@ -401,12 +395,8 @@ const Relatorios = () => {
 
   const gerarRelatorioMargens = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao buscar produtos');
@@ -470,12 +460,8 @@ const Relatorios = () => {
 
   const gerarRelatorioCurvaABC = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3001/api/products', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) throw new Error('Falha ao buscar produtos');
@@ -540,10 +526,7 @@ const Relatorios = () => {
       
       // Buscar vendas do backend
       const response = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
