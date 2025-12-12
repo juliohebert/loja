@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'seu_secret_super_seguro_aqui';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const tenantMiddleware = (req, res, next) => {
   try {
