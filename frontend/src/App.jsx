@@ -20,6 +20,8 @@ import Fornecedores from './components/Fornecedores';
 import OrdensCompra from './components/OrdensCompra';
 import ContasPagarReceber from './components/ContasPagarReceber';
 import SelecionarLoja from './components/SelecionarLoja';
+import AssinaturasAdmin from './components/AssinaturasAdmin';
+import DetalheAssinatura from './components/DetalheAssinatura';
 
 function App() {
   return (
@@ -47,9 +49,11 @@ function App() {
         <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/relatorios" element={<Relatorios />} />
         <Route path="/usuarios" element={<Usuarios />} />
-          <Route path="/fornecedores" element={<Fornecedores />} />
-          <Route path="/ordens-compra" element={<OrdensCompra />} />
-          <Route path="/contas" element={<ContasPagarReceber />} />
+        <Route path="/fornecedores" element={<Fornecedores />} />
+        <Route path="/ordens-compra" element={<OrdensCompra />} />
+        <Route path="/contas" element={<ContasPagarReceber />} />
+        <Route path="/admin/assinaturas" element={<AssinaturasAdmin />} />
+        <Route path="/admin/assinaturas/:id" element={<DetalheAssinatura />} />
       </Routes>
     </Router>
   );

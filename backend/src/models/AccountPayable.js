@@ -16,14 +16,14 @@ const AccountPayable = sequelize.define('AccountPayable', {
   supplierId: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'suppliers',
+      model: 'fornecedores',
       key: 'id'
     }
   },
   purchaseOrderId: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'purchase_orders',
+      model: 'pedidos_compra',
       key: 'id'
     }
   },
@@ -77,7 +77,7 @@ const AccountPayable = sequelize.define('AccountPayable', {
     comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
-  tableName: 'accounts_payable',
+  tableName: 'contas_pagar',
   timestamps: true
 });
 

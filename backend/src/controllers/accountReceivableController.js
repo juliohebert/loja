@@ -1,11 +1,11 @@
-const AccountReceivable = require('../models/AccountReceivable');
+const ContaReceber = require('../models/AccountReceivable');
 const { Op } = require('sequelize');
 
 // Criar conta a receber
-exports.createAccountReceivable = async (req, res) => {
+exports.createContaReceber = async (req, res) => {
   try {
-    const account = await AccountReceivable.create(req.body);
-    res.status(201).json({ success: true, data: account });
+    const conta = await ContaReceber.create(req.body);
+    res.status(201).json({ success: true, data: conta });
   } catch (error) {
     console.error('Erro ao criar conta a receber:', error);
     res.status(500).json({ success: false, message: 'Erro ao criar conta a receber', error: error.message });
@@ -13,7 +13,7 @@ exports.createAccountReceivable = async (req, res) => {
 };
 
 // Listar contas a receber
-exports.getAccountsReceivable = async (req, res) => {
+exports.getContasReceber = async (req, res) => {
   try {
     const { status, mes, ano, clienteNome } = req.query;
     
@@ -35,20 +35,20 @@ exports.getAccountsReceivable = async (req, res) => {
       };
     }
     
-    const accounts = await AccountReceivable.findAll({
+    const contas = await ContaReceber.findAll({
       where,
       order: [['dataVencimento', 'ASC']]
     });
     
     // Atualizar status de vencidos
     const hoje = new Date().toISOString().split('T')[0];
-    for (const account of accounts) {
-      if (account.status === 'pendente' && account.dataVencimento < hoje) {
-        await account.update({ status: 'vencido' });
+    for (const conta of contas) {
+      if (conta.status === 'pendente' && conta.dataVencimento < hoje) {
+        await conta.update({ status: 'vencido' });
       }
     }
     
-    res.json({ success: true, data: accounts });
+    res.json({ success: true, data: contas });
   } catch (error) {
     console.error('Erro ao buscar contas a receber:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar contas a receber', error: error.message });
@@ -56,20 +56,20 @@ exports.getAccountsReceivable = async (req, res) => {
 };
 
 // Buscar conta por ID
-exports.getAccountReceivableById = async (req, res) => {
+exports.getContaReceberById = async (req, res) => {
   try {
-    const account = await AccountReceivable.findOne({
+    const conta = await ContaReceber.findOne({
       where: { 
         id: req.params.id,
         tenant_id: req.tenantId 
       }
     });
     
-    if (!account) {
+    if (!conta) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
     }
     
-    res.json({ success: true, data: account });
+    res.json({ success: true, data: conta });
   } catch (error) {
     console.error('Erro ao buscar conta:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar conta', error: error.message });
@@ -77,32 +77,32 @@ exports.getAccountReceivableById = async (req, res) => {
 };
 
 // Registrar recebimento
-exports.receivePayment = async (req, res) => {
+exports.receberPagamento = async (req, res) => {
   try {
     const { valorRecebido, dataRecebimento, formaPagamento, comprovante } = req.body;
-    const account = await AccountReceivable.findOne({
+    const conta = await ContaReceber.findOne({
       where: { 
         id: req.params.id,
         tenant_id: req.tenantId 
       }
     });
     
-    if (!account) {
+    if (!conta) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
     }
     
-    const novoValorRecebido = parseFloat(account.valorRecebido) + parseFloat(valorRecebido);
-    const status = novoValorRecebido >= parseFloat(account.valor) ? 'recebido' : 'pendente';
+    const novoValorRecebido = parseFloat(conta.valorRecebido) + parseFloat(valorRecebido);
+    const status = novoValorRecebido >= parseFloat(conta.valor) ? 'recebido' : 'pendente';
     
-    await account.update({
+    await conta.update({
       valorRecebido: novoValorRecebido,
       status,
-      dataRecebimento: status === 'recebido' ? dataRecebimento : account.dataRecebimento,
-      formaPagamento: formaPagamento || account.formaPagamento,
-      comprovante: comprovante || account.comprovante
+      dataRecebimento: status === 'recebido' ? dataRecebimento : conta.dataRecebimento,
+      formaPagamento: formaPagamento || conta.formaPagamento,
+      comprovante: comprovante || conta.comprovante
     });
     
-    res.json({ success: true, data: account });
+    res.json({ success: true, data: conta });
   } catch (error) {
     console.error('Erro ao registrar recebimento:', error);
     res.status(500).json({ success: false, message: 'Erro ao registrar recebimento', error: error.message });
@@ -110,21 +110,21 @@ exports.receivePayment = async (req, res) => {
 };
 
 // Cancelar conta
-exports.cancelAccount = async (req, res) => {
+exports.cancelarConta = async (req, res) => {
   try {
-    const account = await AccountReceivable.findOne({
+    const conta = await ContaReceber.findOne({
       where: { 
         id: req.params.id,
         tenant_id: req.tenantId 
       }
     });
     
-    if (!account) {
+    if (!conta) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
     }
     
-    await account.update({ status: 'cancelado' });
-    res.json({ success: true, data: account });
+    await conta.update({ status: 'cancelado' });
+    res.json({ success: true, data: conta });
   } catch (error) {
     console.error('Erro ao cancelar conta:', error);
     res.status(500).json({ success: false, message: 'Erro ao cancelar conta', error: error.message });
@@ -132,14 +132,14 @@ exports.cancelAccount = async (req, res) => {
 };
 
 // Buscar recebimentos próximos
-exports.getUpcomingReceivables = async (req, res) => {
+exports.getRecebimentosProximos = async (req, res) => {
   try {
     const { dias = 7 } = req.query;
     const hoje = new Date();
     const dataLimite = new Date();
     dataLimite.setDate(hoje.getDate() + parseInt(dias));
     
-    const accounts = await AccountReceivable.findAll({
+    const contas = await ContaReceber.findAll({
       where: {
         status: 'pendente',
         dataVencimento: {
@@ -149,7 +149,7 @@ exports.getUpcomingReceivables = async (req, res) => {
       order: [['dataVencimento', 'ASC']]
     });
     
-    res.json({ success: true, data: accounts });
+    res.json({ success: true, data: contas });
   } catch (error) {
     console.error('Erro ao buscar recebimentos próximos:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar recebimentos próximos', error: error.message });
@@ -157,9 +157,9 @@ exports.getUpcomingReceivables = async (req, res) => {
 };
 
 // Buscar clientes devedores
-exports.getDebtors = async (req, res) => {
+exports.getDevedores = async (req, res) => {
   try {
-    const accounts = await AccountReceivable.findAll({
+    const contas = await ContaReceber.findAll({
       where: {
         status: {
           [Op.in]: ['pendente', 'vencido']
@@ -170,27 +170,27 @@ exports.getDebtors = async (req, res) => {
     
     // Agrupar por cliente
     const devedores = {};
-    accounts.forEach(account => {
-      const key = account.clienteCpfCnpj || account.clienteNome;
+    contas.forEach(conta => {
+      const key = conta.clienteCpfCnpj || conta.clienteNome;
       if (!devedores[key]) {
         devedores[key] = {
-          nome: account.clienteNome,
-          cpfCnpj: account.clienteCpfCnpj,
-          telefone: account.clienteTelefone,
+          nome: conta.clienteNome,
+          cpfCnpj: conta.clienteCpfCnpj,
+          telefone: conta.clienteTelefone,
           totalDevido: 0,
           contas: []
         };
       }
-      const saldo = parseFloat(account.valor) - parseFloat(account.valorRecebido);
+      const saldo = parseFloat(conta.valor) - parseFloat(conta.valorRecebido);
       devedores[key].totalDevido += saldo;
       devedores[key].contas.push({
-        id: account.id,
-        descricao: account.descricao,
-        valor: account.valor,
-        valorRecebido: account.valorRecebido,
+        id: conta.id,
+        descricao: conta.descricao,
+        valor: conta.valor,
+        valorRecebido: conta.valorRecebido,
         saldo: saldo,
-        dataVencimento: account.dataVencimento,
-        status: account.status
+        dataVencimento: conta.dataVencimento,
+        status: conta.status
       });
     });
     

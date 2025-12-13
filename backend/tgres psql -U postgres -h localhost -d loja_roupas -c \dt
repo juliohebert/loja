@@ -1,0 +1,22 @@
+                List of relations
+ Schema |        Name         | Type  |  Owner   
+--------+---------------------+-------+----------
+ public | SequelizeMeta       | table | postgres
+ public | accounts_payable    | table | postgres
+ public | accounts_receivable | table | postgres
+ public | caixas              | table | postgres
+ public | clientes            | table | postgres
+ public | configuracoes       | table | postgres
+ public | estoques            | table | postgres
+ public | lojas               | table | postgres
+ public | lojas_master        | table | postgres
+ public | planos              | table | postgres
+ public | produtos            | table | postgres
+ public | purchase_orders     | table | postgres
+ public | suppliers           | table | postgres
+ public | transacoes_clientes | table | postgres
+ public | usuarios            | table | postgres
+ public | variacoes           | table | postgres
+ public | vendas              | table | postgres
+(17 rows)
+

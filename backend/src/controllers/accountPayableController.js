@@ -1,17 +1,17 @@
-const AccountPayable = require('../models/AccountPayable');
+const ContaPagar = require('../models/AccountPayable');
 const Supplier = require('../models/Supplier');
 const { Op } = require('sequelize');
 
 // Criar conta a pagar
-exports.createAccountPayable = async (req, res) => {
+exports.createContaPagar = async (req, res) => {
   try {
-    const account = await AccountPayable.create(req.body);
+    const conta = await ContaPagar.create(req.body);
     
-    const accountCompleta = await AccountPayable.findByPk(account.id, {
+    const contaCompleta = await ContaPagar.findByPk(conta.id, {
       include: [{ model: Supplier, as: 'fornecedor' }]
     });
     
-    res.status(201).json({ success: true, data: accountCompleta });
+    res.status(201).json({ success: true, data: contaCompleta });
   } catch (error) {
     console.error('Erro ao criar conta a pagar:', error);
     res.status(500).json({ success: false, message: 'Erro ao criar conta a pagar', error: error.message });
@@ -19,7 +19,7 @@ exports.createAccountPayable = async (req, res) => {
 };
 
 // Listar contas a pagar
-exports.getAccountsPayable = async (req, res) => {
+exports.getContasPagar = async (req, res) => {
   try {
     const { status, mes, ano, supplierId } = req.query;
     
@@ -37,7 +37,7 @@ exports.getAccountsPayable = async (req, res) => {
       };
     }
     
-    const accounts = await AccountPayable.findAll({
+    const contas = await ContaPagar.findAll({
       where,
       include: [{ model: Supplier, as: 'fornecedor' }],
       order: [['dataVencimento', 'ASC']]
@@ -45,13 +45,13 @@ exports.getAccountsPayable = async (req, res) => {
     
     // Atualizar status de vencidos
     const hoje = new Date().toISOString().split('T')[0];
-    for (const account of accounts) {
-      if (account.status === 'pendente' && account.dataVencimento < hoje) {
-        await account.update({ status: 'vencido' });
+    for (const conta of contas) {
+      if (conta.status === 'pendente' && conta.dataVencimento < hoje) {
+        await conta.update({ status: 'vencido' });
       }
     }
     
-    res.json({ success: true, data: accounts });
+    res.json({ success: true, data: contas });
   } catch (error) {
     console.error('Erro ao buscar contas a pagar:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar contas a pagar', error: error.message });
@@ -59,17 +59,17 @@ exports.getAccountsPayable = async (req, res) => {
 };
 
 // Buscar conta por ID
-exports.getAccountPayableById = async (req, res) => {
+exports.getContaPagarById = async (req, res) => {
   try {
-    const account = await AccountPayable.findByPk(req.params.id, {
+    const conta = await ContaPagar.findByPk(req.params.id, {
       include: [{ model: Supplier, as: 'fornecedor' }]
     });
     
-    if (!account) {
+    if (!conta) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
     }
     
-    res.json({ success: true, data: account });
+    res.json({ success: true, data: conta });
   } catch (error) {
     console.error('Erro ao buscar conta:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar conta', error: error.message });
@@ -77,36 +77,36 @@ exports.getAccountPayableById = async (req, res) => {
 };
 
 // Registrar pagamento
-exports.payAccount = async (req, res) => {
+exports.pagarConta = async (req, res) => {
   try {
     const { valorPago, dataPagamento, formaPagamento, comprovante } = req.body;
-    const account = await AccountPayable.findOne({
+    const conta = await ContaPagar.findOne({
       where: { 
         id: req.params.id,
         tenant_id: req.tenantId 
       }
     });
     
-    if (!account) {
+    if (!conta) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
     }
     
-    const novoValorPago = parseFloat(account.valorPago) + parseFloat(valorPago);
-    const status = novoValorPago >= parseFloat(account.valor) ? 'pago' : 'pendente';
+    const novoValorPago = parseFloat(conta.valorPago) + parseFloat(valorPago);
+    const status = novoValorPago >= parseFloat(conta.valor) ? 'pago' : 'pendente';
     
-    await account.update({
+    await conta.update({
       valorPago: novoValorPago,
       status,
-      dataPagamento: status === 'pago' ? dataPagamento : account.dataPagamento,
-      formaPagamento: formaPagamento || account.formaPagamento,
-      comprovante: comprovante || account.comprovante
+      dataPagamento: status === 'pago' ? dataPagamento : conta.dataPagamento,
+      formaPagamento: formaPagamento || conta.formaPagamento,
+      comprovante: comprovante || conta.comprovante
     });
     
-    const accountAtualizada = await AccountPayable.findByPk(account.id, {
+    const contaAtualizada = await ContaPagar.findByPk(conta.id, {
       include: [{ model: Supplier, as: 'fornecedor' }]
     });
     
-    res.json({ success: true, data: accountAtualizada });
+    res.json({ success: true, data: contaAtualizada });
   } catch (error) {
     console.error('Erro ao registrar pagamento:', error);
     res.status(500).json({ success: false, message: 'Erro ao registrar pagamento', error: error.message });
@@ -114,26 +114,26 @@ exports.payAccount = async (req, res) => {
 };
 
 // Cancelar conta
-exports.cancelAccount = async (req, res) => {
+exports.cancelarConta = async (req, res) => {
   try {
-    const account = await AccountPayable.findOne({
+    const conta = await ContaPagar.findOne({
       where: { 
         id: req.params.id,
         tenant_id: req.tenantId 
       }
     });
     
-    if (!account) {
+    if (!conta) {
       return res.status(404).json({ success: false, message: 'Conta não encontrada' });
     }
     
-    await account.update({ status: 'cancelado' });
+    await conta.update({ status: 'cancelado' });
     
-    const accountAtualizada = await AccountPayable.findByPk(account.id, {
+    const contaAtualizada = await ContaPagar.findByPk(conta.id, {
       include: [{ model: Supplier, as: 'fornecedor' }]
     });
     
-    res.json({ success: true, data: accountAtualizada });
+    res.json({ success: true, data: contaAtualizada });
   } catch (error) {
     console.error('Erro ao cancelar conta:', error);
     res.status(500).json({ success: false, message: 'Erro ao cancelar conta', error: error.message });
@@ -141,14 +141,14 @@ exports.cancelAccount = async (req, res) => {
 };
 
 // Buscar contas próximas ao vencimento
-exports.getUpcomingPayments = async (req, res) => {
+exports.getPagamentosProximos = async (req, res) => {
   try {
     const { dias = 7 } = req.query;
     const hoje = new Date();
     const dataLimite = new Date();
     dataLimite.setDate(hoje.getDate() + parseInt(dias));
     
-    const accounts = await AccountPayable.findAll({
+    const contas = await ContaPagar.findAll({
       where: {
         status: 'pendente',
         dataVencimento: {
@@ -159,7 +159,7 @@ exports.getUpcomingPayments = async (req, res) => {
       order: [['dataVencimento', 'ASC']]
     });
     
-    res.json({ success: true, data: accounts });
+    res.json({ success: true, data: contas });
   } catch (error) {
     console.error('Erro ao buscar pagamentos próximos:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar pagamentos próximos', error: error.message });

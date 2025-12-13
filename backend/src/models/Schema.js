@@ -3,9 +3,9 @@ const { sequelize } = require('../config/database');
 const User = require('./User');
 const Sale = require('./Sale');
 const Supplier = require('./Supplier');
-const PurchaseOrder = require('./PurchaseOrder');
-const AccountPayable = require('./AccountPayable');
-const AccountReceivable = require('./AccountReceivable');
+const OrdemCompra = require('./PurchaseOrder');
+const ContaPagar = require('./AccountPayable');
+const ContaReceber = require('./AccountReceivable');
 
 /**
  * 🎯 OBJECTIVE: Define PostgreSQL Data Models for a Clothing Store System.
@@ -560,8 +560,8 @@ module.exports = {
   Configuration, 
   Sale, 
   Supplier,
-  PurchaseOrder,
-  AccountPayable,
-  AccountReceivable,
+  OrdemCompra,
+  ContaPagar,
+  ContaReceber,
   sequelize 
 };

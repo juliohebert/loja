@@ -81,7 +81,7 @@ const Supplier = sequelize.define('Supplier', {
     comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
-  tableName: 'suppliers',
+  tableName: 'fornecedores',
   timestamps: true
 });
 
