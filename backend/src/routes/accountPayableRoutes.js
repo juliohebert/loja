@@ -5,11 +5,11 @@ const { authMiddleware } = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-router.post('/', accountPayableController.createAccountPayable);
-router.get('/', accountPayableController.getAccountsPayable);
-router.get('/upcoming', accountPayableController.getUpcomingPayments);
-router.get('/:id', accountPayableController.getAccountPayableById);
-router.post('/:id/pay', accountPayableController.payAccount);
-router.patch('/:id/cancel', accountPayableController.cancelAccount);
+router.post('/', accountPayableController.createContaPagar);
+router.get('/', accountPayableController.getContasPagar);
+router.get('/upcoming', accountPayableController.getPagamentosProximos);
+router.get('/:id', accountPayableController.getContaPagarById);
+router.post('/:id/pay', accountPayableController.pagarConta);
+router.patch('/:id/cancel', accountPayableController.cancelarConta);
 
 module.exports = router;

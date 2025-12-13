@@ -20,6 +20,7 @@ const purchaseOrderRoutes = require('./routes/purchaseOrderRoutes');
 const accountPayableRoutes = require('./routes/accountPayableRoutes');
 const accountReceivableRoutes = require('./routes/accountReceivableRoutes');
 const tenantRoutes = require('./routes/tenantRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes'); // Importar rotas de assinatura
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
@@ -40,8 +41,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware para capturar o tenantId
-app.use(tenantMiddleware);
+
+// Middleware para capturar o tenantId, exceto para /api/subscriptions/metrics
+app.use((req, res, next) => {
+  if (req.path === '/api/subscriptions/metrics') {
+    return next();
+  }
+  return tenantMiddleware(req, res, next);
+});
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -62,6 +69,7 @@ app.use('/api/suppliers', supplierRoutes);
 app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api/accounts-payable', accountPayableRoutes);
 app.use('/api/accounts-receivable', accountReceivableRoutes);
+app.use('/api/subscriptions', subscriptionRoutes); // Registrar rota de assinatura
 
 // Rota de health check
 app.get('/health', (req, res) => {

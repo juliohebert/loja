@@ -74,7 +74,7 @@ const AccountReceivable = sequelize.define('AccountReceivable', {
     comment: 'ID do tenant para isolamento multitenancy'
   }
 }, {
-  tableName: 'accounts_receivable',
+  tableName: 'contas_receber',
   timestamps: true
 });
 

@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const tenantController = require('../controllers/tenantController');
 const { authMiddleware } = require('../middleware/auth');
+const subscriptionController = require('../controllers/subscriptionController');
+
+// Endpoint para super-admin: listar todas as lojas com status de assinatura/trial
+router.get('/assinaturas', subscriptionController.listLojasComAssinaturaStatus);
 
 /**
  * @route GET /api/tenants

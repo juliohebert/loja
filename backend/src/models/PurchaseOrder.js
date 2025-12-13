@@ -18,7 +18,7 @@ const PurchaseOrder = sequelize.define('PurchaseOrder', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'suppliers',
+      model: 'fornecedores',
       key: 'id'
     }
   },
@@ -76,7 +76,7 @@ const PurchaseOrder = sequelize.define('PurchaseOrder', {
     type: DataTypes.TEXT
   }
 }, {
-  tableName: 'purchase_orders',
+  tableName: 'pedidos_compra',
   timestamps: true,
   scopes: {
     withDeleted: {

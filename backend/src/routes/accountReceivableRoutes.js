@@ -5,12 +5,12 @@ const { authMiddleware } = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-router.post('/', accountReceivableController.createAccountReceivable);
-router.get('/', accountReceivableController.getAccountsReceivable);
-router.get('/upcoming', accountReceivableController.getUpcomingReceivables);
-router.get('/debtors', accountReceivableController.getDebtors);
-router.get('/:id', accountReceivableController.getAccountReceivableById);
-router.post('/:id/receive', accountReceivableController.receivePayment);
-router.patch('/:id/cancel', accountReceivableController.cancelAccount);
+router.post('/', accountReceivableController.createContaReceber);
+router.get('/', accountReceivableController.getContasReceber);
+router.get('/upcoming', accountReceivableController.getRecebimentosProximos);
+router.get('/debtors', accountReceivableController.getDevedores);
+router.get('/:id', accountReceivableController.getContaReceberById);
+router.post('/:id/receive', accountReceivableController.receberPagamento);
+router.patch('/:id/cancel', accountReceivableController.cancelarConta);
 
 module.exports = router;
