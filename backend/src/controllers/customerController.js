@@ -29,6 +29,9 @@ exports.createCustomer = async (req, res) => {
     }
 
     // Criar cliente
+    // Adiciona dataCadastro no formato YYYY-MM-DD
+    const hoje = new Date();
+    const dataCadastro = hoje.toISOString().split('T')[0];
     const cliente = await Customer.create({
       nome,
       cpf,
@@ -41,7 +44,8 @@ exports.createCustomer = async (req, res) => {
       debito: 0,
       limiteCredito: limiteCredito || 0,
       observacoes: observacoes || null,
-      tenant_id: req.tenantId
+      tenant_id: req.tenantId,
+      dataCadastro
     });
 
     res.status(201).json({
@@ -238,10 +242,10 @@ exports.addTransaction = async (req, res) => {
     }
 
     // Validar tipo
-    const tiposValidos = ['adicionar', 'pagar', 'aumentar-credito', 'diminuir-credito'];
+    const tiposValidos = ['adicionar', 'pagar', 'aumentar-credito', 'diminuir-credito', 'usar-credito'];
     if (!tiposValidos.includes(tipo)) {
       return res.status(400).json({ 
-        error: 'Tipo inválido. Use: adicionar, pagar, aumentar-credito ou diminuir-credito' 
+        error: 'Tipo inválido. Use: adicionar, pagar, aumentar-credito, diminuir-credito ou usar-credito' 
       });
     }
 
@@ -263,7 +267,7 @@ exports.addTransaction = async (req, res) => {
 
     // Criar transação
     const transacao = await CustomerTransaction.create({
-      customer_id: id,
+      clienteId: id,
       tipo,
       valor: valorNum,
       descricao: descricao || null,
@@ -288,6 +292,11 @@ exports.addTransaction = async (req, res) => {
       case 'diminuir-credito':
         novoLimiteCredito = Math.max(0, parseFloat(cliente.limiteCredito) - valorNum);
         break;
+      case 'usar-credito':
+        // Ao usar crédito, DIMINUI o limite de crédito (consome o saldo disponível)
+        // Não aumenta o débito, pois é um pagamento à vista usando crédito
+        novoLimiteCredito = Math.max(0, parseFloat(cliente.limiteCredito) - valorNum);
+        break;
     }
 
     await cliente.update({
@@ -302,9 +311,9 @@ exports.addTransaction = async (req, res) => {
         cliente: {
           id: cliente.id,
           nome: cliente.nome,
-          debito: cliente.debito,
-          limiteCredito: cliente.limiteCredito,
-          creditoDisponivel: cliente.calculateAvailableCredit()
+          debito: novoDebito,
+          limiteCredito: novoLimiteCredito,
+          creditoDisponivel: parseFloat(novoLimiteCredito) - parseFloat(novoDebito)
         }
       }
     });
@@ -335,7 +344,7 @@ exports.getCustomerTransactions = async (req, res) => {
     }
 
     const transacoes = await CustomerTransaction.findAll({
-      where: { customer_id: id },
+      where: { clienteId: id },
       order: [['dataHora', 'DESC']]
     });
 
@@ -365,7 +374,7 @@ exports.deleteTransaction = async (req, res) => {
       return res.status(404).json({ error: 'Transação não encontrada' });
     }
 
-    const cliente = await Customer.findByPk(transacao.customer_id);
+    const cliente = await Customer.findByPk(transacao.clienteId);
     
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente não encontrado' });

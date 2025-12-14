@@ -8,15 +8,15 @@ exports.listLojasComAssinaturaStatus = async (req, res) => {
       attributes: [
         [require('sequelize').fn('DISTINCT', require('sequelize').col('tenant_id')), 'tenantId']
       ],
-      where: { tenantId: { [Op.ne]: null } },
+      where: { tenant_id: { [Op.ne]: null } },
       raw: true
     });
     // Para cada tenant, buscar informações adicionais e assinatura
     const resultado = await Promise.all(tenants.map(async (tenant) => {
       // Buscar primeiro usuário admin do tenant para pegar nome/email/criado_em
       const adminUser = await User.findOne({
-        where: { tenantId: tenant.tenantId, funcao: 'admin' },
-        attributes: ['id', 'nome', 'email', 'criado_em', 'tenantId']
+        where: { tenant_id: tenant.tenantId, funcao: 'admin' },
+        attributes: ['id', 'nome', 'email', 'criado_em', 'tenant_id']
       });
       // Buscar assinatura ativa ou trial mais recente para esse tenant
       const assinatura = await Subscription.findOne({
@@ -142,7 +142,15 @@ exports.updateStatus = async (req, res) => {
 // Criar nova assinatura (super-admin)
 exports.create = async (req, res) => {
   try {
-    const { lojaId, plano, valor, dataInicio, dataFim } = req.body;
+    // Para super-admin, usar o tenantId do header ou do body
+    let lojaId = req.body.lojaId;
+    if (!lojaId && req.headers['x-tenant-id']) {
+      lojaId = req.headers['x-tenant-id'];
+    }
+    const { plano, valor, dataInicio, dataFim } = req.body;
+    if (!lojaId) {
+      return res.status(400).json({ error: 'lojaId (tenantId) é obrigatório' });
+    }
     const assinatura = await Subscription.create({
       lojaId, plano, valor, dataInicio, dataFim
     });

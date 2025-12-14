@@ -19,7 +19,7 @@ const Subscription = sequelize.define('Subscription', {
     comment: 'Nome do plano de assinatura'
   },
   status: {
-    type: DataTypes.ENUM('ativa', 'suspensa', 'cancelada', 'trial'),
+    type: DataTypes.ENUM('trial', 'ativa', 'pendente', 'suspensa', 'cancelada'),
     defaultValue: 'trial',
     allowNull: false
   },

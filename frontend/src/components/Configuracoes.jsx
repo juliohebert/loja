@@ -4,6 +4,7 @@ import { FaCog, FaSave, FaUndo, FaCheckCircle, FaTimesCircle } from 'react-icons
 import Sidebar from './Sidebar';
 import Toast from './Toast';
 import { getAuthHeaders } from '../utils/auth';
+import PlanosDisponiveis from './PlanosDisponiveis';
 
 export default function Configuracoes() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Configuracoes() {
   const [loading, setLoading] = useState(false);
   const [alteracoes, setAlteracoes] = useState({});
   const [toast, setToast] = useState({ isOpen: false, message: '', tipo: 'sucesso' });
+  const [abaAtiva, setAbaAtiva] = useState('configuracoes');
 
   useEffect(() => {
     // Verificar autenticação
@@ -175,7 +177,7 @@ export default function Configuracoes() {
                 </div>
               </div>
 
-              {Object.keys(alteracoes).length > 0 && (
+              {Object.keys(alteracoes).length > 0 && abaAtiva === 'configuracoes' && (
                 <div className="flex gap-3">
                   <button
                     onClick={descartarAlteracoes}
@@ -196,58 +198,90 @@ export default function Configuracoes() {
             </div>
 
             {/* Badge de alterações pendentes */}
-            {Object.keys(alteracoes).length > 0 && (
+            {Object.keys(alteracoes).length > 0 && abaAtiva === 'configuracoes' && (
               <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-full text-sm font-semibold shadow-lg animate-pulse">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
                 {Object.keys(alteracoes).length} alteração(ões) pendente(s)
               </div>
             )}
+
+            {/* Abas de navegação */}
+            <div className="mt-6 flex gap-2 border-b border-white/20">
+              <button
+                onClick={() => setAbaAtiva('configuracoes')}
+                className={`px-6 py-3 font-semibold rounded-t-lg transition-all ${
+                  abaAtiva === 'configuracoes'
+                    ? 'bg-white text-blue-600'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="material-icons-outlined text-lg">settings</span>
+                  Configurações
+                </span>
+              </button>
+              <button
+                onClick={() => setAbaAtiva('planos')}
+                className={`px-6 py-3 font-semibold rounded-t-lg transition-all ${
+                  abaAtiva === 'planos'
+                    ? 'bg-white text-blue-600'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="material-icons-outlined text-lg">workspace_premium</span>
+                  Planos
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-8 py-8">
-          {/* Informações */}
-          <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-md">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-blue-500 text-white rounded-lg">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+          {abaAtiva === 'configuracoes' && (
+            <>
+              {/* Informações */}
+              <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-md">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-500 text-white rounded-lg">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-blue-900 text-lg mb-3">Informações sobre as Configurações</h3>
+                    <ul className="text-sm text-blue-800 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">•</span>
+                        <span>As configurações são aplicadas <strong>imediatamente após salvar</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">•</span>
+                        <span><strong>Exigir Caixa Aberto:</strong> Bloqueia vendas no PDV se não houver caixa aberto</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">•</span>
+                        <span><strong>Venda com Estoque Zero:</strong> Permite vender produtos mesmo sem estoque disponível</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">•</span>
+                        <span><strong>Limite de Desconto PDV:</strong> Percentual máximo de desconto permitido nas vendas</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">•</span>
+                        <span><strong>Logo da Loja:</strong> Faça upload ou cole a URL de uma imagem para personalizar o menu</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-0.5">•</span>
+                        <span><strong>Nome da Loja:</strong> Nome exibido ao lado da logo no menu lateral</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-blue-900 text-lg mb-3">Informações sobre as Configurações</h3>
-                <ul className="text-sm text-blue-800 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span>As configurações são aplicadas <strong>imediatamente após salvar</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span><strong>Exigir Caixa Aberto:</strong> Bloqueia vendas no PDV se não houver caixa aberto</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span><strong>Venda com Estoque Zero:</strong> Permite vender produtos mesmo sem estoque disponível</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span><strong>Limite de Desconto PDV:</strong> Percentual máximo de desconto permitido nas vendas</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span><strong>Logo da Loja:</strong> Faça upload ou cole a URL de uma imagem para personalizar o menu</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span><strong>Nome da Loja:</strong> Nome exibido ao lado da logo no menu lateral</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
 
-          {/* Configurações em Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Configurações em Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {configs.map(config => (
               <div
                 key={config.chave}
@@ -434,6 +468,12 @@ export default function Configuracoes() {
               </div>
             )}
           </div>
+            </>
+          )}
+
+          {abaAtiva === 'planos' && (
+            <PlanosDisponiveis />
+          )}
         </div>
       </main>
     </div>

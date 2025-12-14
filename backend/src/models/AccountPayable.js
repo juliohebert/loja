@@ -70,7 +70,11 @@ const AccountPayable = sequelize.define('AccountPayable', {
   comprovante: {
     type: DataTypes.STRING
   },
-  tenantId: {
+  ativo: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  tenant_id: {
     type: DataTypes.STRING(255),
     allowNull: true,
     field: 'tenant_id',

@@ -22,6 +22,8 @@ import ContasPagarReceber from './components/ContasPagarReceber';
 import SelecionarLoja from './components/SelecionarLoja';
 import AssinaturasAdmin from './components/AssinaturasAdmin';
 import DetalheAssinatura from './components/DetalheAssinatura';
+import PlanosAdmin from './components/PlanosAdmin';
+import FormPlano from './components/FormPlano';
 
 function App() {
   return (
@@ -54,6 +56,9 @@ function App() {
         <Route path="/contas" element={<ContasPagarReceber />} />
         <Route path="/admin/assinaturas" element={<AssinaturasAdmin />} />
         <Route path="/admin/assinaturas/:id" element={<DetalheAssinatura />} />
+        <Route path="/admin/planos" element={<PlanosAdmin />} />
+        <Route path="/admin/planos/novo" element={<FormPlano />} />
+        <Route path="/admin/planos/:id" element={<FormPlano />} />
       </Routes>
     </Router>
   );

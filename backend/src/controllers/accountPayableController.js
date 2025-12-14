@@ -23,7 +23,9 @@ exports.getContasPagar = async (req, res) => {
   try {
     const { status, mes, ano, supplierId } = req.query;
     
-    const where = {};
+    const where = {
+      tenant_id: req.tenantId
+    };
     if (status) where.status = status;
     if (supplierId) where.supplierId = supplierId;
     
@@ -73,6 +75,60 @@ exports.getContaPagarById = async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar conta:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar conta', error: error.message });
+  }
+};
+
+// Atualizar conta a pagar
+exports.updateContaPagar = async (req, res) => {
+  try {
+    const conta = await ContaPagar.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
+    
+    if (!conta) {
+      return res.status(404).json({ success: false, message: 'Conta não encontrada' });
+    }
+    
+    await conta.update(req.body);
+    
+    const contaAtualizada = await ContaPagar.findByPk(conta.id, {
+      include: [{ model: Supplier, as: 'fornecedor' }]
+    });
+    
+    res.json({ success: true, data: contaAtualizada });
+  } catch (error) {
+    console.error('Erro ao atualizar conta:', error);
+    res.status(500).json({ success: false, message: 'Erro ao atualizar conta', error: error.message });
+  }
+};
+
+// Inativar conta a pagar
+exports.inativarContaPagar = async (req, res) => {
+  try {
+    const conta = await ContaPagar.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
+    
+    if (!conta) {
+      return res.status(404).json({ success: false, message: 'Conta não encontrada' });
+    }
+    
+    await conta.update({ ativo: false });
+    
+    const contaAtualizada = await ContaPagar.findByPk(conta.id, {
+      include: [{ model: Supplier, as: 'fornecedor' }]
+    });
+    
+    res.json({ success: true, data: contaAtualizada, message: 'Conta inativada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao inativar conta:', error);
+    res.status(500).json({ success: false, message: 'Erro ao inativar conta', error: error.message });
   }
 };
 

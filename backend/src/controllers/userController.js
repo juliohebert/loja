@@ -443,7 +443,7 @@ exports.registerStore = async (req, res) => {
         id: usuario.id, 
         email: usuario.email,
         funcao: usuario.funcao, // garantir que o token traga o campo correto
-        tenantId: usuario.tenantId
+        tenantId: usuario.tenant_id
       },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
@@ -458,7 +458,7 @@ exports.registerStore = async (req, res) => {
         nome: usuario.nome,
         email: usuario.email,
         funcao: usuario.funcao,
-        tenantId: usuario.tenantId,
+        tenantId: usuario.tenant_id,
         nomeLoja: nomeLoja // garantir que o frontend saiba o nome da clínica
       }
     });

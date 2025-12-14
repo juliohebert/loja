@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getAuthHeaders } from '../utils/auth';
+import { getAuthHeaders, decodeToken } from '../utils/auth';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -11,13 +11,37 @@ const Sidebar = () => {
 
   useEffect(() => {
     const carregarUsuario = () => {
-      const dadosUsuario = localStorage.getItem('usuario');
+      // Tentar pegar dados do usuário do localStorage primeiro
+      let dadosUsuario = localStorage.getItem('user');
+      
+      // Se não existir, tentar pegar do campo 'usuario' (legado)
+      if (!dadosUsuario) {
+        dadosUsuario = localStorage.getItem('usuario');
+      }
+      
       if (dadosUsuario) {
         try {
           const usuarioObj = JSON.parse(dadosUsuario);
           setUsuario(usuarioObj);
         } catch (error) {
-          console.error('Erro ao carregar usuário:', error);
+          console.error('Erro ao carregar usuário do localStorage:', error);
+        }
+      } else {
+        // Se não existir no localStorage, tentar decodificar do token JWT
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const decoded = decodeToken(token);
+            if (decoded) {
+              setUsuario({
+                nome: decoded.nome || decoded.email?.split('@')[0] || 'Usuário',
+                email: decoded.email,
+                funcao: decoded.funcao || decoded.role || 'usuario'
+              });
+            }
+          } catch (error) {
+            console.error('Erro ao decodificar token:', error);
+          }
         }
       }
     };
@@ -180,6 +204,26 @@ const Sidebar = () => {
       adminOnly: true
     },
     {
+      path: '/admin/planos',
+      icon: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      ),
+      label: 'Planos',
+      superAdminOnly: true
+    },
+    {
+      path: '/admin/assinaturas',
+      icon: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+        </svg>
+      ),
+      label: 'Assinaturas',
+      superAdminOnly: true
+    },
+    {
       path: '/configuracoes',
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -191,8 +235,8 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between p-4">
-      <div className="flex flex-col gap-6">
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+      <div className="flex-shrink-0 p-4">
         {/* Logo */}
         <div className="flex items-center gap-3 px-2">
           {logoUrl ? (
@@ -216,13 +260,20 @@ const Sidebar = () => {
           </svg>
           <h1 className="text-gray-800 text-lg font-bold">{nomeLoja}</h1>
         </div>
+      </div>
 
-        {/* Menu */}
+      {/* Menu - com scroll */}
+      <div className="flex-1 overflow-y-auto px-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col">
             {menuItems.map((item) => {
               // Ocultar menu de Usuários se não for admin
               if (item.adminOnly && usuario?.funcao !== 'admin') {
+                return null;
+              }
+              
+              // Ocultar menus de super-admin se não for super-admin
+              if (item.superAdminOnly && usuario?.funcao !== 'super-admin') {
                 return null;
               }
               
@@ -246,7 +297,8 @@ const Sidebar = () => {
       </div>
 
       {/* Footer da Sidebar - Usuário, Trocar de Loja e Sair */}
-      <div className="flex flex-col gap-2 border-t border-gray-200 pt-4">
+      <div className="flex-shrink-0 p-4">
+        <div className="flex flex-col gap-2 border-t border-gray-200 pt-4">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="bg-primary rounded-full w-10 h-10 flex items-center justify-center text-white font-semibold">
             {usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U'}
@@ -256,7 +308,15 @@ const Sidebar = () => {
               {usuario?.nome || 'Usuário'}
             </h1>
             <p className="text-gray-500 text-sm font-normal leading-normal">
-              {usuario?.funcao === 'admin' ? 'Administrador' : usuario?.funcao === 'gerente' ? 'Gerente' : 'Usuário'}
+              {usuario?.funcao === 'super-admin' 
+                ? 'Super Admin' 
+                : usuario?.funcao === 'admin' 
+                ? 'Administrador' 
+                : usuario?.funcao === 'gerente' 
+                ? 'Gerente' 
+                : usuario?.funcao === 'vendedor'
+                ? 'Vendedor'
+                : 'Usuário'}
             </p>
           </div>
           <button 
@@ -279,6 +339,7 @@ const Sidebar = () => {
           </svg>
           <span>Trocar de Loja</span>
         </button>
+        </div>
       </div>
     </div>
   );

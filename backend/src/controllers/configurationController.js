@@ -6,7 +6,7 @@ const { Configuration } = require('../models/Schema');
 exports.getAllConfigurations = async (req, res) => {
   try {
     const configuracoes = await Configuration.findAll({
-      where: { tenantId: req.tenantId }, // Filtrar pelo tenantId
+      where: { tenant_id: req.tenantId }, // Filtrar pelo tenantId
       order: [['chave', 'ASC']]
     });
 
@@ -31,13 +31,13 @@ exports.getConfigurationByKey = async (req, res) => {
     const { chave } = req.params;
 
     let config = await Configuration.findOne({
-      where: { chave, tenantId: req.tenantId } // Filtrar pelo tenantId
+      where: { chave, tenant_id: req.tenantId } // Filtrar pelo tenantId
     });
 
     // Se não encontrou, buscar o default e criar para este tenant
     if (!config) {
       const defaultConfig = await Configuration.findOne({
-        where: { chave, tenantId: 'default' }
+        where: { chave, tenant_id: 'default' }
       });
 
       if (defaultConfig) {
@@ -47,7 +47,7 @@ exports.getConfigurationByKey = async (req, res) => {
           valor: defaultConfig.valor,
           tipo: defaultConfig.tipo,
           descricao: defaultConfig.descricao,
-          tenantId: req.tenantId
+          tenant_id: req.tenantId
         });
       } else {
         return res.status(404).json({
@@ -110,13 +110,13 @@ exports.upsertConfiguration = async (req, res) => {
     }
 
     const [config, created] = await Configuration.findOrCreate({
-      where: { chave, tenantId: req.tenantId }, // Filtrar pelo tenantId
+      where: { chave, tenant_id: req.tenantId }, // Filtrar pelo tenantId
       defaults: {
         chave,
         valor: valorString,
         tipo: tipo || 'texto',
         descricao,
-        tenantId: req.tenantId // Associar tenantId à configuração
+        tenant_id: req.tenantId // Associar tenantId à configuração
       }
     });
 
@@ -150,7 +150,7 @@ exports.deleteConfiguration = async (req, res) => {
     const { chave } = req.params;
 
     const config = await Configuration.findOne({
-      where: { chave, tenantId: req.tenantId } // Filtrar pelo tenantId
+      where: { chave, tenant_id: req.tenantId } // Filtrar pelo tenantId
     });
 
     if (!config) {
@@ -213,8 +213,8 @@ exports.initializeDefaultConfigurations = async (req) => {
 
     for (const config of defaults) {
       await Configuration.findOrCreate({
-        where: { chave: config.chave, tenantId: 'default' },
-        defaults: { ...config, tenantId: 'default' }
+        where: { chave: config.chave, tenant_id: 'default' },
+        defaults: { ...config, tenant_id: 'default' }
       });
     }
 

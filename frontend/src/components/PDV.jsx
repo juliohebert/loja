@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaSearch, FaShoppingBag, FaUser, FaMoneyBill, FaCreditCard, FaQrcode, FaMinus, FaPlus, FaTrash } from 'react-icons/fa'; // Importando ícones
 import Sidebar from './Sidebar';
-import { getAuthHeaders } from '../utils/auth';
-import { Search, ShoppingBag, CreditCard, Banknote, QrCode, Receipt, Trash2, Plus, Minus, User } from 'lucide-react';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
+import { getAuthHeaders } from '../utils/auth';
+
 
 const PDV = () => {
       // Estado para comprovante/modal
@@ -20,7 +21,8 @@ const PDV = () => {
   const [carrinho, setCarrinho] = useState([]);
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
-  const [cupom, setCupom] = useState('');
+  const [desconto, setDesconto] = useState('');
+  const [tipoDesconto, setTipoDesconto] = useState('valor'); // 'valor' ou 'percentual'
   const [formaPagamento, setFormaPagamento] = useState('Dinheiro');
   const [emitirNota, setEmitirNota] = useState(false);
   const [carregando, setCarregando] = useState(true);
@@ -34,6 +36,17 @@ const PDV = () => {
     const [showVendaSucesso, setShowVendaSucesso] = useState(false);
   const [vendedores, setVendedores] = useState([]);
   const [vendedorSelecionado, setVendedorSelecionado] = useState(null);
+  // Adicionando estado para clienteSelecionado e statusFinanceiroCliente
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [statusFinanceiroCliente, setStatusFinanceiroCliente] = useState(null);
+  const [creditoDisponivel, setCreditoDisponivel] = useState(0);
+  const [usarCredito, setUsarCredito] = useState(false);
+  const [valorCreditoUtilizado, setValorCreditoUtilizado] = useState(0);
+  // Estados para débito pendente
+  const [debitoPendente, setDebitoPendente] = useState(0);
+  const [pagarDebito, setPagarDebito] = useState(false);
+  // Adicionando estado para armazenar clientes
+  const [clientes, setClientes] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -51,7 +64,16 @@ const PDV = () => {
     carregarConfiguracoes();
     verificarCaixaAberto();
     buscarVendedores();
+    buscarClientes();
   }, [navigate]);
+  // Atualizar status financeiro ao selecionar cliente
+  useEffect(() => {
+    if (clienteSelecionado) {
+      verificarStatusFinanceiroCliente(clienteSelecionado);
+    } else {
+      setStatusFinanceiroCliente(null);
+    }
+  }, [clienteSelecionado]);
 
   // Esconde o toast de sucesso após 3 segundos
   useEffect(() => {
@@ -204,58 +226,90 @@ const PDV = () => {
   const categorias = ['Todos', ...new Set(produtos.map(p => p.categoria))];
 
   const adicionarAoCarrinho = (produto) => {
-    console.log('🛒 Tentando adicionar produto:', produto);
-    console.log('📦 Variações do produto:', produto.variacoes);
-    
-    // Verificar se produto tem variações disponíveis
-    const variacoesComEstoque = produto.variacoes.filter(v => {
-      const quantidade = v.estoque?.quantidade || 0;
-      console.log(`  - ${v.tamanho}/${v.cor}: ${quantidade} unidades`);
-      return quantidade > 0;
-    });
-    
-    console.log('✅ Variações com estoque:', variacoesComEstoque.length);
-    
-    if (variacoesComEstoque.length === 0) {
-      alert('Produto sem estoque disponível');
-      return;
-    }
-    
-    // Se produto tem múltiplas variações ou usuário quer escolher, abrir modal
-    if (produto.variacoes.length > 1) {
-      setModalVariacao({ isOpen: true, produto });
-    } else if (produto.variacoes.length === 1) {
-      const variacao = produto.variacoes[0];
-      adicionarVariacaoAoCarrinho(produto, variacao);
+    try {
+      console.log('🛒 Tentando adicionar produto:', produto);
+      console.log('📦 Variações do produto:', produto?.variacoes);
+      
+      // Verificar se produto existe
+      if (!produto) {
+        console.error('❌ Produto não definido');
+        alert('Erro: Produto não encontrado');
+        return;
+      }
+      
+      // Verificar se produto tem variações
+      if (!produto.variacoes || produto.variacoes.length === 0) {
+        console.error('❌ Produto sem variações:', produto);
+        alert('Produto sem variações cadastradas');
+        return;
+      }
+      
+      // Verificar se produto tem variações disponíveis
+      const variacoesComEstoque = produto.variacoes.filter(v => {
+        const quantidade = v.estoque?.quantidade || 0;
+        console.log(`  - ${v.tamanho}/${v.cor}: ${quantidade} unidades`);
+        return quantidade > 0;
+      });
+      
+      console.log('✅ Variações com estoque:', variacoesComEstoque.length);
+      
+      if (variacoesComEstoque.length === 0) {
+        alert('Produto sem estoque disponível');
+        return;
+      }
+      
+      // Se produto tem múltiplas variações ou usuário quer escolher, abrir modal
+      if (variacoesComEstoque.length > 1) {
+        console.log('🔄 Abrindo modal de seleção...');
+        setModalVariacao({ isOpen: true, produto });
+      } else if (variacoesComEstoque.length === 1) {
+        console.log('➕ Adicionando variação única ao carrinho...');
+        const variacao = variacoesComEstoque[0];
+        adicionarVariacaoAoCarrinho(produto, variacao);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao adicionar produto ao carrinho:', error);
+      alert('Erro ao adicionar produto ao carrinho: ' + error.message);
     }
   };
 
   const adicionarVariacaoAoCarrinho = (produto, variacao) => {
-    const itemExistente = carrinho.find(item => item.variacaoId === variacao.id);
-    const quantidadeEstoque = variacao.estoque?.quantidade || 0;
-    
-    if (itemExistente) {
-      if (itemExistente.quantidade >= quantidadeEstoque) {
-        alert('Quantidade máxima em estoque atingida');
-        return;
+    try {
+      console.log('➕ Adicionando variação ao carrinho:', { produto, variacao });
+      
+      const itemExistente = carrinho.find(item => item.variacaoId === variacao.id);
+      const quantidadeEstoque = variacao.estoque?.quantidade || 0;
+      
+      if (itemExistente) {
+        if (itemExistente.quantidade >= quantidadeEstoque) {
+          alert('Quantidade máxima em estoque atingida');
+          return;
+        }
+        atualizarQuantidade(itemExistente.id, itemExistente.quantidade + 1);
+      } else {
+        const novoItem = {
+          id: Date.now(),
+          produtoId: produto.id,
+          variacaoId: variacao.id,
+          stockId: variacao.stockId,
+          nome: produto.nome,
+          tamanho: variacao.tamanho,
+          cor: variacao.cor,
+          preco: produto.preco,
+          quantidade: 1,
+          imagem: produto.imagem,
+          estoqueMax: quantidadeEstoque,
+          estoqueDisponivel: quantidadeEstoque
+        };
+        console.log('🆕 Novo item no carrinho:', novoItem);
+        setCarrinho([...carrinho, novoItem]);
       }
-      atualizarQuantidade(itemExistente.id, itemExistente.quantidade + 1);
-    } else {
-      const novoItem = {
-        id: Date.now(),
-        produtoId: produto.id,
-        variacaoId: variacao.id,
-        stockId: variacao.stockId,
-        nome: produto.nome,
-        tamanho: variacao.tamanho,
-        cor: variacao.cor,
-        preco: produto.preco,
-        quantidade: 1,
-        imagem: produto.imagem,
-        estoqueMax: quantidadeEstoque,
-        estoqueDisponivel: quantidadeEstoque
-      };
-      setCarrinho([...carrinho, novoItem]);
+      
+      // Fechar modal se estiver aberto
+      setModalVariacao({ isOpen: false, produto: null });
+    } catch (error) {
+      console.error('❌ Erro ao adicionar variação ao carrinho:', error);
+      alert('Erro ao adicionar variação ao carrinho: ' + error.message);
     }
   };
 
@@ -283,12 +337,37 @@ const PDV = () => {
   };
 
   const calcularDesconto = () => {
-    // TODO: Implementar lógica de cupom
-    return 0;
+    if (!desconto || desconto === '' || parseFloat(desconto) <= 0) {
+      return 0;
+    }
+
+    const valorDesconto = parseFloat(desconto);
+    const subtotal = calcularSubtotal();
+
+    if (tipoDesconto === 'percentual') {
+      // Calcular desconto percentual
+      return (subtotal * valorDesconto) / 100;
+    } else {
+      // Desconto em valor fixo
+      // Não pode ser maior que o subtotal
+      return Math.min(valorDesconto, subtotal);
+    }
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - calcularDesconto();
+    let total = calcularSubtotal() - calcularDesconto();
+    
+    // Adicionar débito pendente ao total se marcado para pagamento
+    if (pagarDebito && debitoPendente > 0) {
+      total += debitoPendente;
+    }
+    
+    return total;
+  };
+
+  const calcularTotalComCredito = () => {
+    const total = calcularTotal();
+    return Math.max(0, total - valorCreditoUtilizado);
   };
 
   const finalizarVenda = async () => {
@@ -332,7 +411,10 @@ const PDV = () => {
       troco: formaPagamento === 'Dinheiro' && troco ? (parseFloat(troco) - calcularTotal()).toFixed(2) : '0.00',
       emitirNota,
       vendedor: vendedorSelecionado || usuario?.nome || 'Sistema',
-      caixaId: caixaAberto?.id
+      caixaId: caixaAberto?.id,
+      clienteId: clienteSelecionado || null,
+      creditoUtilizado: usarCredito ? valorCreditoUtilizado : 0,
+      totalPago: usarCredito ? calcularTotalComCredito() : calcularTotal()
     };
     
     // Dar baixa no estoque de cada item
@@ -422,6 +504,24 @@ const PDV = () => {
     const dataHoje = hoje.toISOString().split('T')[0];
     const dataHoraCompleta = hoje.toISOString();
     
+    // Montar informações financeiras relevantes (apenas desconto, crédito e débito)
+    let detalhesFinanceiros = [];
+    
+    // Desconto
+    if (venda.desconto > 0) {
+      detalhesFinanceiros.push(`Desconto: R$ ${venda.desconto.toFixed(2)}`);
+    }
+    
+    // Crédito utilizado
+    if (usarCredito && valorCreditoUtilizado > 0) {
+      detalhesFinanceiros.push(`Crédito usado: R$ ${valorCreditoUtilizado.toFixed(2)}`);
+    }
+    
+    // Débito pago
+    if (pagarDebito && debitoPendente > 0) {
+      detalhesFinanceiros.push(`Débito pago: R$ ${debitoPendente.toFixed(2)}`);
+    }
+    
     // Criar lançamento de receita
     const novoLancamento = {
       id: Date.now(),
@@ -433,19 +533,15 @@ const PDV = () => {
       dataHora: dataHoraCompleta,
       status: 'pago',
       formaPagamento: venda.formaPagamento,
-      observacoes: `Forma de pagamento: ${venda.formaPagamento}${venda.troco > 0 ? ` | Troco: R$ ${venda.troco}` : ''} | Vendedor: ${venda.vendedor || 'Sistema'}`
+      observacoes: detalhesFinanceiros.length > 0 ? detalhesFinanceiros.join(' | ') : null
     };
     
     // Adicionar aos lançamentos
     lancamentos.push(novoLancamento);
     localStorage.setItem('lancamentos', JSON.stringify(lancamentos));
 
-    // Salvar venda completa em array separado para estatísticas (localStorage)
-    const vendasSalvas = localStorage.getItem('vendas');
-    let vendas = vendasSalvas ? JSON.parse(vendasSalvas) : [];
-    
+    // Preparar dados da venda para enviar ao backend
     const vendaCompleta = {
-      id: novoLancamento.id,
       numeroVenda: numeroVenda,
       itens: venda.itens.map(item => ({
         nome: item.nome,
@@ -462,14 +558,15 @@ const PDV = () => {
       troco: venda.troco,
       vendedor: venda.vendedor,
       caixaId: venda.caixaId,
+      clienteId: clienteSelecionado || null,
+      creditoUtilizado: usarCredito ? valorCreditoUtilizado : 0,
+      debitoPago: pagarDebito ? debitoPendente : 0,
+      tipoDesconto: desconto && parseFloat(desconto) > 0 ? tipoDesconto : null,
+      valorDescontoOriginal: desconto && parseFloat(desconto) > 0 ? parseFloat(desconto) : null,
+      observacoes: detalhesFinanceiros.length > 0 ? detalhesFinanceiros.join(' | ') : null,
       data: dataHoje,
-      dataHora: dataHoraCompleta,
-      timestamp: Date.now()
+      dataHora: dataHoraCompleta
     };
-    
-    vendas.push(vendaCompleta);
-    localStorage.setItem('vendas', JSON.stringify(vendas));
-    console.log('✅ Venda salva no localStorage:', vendaCompleta);
 
     // Salvar venda no backend (banco de dados)
     try {
@@ -488,6 +585,81 @@ const PDV = () => {
     } catch (error) {
       console.error('❌ Erro ao salvar venda no backend:', error);
     }
+
+    // Se o cliente usou crédito, registrar a transação
+    if (usarCredito && clienteSelecionado && valorCreditoUtilizado > 0) {
+      try {
+        // Buscar dados atuais do cliente
+        const responseCliente = await fetch(`http://localhost:3001/api/customers/${clienteSelecionado}`, {
+          headers: getAuthHeaders()
+        });
+
+        if (responseCliente.ok) {
+          const clienteData = await responseCliente.json();
+
+          // Registrar transação no histórico do cliente (CustomerTransaction)
+          // A transação tipo 'usar-credito' vai automaticamente aumentar o débito do cliente
+          const transacaoCliente = {
+            tipo: 'usar-credito',
+            valor: valorCreditoUtilizado,
+            descricao: `Crédito utilizado em venda #${String(numeroVenda).padStart(4, '0')}`,
+              data: dataHoje
+            };
+
+            console.log('📤 Enviando transação:', transacaoCliente);
+
+            const responseTransacaoCliente = await fetch(`http://localhost:3001/api/customers/${clienteSelecionado}/transactions`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify(transacaoCliente)
+            });
+
+            if (responseTransacaoCliente.ok) {
+              console.log('✅ Transação de uso de crédito registrada no histórico do cliente');
+              
+              // Atualizar dados do cliente na interface após uso do crédito
+              await verificarStatusFinanceiroCliente(clienteSelecionado);
+            } else {
+              const errorData = await responseTransacaoCliente.json();
+              console.error('❌ Erro ao registrar transação no histórico do cliente:', errorData);
+            }
+          }
+        } catch (error) {
+          console.error('❌ Erro ao processar uso de crédito:', error);
+        }
+      }
+
+    // Se o cliente está pagando débito pendente, registrar a transação
+    if (pagarDebito && clienteSelecionado && debitoPendente > 0) {
+      try {
+        const transacaoPagamento = {
+          tipo: 'pagar',
+          valor: debitoPendente,
+          descricao: `Pagamento de débito junto com venda #${String(numeroVenda).padStart(4, '0')}`,
+          data: dataHoje
+        };
+
+        console.log('📤 Enviando transação de pagamento:', transacaoPagamento);
+
+        const responseTransacaoPagamento = await fetch(`http://localhost:3001/api/customers/${clienteSelecionado}/transactions`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(transacaoPagamento)
+        });
+
+        if (responseTransacaoPagamento.ok) {
+          console.log('✅ Pagamento de débito registrado no histórico do cliente');
+          
+          // Atualizar dados do cliente na interface após pagamento
+          await verificarStatusFinanceiroCliente(clienteSelecionado);
+        } else {
+          const errorData = await responseTransacaoPagamento.json();
+          console.error('❌ Erro ao registrar pagamento no histórico do cliente:', errorData);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao processar pagamento de débito:', error);
+      }
+    }
     
     // Disparar evento customizado para atualizar dashboard
     window.dispatchEvent(new CustomEvent('vendaRealizada', { detail: novoLancamento }));
@@ -495,10 +667,14 @@ const PDV = () => {
 
   const limparVenda = () => {
     setCarrinho([]);
-    setCupom('');
+    setDesconto('');
+    setTipoDesconto('valor');
     setTroco('');
     setFormaPagamento('Dinheiro');
     setEmitirNota(false);
+    setUsarCredito(false);
+    setValorCreditoUtilizado(0);
+    setPagarDebito(false);
   };
 
   const ImagemProduto = ({ src, alt }) => {
@@ -507,7 +683,7 @@ const PDV = () => {
     if (erro || !src) {
       return (
         <div className="w-full h-full aspect-square bg-slate-100 flex items-center justify-center rounded-lg">
-          <ShoppingBag className="w-8 h-8 text-slate-400" />
+          <FaShoppingBag className="w-8 h-8 text-slate-400" />
         </div>
       );
     }
@@ -520,6 +696,95 @@ const PDV = () => {
         onError={() => setErro(true)}
       />
     );
+  };
+
+  // Função para buscar clientes da API
+  const buscarClientes = async () => {
+    try {
+      const headers = getAuthHeaders();
+      const response = await fetch('/api/customers', { headers });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📋 Resposta da API de clientes:', data);
+        // Verificar se data é um array ou um objeto com propriedade data
+        const clientesArray = Array.isArray(data) ? data : (data.data || []);
+        setClientes(clientesArray);
+        console.log('✅ Clientes carregados:', clientesArray.length);
+      } else {
+        console.error('Erro ao buscar clientes:', response.statusText);
+        setClientes([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+      setClientes([]);
+    }
+  };
+
+  // Função para verificar status financeiro do cliente
+  const verificarStatusFinanceiroCliente = async (clienteId) => {
+    if (!clienteId) {
+      setStatusFinanceiroCliente(null);
+      setCreditoDisponivel(0);
+      setUsarCredito(false);
+      setValorCreditoUtilizado(0);
+      setDebitoPendente(0);
+      setPagarDebito(false);
+      return;
+    }
+    
+    try {
+      // Buscar dados atualizados do cliente da API
+      const response = await fetch(`http://localhost:3001/api/customers/${clienteId}`, {
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        console.log('❌ Erro ao buscar cliente');
+        setStatusFinanceiroCliente(null);
+        setCreditoDisponivel(0);
+        setUsarCredito(false);
+        setValorCreditoUtilizado(0);
+        setDebitoPendente(0);
+        setPagarDebito(false);
+        return;
+      }
+
+      const { data: clienteEncontrado } = await response.json();
+      
+      console.log('👤 Cliente selecionado:', clienteEncontrado);
+      console.log('💰 Débito do cliente:', clienteEncontrado.debito);
+      console.log('💳 Limite de crédito:', clienteEncontrado.limiteCredito);
+      
+      const valorDebito = parseFloat(clienteEncontrado.debito) || 0;
+      const limiteCredito = parseFloat(clienteEncontrado.limiteCredito) || 0;
+      const creditoDisp = limiteCredito - valorDebito;
+      
+      console.log('✨ Crédito disponível:', creditoDisp);
+      
+      setCreditoDisponivel(creditoDisp > 0 ? creditoDisp : 0);
+      setDebitoPendente(valorDebito);
+      
+      if (valorDebito > 0) {
+        console.log('🔴 Cliente possui débito de R$', valorDebito);
+        setStatusFinanceiroCliente('debito');
+      } else {
+        console.log('✅ Cliente sem débito');
+        setStatusFinanceiroCliente('credito');
+      }
+
+      // Atualizar também o array de clientes no estado para manter sincronizado
+      setClientes(prevClientes => 
+        prevClientes.map(c => c.id === clienteId ? clienteEncontrado : c)
+      );
+    } catch (error) {
+      console.error('❌ Erro ao verificar status financeiro:', error);
+      setStatusFinanceiroCliente(null);
+      setCreditoDisponivel(0);
+      setUsarCredito(false);
+      setValorCreditoUtilizado(0);
+      setDebitoPendente(0);
+      setPagarDebito(false);
+    }
   };
 
   return (
@@ -554,7 +819,8 @@ const PDV = () => {
           <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col overflow-hidden max-h-full">
             {/* Busca */}
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
+              {/* Substituindo o componente Search pelo ícone FaSearch */}
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
               <input
                 type="text"
                 value={busca}
@@ -589,7 +855,7 @@ const PDV = () => {
                 </div>
               ) : produtosFiltrados.length === 0 ? (
                 <div className="col-span-full flex flex-col items-center justify-center py-8 text-slate-500">
-                  <ShoppingBag className="w-12 h-12 mb-2 text-slate-300" />
+                  <FaShoppingBag className="w-12 h-12 mb-2 text-slate-300" />
                   <p>Nenhum produto encontrado</p>
                 </div>
               ) : (
@@ -655,7 +921,7 @@ const PDV = () => {
             <div className="flex-1 flex flex-col gap-4 overflow-y-auto px-2">
               {carrinho.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-                  <ShoppingBag className="w-16 h-16 mb-3 text-slate-300" />
+                  <FaShoppingBag className="w-16 h-16 mb-3 text-slate-300" />
                   <p>Carrinho vazio</p>
                   <p className="text-xs">Adicione produtos para começar</p>
                 </div>
@@ -693,7 +959,7 @@ const PDV = () => {
                           onClick={() => atualizarQuantidade(item.id, item.quantidade - 1)}
                           className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center hover:bg-slate-300 flex-shrink-0"
                         >
-                          <Minus className="w-3.5 h-3.5" />
+                          <FaMinus className="w-3.5 h-3.5" />
                         </button>
                         <span className="w-8 text-center text-sm font-medium">
                           {item.quantidade}
@@ -702,14 +968,14 @@ const PDV = () => {
                           onClick={() => atualizarQuantidade(item.id, item.quantidade + 1)}
                           className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center hover:bg-slate-300 flex-shrink-0"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <FaPlus className="w-3.5 h-3.5" />
                         </button>
                       </div>
                       <button
                         onClick={() => removerDoCarrinho(item.id)}
                         className="text-slate-400 hover:text-red-500"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <FaTrash className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -721,18 +987,27 @@ const PDV = () => {
             <div className="border-t border-slate-200 mt-auto pt-4 px-2 space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <p className="text-slate-600">Subtotal</p>
-                <p className="font-medium">R$ {calcularSubtotal().toFixed(2)}</p>
-                              <p className="font-medium">{formatarPreco(calcularSubtotal())}</p>
+                <p className="font-medium">{formatarPreco(calcularSubtotal())}</p>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <p className="text-slate-600">Descontos</p>
-                <p className="font-medium text-green-600">- R$ {calcularDesconto().toFixed(2)}</p>
-                              <p className="font-medium text-green-600">- {formatarPreco(calcularDesconto())}</p>
+                <p className="font-medium text-green-600">- {formatarPreco(calcularDesconto())}</p>
               </div>
+              {pagarDebito && debitoPendente > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <p className="text-slate-600">Débito pendente</p>
+                  <p className="font-medium text-orange-600">+ {formatarPreco(debitoPendente)}</p>
+                </div>
+              )}
+              {usarCredito && valorCreditoUtilizado > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <p className="text-slate-600">Crédito usado</p>
+                  <p className="font-medium text-blue-600">- {formatarPreco(valorCreditoUtilizado)}</p>
+                </div>
+              )}
               <div className="flex items-center justify-between text-lg font-bold">
-                <p>Total</p>
-                <p>R$ {calcularTotal().toFixed(2)}</p>
-                              <p>{formatarPreco(calcularTotal())}</p>
+                <p>Total a Pagar</p>
+                <p>{formatarPreco(usarCredito ? calcularTotalComCredito() : calcularTotal())}</p>
               </div>
             </div>
           </div>
@@ -746,27 +1021,133 @@ const PDV = () => {
             </h2>
             
             <div className="space-y-3">
-              {/* Cupom */}
+              {/* Desconto */}
               <label className="flex flex-col">
-                <span className="text-sm font-medium mb-1 text-slate-700">Aplicar Cupom</span>
-                <div className="flex">
+                <span className="text-sm font-medium mb-1 text-slate-700">Desconto</span>
+                <div className="flex gap-2">
                   <input
-                    type="text"
-                    value={cupom}
-                    onChange={(e) => setCupom(e.target.value.toUpperCase())}
-                    className="form-input flex w-full min-w-0 flex-1 rounded-r-none rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary h-10 placeholder:text-slate-500 px-3 text-sm bg-background-light border-transparent"
-                    placeholder="INSIRA O CUPOM"
+                    type="number"
+                    value={desconto}
+                    onChange={(e) => setDesconto(e.target.value)}
+                    className="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary h-10 placeholder:text-slate-500 px-3 text-sm bg-background-light border border-slate-300"
+                    placeholder={tipoDesconto === 'percentual' ? "0" : "0.00"}
+                    min="0"
+                    step={tipoDesconto === 'percentual' ? "1" : "0.01"}
                   />
-                  <button className="flex min-w-[70px] cursor-pointer items-center justify-center rounded-lg rounded-l-none h-10 px-4 bg-primary text-white text-sm font-bold hover:bg-blue-700">
-                    Aplicar
-                  </button>
+                  <select
+                    value={tipoDesconto}
+                    onChange={(e) => {
+                      setTipoDesconto(e.target.value);
+                      setDesconto('');
+                    }}
+                    className="flex min-w-[90px] cursor-pointer items-center justify-center rounded-lg h-10 px-3 bg-slate-100 border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-200"
+                  >
+                    <option value="valor">R$</option>
+                    <option value="percentual">%</option>
+                  </select>
                 </div>
+                {desconto && parseFloat(desconto) > 0 && (
+                  <span className="text-xs text-green-600 mt-1">
+                    Desconto aplicado: {formatarPreco(calcularDesconto())}
+                  </span>
+                )}
               </label>
+
+              {/* Seleção de Cliente */}
+              <div className="pt-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <FaUser className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm font-medium text-slate-700">Cliente</span>
+                </div>
+                <select
+                  value={clienteSelecionado || ''}
+                  onChange={(e) => setClienteSelecionado(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+                >
+                  <option value="">Cliente não identificado</option>
+                  {Array.isArray(clientes) && clientes.map((cliente) => (
+                    <option key={cliente.id} value={cliente.id}>
+                      {cliente.nome}
+                    </option>
+                  ))}
+                </select>
+                {statusFinanceiroCliente === 'debito' && (
+                  <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-md bg-red-50 border border-red-200">
+                    <svg className="w-3.5 h-3.5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-xs text-red-700">Cliente com débito pendente</span>
+                  </div>
+                )}
+                {creditoDisponivel > 0 && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-blue-50 border border-blue-200">
+                      <svg className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                        <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs text-blue-700 font-medium">Crédito disponível: {formatarPreco(creditoDisponivel)}</span>
+                    </div>
+                    <label className="mt-2 flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={usarCredito}
+                        onChange={(e) => {
+                          setUsarCredito(e.target.checked);
+                          if (e.target.checked) {
+                            const total = calcularTotal();
+                            const valorAUsar = Math.min(creditoDisponivel, total);
+                            setValorCreditoUtilizado(valorAUsar);
+                          } else {
+                            setValorCreditoUtilizado(0);
+                          }
+                        }}
+                        className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      />
+                      <span className="text-xs text-slate-600">Usar crédito nesta compra</span>
+                    </label>
+                    {usarCredito && (
+                      <div className="mt-2 px-2 py-1 rounded-md bg-green-50 border border-green-200">
+                        <span className="text-xs text-green-700 font-medium">
+                          Valor do crédito aplicado: {formatarPreco(valorCreditoUtilizado)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {debitoPendente > 0 && (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-orange-50 border border-orange-200">
+                      <svg className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs text-orange-700 font-medium">Débito pendente: {formatarPreco(debitoPendente)}</span>
+                    </div>
+                    <label className="mt-2 flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={pagarDebito}
+                        onChange={(e) => setPagarDebito(e.target.checked)}
+                        className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      />
+                      <span className="text-xs text-slate-600">Pagar débito junto com esta compra</span>
+                    </label>
+                    {pagarDebito && (
+                      <div className="mt-2 px-2 py-1 rounded-md bg-green-50 border border-green-200">
+                        <span className="text-xs text-green-700 font-medium">
+                          Débito a ser pago: {formatarPreco(debitoPendente)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Seleção de Vendedor */}
               <div className="pt-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <User className="w-4 h-4 text-slate-600" />
+                  {/* Substituindo o componente User pelo ícone FaUser */}
+                  <FaUser className="w-4 h-4 text-slate-600" />
                   <span className="text-sm font-medium text-slate-700">Vendedor</span>
                 </div>
                 <select
@@ -798,7 +1179,7 @@ const PDV = () => {
                         : 'border-slate-300 hover:border-primary hover:bg-primary/5'
                     }`}
                   >
-                    <Banknote className="w-5 h-5" />
+                    <FaMoneyBill className="w-5 h-5" />
                     <span className="text-sm font-bold">Dinheiro</span>
                   </button>
                   <button
@@ -809,7 +1190,7 @@ const PDV = () => {
                         : 'border-slate-300 hover:border-primary hover:bg-primary/5'
                     }`}
                   >
-                    <CreditCard className="w-5 h-5" />
+                    <FaCreditCard className="w-5 h-5" />
                     <span className="text-sm font-bold">Débito</span>
                   </button>
                   <button
@@ -820,7 +1201,7 @@ const PDV = () => {
                         : 'border-slate-300 hover:border-primary hover:bg-primary/5'
                     }`}
                   >
-                    <CreditCard className="w-5 h-5" />
+                    <FaCreditCard className="w-5 h-5" />
                     <span className="text-sm font-bold">Crédito</span>
                   </button>
                   <button
@@ -831,7 +1212,7 @@ const PDV = () => {
                         : 'border-slate-300 hover:border-primary hover:bg-primary/5'
                     }`}
                   >
-                    <QrCode className="w-5 h-5" />
+                    <FaQrcode className="w-5 h-5" />
                     <span className="text-sm font-bold">Pix</span>
                   </button>
                 </div>

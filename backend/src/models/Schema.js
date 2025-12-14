@@ -347,7 +347,7 @@ const CustomerTransaction = sequelize.define('CustomerTransaction', {
     onUpdate: 'CASCADE'
   },
   tipo: {
-    type: DataTypes.ENUM('adicionar', 'pagar', 'aumentar-credito', 'diminuir-credito'),
+    type: DataTypes.ENUM('adicionar', 'pagar', 'aumentar-credito', 'diminuir-credito', 'usar-credito'),
     allowNull: false,
     field: 'tipo'
   },
@@ -491,7 +491,7 @@ const Configuration = sequelize.define('Configuration', {
     allowNull: true,
     field: 'descricao'
   },
-  tenantId: {
+  tenant_id: {
     type: DataTypes.STRING,
     allowNull: true, // Temporariamente NULL para migração
     defaultValue: 'default',

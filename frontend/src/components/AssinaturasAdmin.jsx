@@ -1,3 +1,4 @@
+export default AssinaturasAdmin;
 // Tooltip simples para ações
 function Tooltip({ label, children }) {
   const [show, setShow] = React.useState(false);
@@ -20,8 +21,20 @@ function Tooltip({ label, children }) {
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Modal from './Modal';
 
-export default function AssinaturasAdmin() {
+function AssinaturasAdmin() {
+      // Modal de confirmação de remoção
+      const [showRemoverModal, setShowRemoverModal] = useState(false);
+      const [lojaRemover, setLojaRemover] = useState(null);
+      const [removendo, setRemovendo] = useState(false);
+      const [erroRemover, setErroRemover] = useState('');
+    // Modal de edição de plano
+    const [showEditPlanoModal, setShowEditPlanoModal] = useState(false);
+    const [assinaturaEditando, setAssinaturaEditando] = useState(null);
+    const [novoPlano, setNovoPlano] = useState('');
+    const [salvandoPlano, setSalvandoPlano] = useState(false);
+    const [erroPlano, setErroPlano] = useState('');
   const [assinaturas, setAssinaturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,6 +52,70 @@ export default function AssinaturasAdmin() {
     receitaMensal: 0,
     cancelamentos: 0,
   });
+  // Modal de nova assinatura
+  const [showModal, setShowModal] = useState(false);
+  const [lojas, setLojas] = useState([]);
+  const [planos, setPlanos] = useState([]);
+  const [novaAssinatura, setNovaAssinatura] = useState({ lojaId: '', plano: '', valor: '', dataInicio: '', dataFim: '' });
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState('');
+  // Buscar lojas e planos para o modal
+  useEffect(() => {
+    if (!showModal) return;
+    async function fetchLojasEPlanos() {
+      try {
+        const token = localStorage.getItem('token');
+        // Buscar lojas
+        const lojasResp = await fetch('http://localhost:3001/api/tenants', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const lojasData = await lojasResp.json();
+        setLojas(lojasData.data || []);
+        // Buscar planos
+        const planosResp = await fetch('http://localhost:3001/api/plans', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const planosData = await planosResp.json();
+        setPlanos(planosData.data || []);
+      } catch (err) {
+        setModalError('Erro ao buscar lojas ou planos');
+      }
+    }
+    fetchLojasEPlanos();
+  }, [showModal]);
+
+  async function handleNovaAssinatura(e) {
+    e.preventDefault();
+    setSaving(true);
+    setModalError('');
+    try {
+      const token = localStorage.getItem('token');
+      // Garantir que valor seja número
+      const assinaturaPayload = {
+        ...novaAssinatura,
+        valor: novaAssinatura.valor !== '' ? Number(novaAssinatura.valor) : undefined,
+        dataFim: novaAssinatura.dataFim ? novaAssinatura.dataFim : null
+      };
+      const resp = await fetch('http://localhost:3001/api/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'x-tenant-id': novaAssinatura.lojaId || ''
+        },
+        body: JSON.stringify(assinaturaPayload)
+      });
+      if (!resp.ok) throw new Error('Erro ao criar assinatura');
+      setShowModal(false);
+      setNovaAssinatura({ lojaId: '', plano: '', valor: '', dataInicio: '', dataFim: '' });
+      setTimeout(() => window.location.reload(), 500); // Recarregar lista
+    } catch (err) {
+      setModalError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
 
   useEffect(() => {
     async function fetchMetricas() {
@@ -154,10 +231,111 @@ export default function AssinaturasAdmin() {
             <option value="oldest">Mais antigos</option>
           </select>
           <div className="flex gap-2 flex-wrap">
-            <button className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-sm hover:shadow">
+            <button
+              className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-sm hover:shadow"
+              onClick={() => setShowModal(true)}
+            >
               <span className="material-icons-outlined text-lg">add</span>
               <span className="hidden sm:inline">Nova Assinatura</span>
             </button>
+                  {/* Modal Nova Assinatura */}
+                  {showModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md relative">
+                        <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowModal(false)}>
+                          <span className="material-icons-outlined">close</span>
+                        </button>
+                        <h3 className="text-xl font-bold mb-4">Nova Assinatura</h3>
+                        <form onSubmit={handleNovaAssinatura} className="flex flex-col gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Loja</label>
+                            <select
+                              className="w-full rounded border border-gray-300 px-3 py-2"
+                              value={novaAssinatura.lojaId}
+                              onChange={e => {
+                                const lojaId = e.target.value;
+                                // Buscar plano atual da loja selecionada
+                                const lojaSelecionada = lojas.find(l => l.tenantId === lojaId);
+                                let planoAtual = '';
+                                let valorAtual = '';
+                                if (lojaSelecionada && lojaSelecionada.assinatura && lojaSelecionada.assinatura.plano) {
+                                  planoAtual = lojaSelecionada.assinatura.plano;
+                                  // Buscar valor do plano cadastrado
+                                  const planoObj = planos.find(p => p.name === planoAtual);
+                                  if (planoObj && planoObj.valor !== undefined) {
+                                    valorAtual = planoObj.valor;
+                                  }
+                                }
+                                setNovaAssinatura(a => ({ ...a, lojaId, plano: planoAtual, valor: valorAtual }));
+                              }}
+                              required
+                            >
+                              <option value="">Selecione a loja</option>
+                              {lojas.map(loja => (
+                                <option key={loja.tenantId} value={loja.tenantId}>{loja.nomeLoja || loja.tenantId}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Plano</label>
+                            <select
+                              className="w-full rounded border border-gray-300 px-3 py-2"
+                              value={novaAssinatura.plano}
+                              onChange={e => {
+                                const planoSelecionado = planos.find(p => p.name === e.target.value);
+                                setNovaAssinatura(a => ({
+                                  ...a,
+                                  plano: e.target.value,
+                                  valor: planoSelecionado ? planoSelecionado.valor : ''
+                                }));
+                              }}
+                              required
+                            >
+                              <option value="">Selecione o plano</option>
+                              {planos.map(plano => (
+                                <option key={plano.id} value={plano.name}>{plano.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Valor</label>
+                            <input
+                              type="number"
+                              className="w-full rounded border border-gray-300 px-3 py-2"
+                              value={novaAssinatura.valor !== undefined && novaAssinatura.valor !== null ? novaAssinatura.valor : ''}
+                              onChange={e => setNovaAssinatura(a => ({ ...a, valor: e.target.value }))}
+                              required
+                              min="0"
+                              step="0.01"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Data de Início</label>
+                            <input
+                              type="date"
+                              className="w-full rounded border border-gray-300 px-3 py-2"
+                              value={novaAssinatura.dataInicio}
+                              onChange={e => setNovaAssinatura(a => ({ ...a, dataInicio: e.target.value }))}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Data de Fim</label>
+                            <input
+                              type="date"
+                              className="w-full rounded border border-gray-300 px-3 py-2"
+                              value={novaAssinatura.dataFim}
+                              onChange={e => setNovaAssinatura(a => ({ ...a, dataFim: e.target.value }))}
+                            />
+                          </div>
+                          {modalError && <div className="text-red-600 text-sm">{modalError}</div>}
+                          <button type="submit" className="bg-primary text-white px-6 py-2 rounded hover:bg-primary-hover disabled:opacity-60" disabled={saving}>
+                            Salvar
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  )}
             <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 font-medium py-2.5 px-4 rounded-lg transition-all border border-gray-300 dark:border-gray-600 shadow-sm">
               <span className="material-icons-outlined text-lg">upload</span>
               <span className="hidden sm:inline">Importar</span>
@@ -179,6 +357,7 @@ export default function AssinaturasAdmin() {
                   </div>
                 </th>
                 <th className="px-6 py-3" scope="col">Loja</th>
+                <th className="px-6 py-3" scope="col">Data de Criação</th>
                 <th className="px-6 py-3" scope="col">Plano</th>
                 <th className="px-6 py-3" scope="col">Status</th>
                 <th className="px-6 py-3" scope="col">Próxima Cobrança</th>
@@ -190,6 +369,7 @@ export default function AssinaturasAdmin() {
               {assinaturas.map((a, idx) => {
                 const nomeLoja = a.nomeLoja || a.loja?.nome || a.tenantId || '-';
                 const emailLoja = a.email || a.loja?.email || '-';
+                const dataCriacao = a.criado_em ? new Date(a.criado_em).toLocaleDateString('pt-BR') : '-';
                 let plano = '-';
                 let status = 'Sem assinatura';
                 let statusKey = 'cancelado';
@@ -230,6 +410,7 @@ export default function AssinaturasAdmin() {
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4">{dataCriacao}</td>
                     <td className="px-6 py-4">
                       <span className="font-medium text-gray-900 dark:text-white">{plano}</span>
                     </td>
@@ -242,43 +423,166 @@ export default function AssinaturasAdmin() {
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{valor}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <Tooltip label="Detalhes">
-                          <button
-                            className="group rounded-full p-2 transition bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-primary"
-                            aria-label="Ver detalhes"
-                          >
-                            {/* Heroicon: Eye */}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-primary transition">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12C3.75 7.5 7.5 4.5 12 4.5c4.5 0 8.25 3 9.75 7.5-1.5 4.5-5.25 7.5-9.75 7.5-4.5 0-8.25-3-9.75-7.5z" />
-                              <circle cx="12" cy="12" r="3" />
-                            </svg>
-                          </button>
-                        </Tooltip>
-                        <Tooltip label="Editar">
-                          <button
-                            className="group rounded-full p-2 transition bg-transparent hover:bg-yellow-50 dark:hover:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                            aria-label="Editar assinatura"
-                            onClick={() => navigate(`/admin/assinaturas/${a.id || a.tenantId}`)}
-                          >
-                            {/* Heroicon: Pencil Square */}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-yellow-600 transition">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.25 2.25 0 1 1 3.182 3.182L7.5 19.213l-4.5 1.318 1.318-4.5 12.544-12.544z" />
-                            </svg>
-                          </button>
-                        </Tooltip>
-                        <Tooltip label="Bloquear">
-                          <button
-                            className="group rounded-full p-2 transition bg-transparent hover:bg-red-50 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-400"
-                            aria-label="Cancelar assinatura"
-                          >
-                            {/* Heroicon: No Symbol */}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition">
-                              <circle cx="12" cy="12" r="9" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 8l8 8" />
-                            </svg>
-                          </button>
-                        </Tooltip>
-                      </div>
+                      <Tooltip label="Detalhes">
+                        <button
+                          className="group rounded-full p-2 transition bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-primary"
+                          aria-label="Ver detalhes"
+                          onClick={() => handleVisualizarAssinatura(a)}
+                        >
+                          {/* Heroicon: Eye */}
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-primary transition">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12C3.75 7.5 7.5 4.5 12 4.5c4.5 0 8.25 3 9.75 7.5-1.5 4.5-5.25 7.5-9.75 7.5-4.5 0-8.25-3-9.75-7.5z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="Bloquear licença">
+                        <button
+                          className="group rounded-full p-2 transition bg-transparent hover:bg-red-50 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          aria-label="Bloquear licença"
+                          onClick={() => {/* ação de bloquear aqui */}}
+                        >
+                          {/* Heroicon: No Symbol */}
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition">
+                            <circle cx="12" cy="12" r="9" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 8l8 8" />
+                          </svg>
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="Remover">
+                        <button
+                          className="group rounded-full p-2 transition bg-transparent hover:bg-red-50 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          aria-label="Remover"
+                          onClick={() => {
+                            const lojaId = a.loja?.id || a.id || a.tenantId;
+                            setLojaRemover({ ...a, id: lojaId });
+                            setErroRemover('');
+                            setShowRemoverModal(true);
+                          }}
+                        >
+                          {/* Heroicon: Trash */}
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="Editar plano">
+                        <button
+                          className="group rounded-full p-2 transition bg-transparent hover:bg-yellow-50 dark:hover:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          aria-label="Editar plano assinatura"
+                          onClick={() => {
+                            setAssinaturaEditando(a);
+                            setNovoPlano(a.plano || a.assinatura?.plano || '');
+                            setErroPlano('');
+                            setShowEditPlanoModal(true);
+                          }}
+                        >
+                          {/* Heroicon: Pencil Square */}
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500 group-hover:text-yellow-600 transition">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.25 2.25 0 1 1 3.182 3.182L7.5 19.213l-4.5 1.318 1.318-4.5 12.544-12.544z" />
+                          </svg>
+                        </button>
+                      </Tooltip>
+                        </div>
+                      {/* Modal de confirmação de remoção de loja */}
+                      <Modal isOpen={showRemoverModal} onClose={() => setShowRemoverModal(false)} size="sm">
+                        <div className="p-6">
+                          <h3 className="text-lg font-bold mb-4 text-red-600">Remover Loja</h3>
+                          <p className="mb-4">Tem certeza que deseja remover a loja <span className="font-semibold">{lojaRemover?.nome || lojaRemover?.nomeLoja || lojaRemover?.tenantId}</span>? Esta ação é irreversível e removerá a loja do banco de dados.</p>
+                          {erroRemover && <div className="text-red-600 text-sm mb-2">{erroRemover}</div>}
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 disabled:opacity-60"
+                              disabled={removendo}
+                              onClick={async () => {
+                                setRemovendo(true);
+                                setErroRemover('');
+                                try {
+                                  const token = localStorage.getItem('token');
+                                  const lojaId = lojaRemover?.id;
+                                  if (!lojaId) throw new Error('ID da loja não encontrado.');
+                                  const resp = await fetch(`http://localhost:3001/api/tenants/${lojaId}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                      'Authorization': `Bearer ${token}`,
+                                      'Content-Type': 'application/json'
+                                    }
+                                  });
+                                  if (!resp.ok) throw new Error('Erro ao remover loja');
+                                  setShowRemoverModal(false);
+                                  setTimeout(() => window.location.reload(), 500);
+                                } catch (err) {
+                                  setErroRemover(err.message);
+                                } finally {
+                                  setRemovendo(false);
+                                }
+                              }}
+                            >
+                              Remover
+                            </button>
+                            <button type="button" className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-2 rounded" onClick={() => setShowRemoverModal(false)}>
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      </Modal>
+                              {/* Modal de edição de plano */}
+                              <Modal isOpen={showEditPlanoModal} onClose={() => setShowEditPlanoModal(false)} size="sm">
+                                <div className="p-6">
+                                  <h3 className="text-lg font-bold mb-4">Editar Plano da Assinatura</h3>
+                                  <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    setSalvandoPlano(true);
+                                    setErroPlano('');
+                                    try {
+                                      const token = localStorage.getItem('token');
+                                      const tenantId = assinaturaEditando?.tenantId || assinaturaEditando?.lojaId;
+                                      const assinaturaId = assinaturaEditando?.assinatura?.id || assinaturaEditando?.id;
+                                      if (!assinaturaId) throw new Error('ID da assinatura não encontrado.');
+                                      const resp = await fetch(`http://localhost:3001/api/subscriptions/${assinaturaId}`, {
+                                        method: 'PUT',
+                                        headers: {
+                                          'Authorization': `Bearer ${token}`,
+                                          'Content-Type': 'application/json',
+                                          ...(tenantId ? { 'x-tenant-id': tenantId } : {})
+                                        },
+                                        body: JSON.stringify({ plano: novoPlano })
+                                      });
+                                      if (!resp.ok) throw new Error('Erro ao atualizar plano');
+                                      setShowEditPlanoModal(false);
+                                      setTimeout(() => window.location.reload(), 500);
+                                    } catch (err) {
+                                      setErroPlano(err.message);
+                                    } finally {
+                                      setSalvandoPlano(false);
+                                    }
+                                  }} className="flex flex-col gap-4">
+                                    <div>
+                                      <label className="block text-sm font-medium mb-1">Plano</label>
+                                      <select
+                                        className="w-full rounded border border-gray-300 px-3 py-2"
+                                        value={novoPlano}
+                                        onChange={e => setNovoPlano(e.target.value)}
+                                        required
+                                      >
+                                        <option value="">Selecione um plano</option>
+                                        {planos.map(plano => (
+                                          <option key={plano.id} value={plano.name}>{plano.name}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    {erroPlano && <div className="text-red-600 text-sm">{erroPlano}</div>}
+                                    <div className="flex gap-2 mt-4">
+                                      <button type="submit" className="bg-primary text-white px-6 py-2 rounded hover:bg-primary-hover disabled:opacity-60" disabled={salvandoPlano}>
+                                        Salvar
+                                      </button>
+                                      <button type="button" className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-2 rounded" onClick={() => setShowEditPlanoModal(false)}>
+                                        Cancelar
+                                      </button>
+                                    </div>
+                                  </form>
+                                </div>
+                                    </Modal>
 
                     </td>
                   </tr>

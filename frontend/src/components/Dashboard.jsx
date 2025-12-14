@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { getAuthHeaders } from '../utils/auth';
 
 // Função utilitária para formatar valores monetários no padrão brasileiro
 const formatarPreco = (valor) => {
@@ -46,6 +47,30 @@ const Dashboard = () => {
     carregarDashboard();
   }, [filtro]);
 
+  // Atualizar dashboard quando uma venda for realizada
+  useEffect(() => {
+    const handleVendaRealizada = () => {
+      carregarDashboard();
+    };
+
+    // Escutar evento customizado de venda realizada
+    window.addEventListener('vendaRealizada', handleVendaRealizada);
+
+    // Também verificar mudanças no localStorage
+    const interval = setInterval(() => {
+      const dashboardAtualizar = localStorage.getItem('dashboard_atualizar');
+      if (dashboardAtualizar) {
+        carregarDashboard();
+        localStorage.removeItem('dashboard_atualizar');
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('vendaRealizada', handleVendaRealizada);
+      clearInterval(interval);
+    };
+  }, []);
+
   const normalizarNome = (nome) => {
     return nome?.toLowerCase().trim() || '';
   };
@@ -53,11 +78,82 @@ const Dashboard = () => {
   const carregarDashboard = async () => {
     setCarregando(true);
     try {
-      // Carregar dados do localStorage
+      console.log('📊 [DASHBOARD] Carregando dados do dashboard...');
+      
+      // Buscar vendas da API
+      let vendas = [];
+      try {
+        const responseVendas = await fetch('http://localhost:3001/api/sales', {
+          headers: getAuthHeaders()
+        });
+        
+        if (responseVendas.ok) {
+          const dataVendas = await responseVendas.json();
+          vendas = dataVendas.data || [];
+          console.log('✅ [DASHBOARD] Vendas carregadas da API:', vendas.length);
+        } else {
+          console.warn('⚠️ [DASHBOARD] Falha ao buscar vendas da API, usando localStorage como fallback');
+          vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+        }
+      } catch (error) {
+        console.error('❌ [DASHBOARD] Erro ao buscar vendas da API:', error);
+        vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+      }
+
+      // Buscar clientes da API
+      let clientes = [];
+      try {
+        const responseClientes = await fetch('http://localhost:3001/api/customers', {
+          headers: getAuthHeaders()
+        });
+        
+        if (responseClientes.ok) {
+          const dataClientes = await responseClientes.json();
+          clientes = dataClientes.data || [];
+          console.log('✅ [DASHBOARD] Clientes carregados da API:', clientes.length);
+        } else {
+          console.warn('⚠️ [DASHBOARD] Falha ao buscar clientes da API, usando localStorage como fallback');
+          clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+        }
+      } catch (error) {
+        console.error('❌ [DASHBOARD] Erro ao buscar clientes da API:', error);
+        clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
+      }
+
+      // Buscar produtos da API
+      let produtos = [];
+      try {
+        const responseProdutos = await fetch('http://localhost:3001/api/products', {
+          headers: getAuthHeaders()
+        });
+        if (responseProdutos.ok) {
+          const dataProdutos = await responseProdutos.json();
+          const produtosAPI = dataProdutos.data || [];
+          
+          // Extrair todas as variações de todos os produtos
+          produtosAPI.forEach(prod => {
+            if (prod.variacoes && Array.isArray(prod.variacoes) && prod.variacoes.length > 0) {
+              // Adicionar cada variação como um produto separado
+              prod.variacoes.forEach(variacao => {
+                const quantidade = variacao.estoque?.quantidade || 0;
+                produtos.push({
+                  name: `${prod.nome} - ${variacao.cor}`,
+                  quantity: quantidade,
+                  minLimit: prod.estoque_minimo || 5,
+                  images: prod.imagens
+                });
+              });
+            }
+          });
+          
+          console.log('✅ [DASHBOARD] Produtos/Variantes carregados:', produtos.length);
+        }
+      } catch (error) {
+        console.warn('⚠️ [DASHBOARD] Erro ao buscar produtos:', error);
+      }
+
+      // Carregar lançamentos do localStorage
       const lancamentos = JSON.parse(localStorage.getItem('lancamentos') || '[]');
-      const produtos = JSON.parse(localStorage.getItem('products') || '[]');
-      const clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-      let vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
 
       // Criar mapa de produtos por nome normalizado para buscar imagens
       const produtosPorNome = {};
@@ -121,13 +217,66 @@ const Dashboard = () => {
       // Filtrar por período
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
+      const amanha = new Date(hoje);
+      amanha.setDate(amanha.getDate() + 1);
       const seteDiasAtras = new Date(hoje);
       seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
 
-      const lancamentosPeriodo = lancamentos.filter(lanc => {
-        const dataLanc = new Date(lanc.data);
+      // Filtrar vendas por data (usar campo 'data' ou 'criado_em' da API)
+      const vendasFiltradas = vendas.filter(venda => {
+        // Tentar usar campo 'data' primeiro, depois 'criadoEm'
+        let dataVenda;
+        if (venda.data) {
+          const [ano, mes, dia] = venda.data.split('-').map(Number);
+          dataVenda = new Date(ano, mes - 1, dia);
+        } else if (venda.criadoEm) {
+          dataVenda = new Date(venda.criadoEm);
+          dataVenda.setHours(0, 0, 0, 0);
+        } else if (venda.dataHora) {
+          dataVenda = new Date(venda.dataHora);
+          dataVenda.setHours(0, 0, 0, 0);
+        } else {
+          return false;
+        }
+
         if (filtro === 'hoje') {
-          return dataLanc >= hoje && lanc.tipo === 'receita';
+          return dataVenda >= hoje && dataVenda < amanha;
+        } else {
+          return dataVenda >= seteDiasAtras;
+        }
+      });
+
+      console.log(`📊 [DASHBOARD] Total de vendas: ${vendas.length}, Filtradas (${filtro}): ${vendasFiltradas.length}`);
+
+      // Calcular total das vendas filtradas
+      const totalVendasFiltradas = vendasFiltradas.reduce((acc, venda) => acc + (parseFloat(venda.total) || 0), 0);
+
+      // Vendas dos últimos 7 dias (sempre calcular para o gráfico)
+      const vendas7Dias = vendas.filter(venda => {
+        let dataVenda;
+        if (venda.data) {
+          const [ano, mes, dia] = venda.data.split('-').map(Number);
+          dataVenda = new Date(ano, mes - 1, dia);
+        } else if (venda.criadoEm) {
+          dataVenda = new Date(venda.criadoEm);
+          dataVenda.setHours(0, 0, 0, 0);
+        } else if (venda.dataHora) {
+          dataVenda = new Date(venda.dataHora);
+          dataVenda.setHours(0, 0, 0, 0);
+        } else {
+          return false;
+        }
+        return dataVenda >= seteDiasAtras;
+      });
+      const totalVendas7Dias = vendas7Dias.reduce((acc, venda) => acc + (parseFloat(venda.total) || 0), 0);
+
+      const lancamentosPeriodo = lancamentos.filter(lanc => {
+        // Converter data string para Date no fuso local
+        const [ano, mes, dia] = lanc.data.split('-').map(Number);
+        const dataLanc = new Date(ano, mes - 1, dia);
+        
+        if (filtro === 'hoje') {
+          return dataLanc >= hoje && dataLanc < amanha && lanc.tipo === 'receita';
         } else {
           return dataLanc >= seteDiasAtras && lanc.tipo === 'receita';
         }
@@ -135,21 +284,16 @@ const Dashboard = () => {
 
       const vendasPeriodo = lancamentosPeriodo.reduce((acc, lanc) => acc + (lanc.valor || 0), 0);
 
-      // Vendas dos últimos 7 dias
-      const lancamentos7Dias = lancamentos.filter(lanc => {
-        const dataLanc = new Date(lanc.data);
-        return dataLanc >= seteDiasAtras && lanc.tipo === 'receita';
-      });
-      const totalVendas7Dias = lancamentos7Dias.reduce((acc, lanc) => acc + (lanc.valor || 0), 0);
-
-      // Clientes
+      // Clientes - usar criadoEm ao invés de dataCadastro
       const clientesHoje = clientes.filter(c => {
-        const dataCad = new Date(c.dataCadastro);
-        return dataCad >= hoje;
+        if (!c.criadoEm) return false;
+        const dataCad = new Date(c.criadoEm);
+        dataCad.setHours(0, 0, 0, 0);
+        return dataCad >= hoje && dataCad < amanha;
       });
 
-      const clientesComDebito = clientes.filter(c => (c.debito || 0) > 0);
-      const totalDebitos = clientesComDebito.reduce((acc, c) => acc + (c.debito || 0), 0);
+      const clientesComDebito = clientes.filter(c => (parseFloat(c.debito) || 0) > 0);
+      const totalDebitos = clientesComDebito.reduce((acc, c) => acc + (parseFloat(c.debito) || 0), 0);
 
       // Produtos com baixo estoque
       const alertasEstoque = produtos.filter(prod => {
@@ -161,9 +305,21 @@ const Dashboard = () => {
         quantidade: prod.quantity || 0,
         status: (prod.quantity || 0) === 0 ? 'esgotado' : 'baixo'
       }));
+      
+      console.log('DEBUG ALERTAS ESTOQUE:', {
+        totalProdutos: produtos.length,
+        produtosComAlerta: alertasEstoque.length,
+        alertas: alertasEstoque,
+        produtosCompletos: produtos.map(p => ({
+          name: p.name,
+          quantity: p.quantity,
+          minLimit: p.minLimit
+        }))
+      });
+      
       setProdutosBaixoEstoque(alertasEstoque);
 
-      // Produtos mais vendidos
+      // Produtos mais vendidos (usar TODAS as vendas, não apenas filtradas)
       const vendasPorProduto = {};
       vendas.forEach(venda => {
         if (venda.itens && Array.isArray(venda.itens)) {
@@ -200,10 +356,17 @@ const Dashboard = () => {
       
       setProdutosMaisVendidos(topProdutos);
 
+      console.log('📊 [DASHBOARD] Estatísticas:', {
+        vendasDia: totalVendasFiltradas,
+        pedidosRealizados: vendasFiltradas.length,
+        ticketMedio: vendasFiltradas.length > 0 ? totalVendasFiltradas / vendasFiltradas.length : 0,
+        vendas7Dias: totalVendas7Dias
+      });
+
       setEstatisticas({
-        vendasDia: vendasPeriodo,
-        pedidosRealizados: lancamentosPeriodo.length,
-        ticketMedio: lancamentosPeriodo.length > 0 ? vendasPeriodo / lancamentosPeriodo.length : 0,
+        vendasDia: totalVendasFiltradas, // Usar vendas da API
+        pedidosRealizados: vendasFiltradas.length, // Quantidade de vendas filtradas
+        ticketMedio: vendasFiltradas.length > 0 ? totalVendasFiltradas / vendasFiltradas.length : 0,
         novosClientes: clientesHoje.length,
         totalClientes: clientes.length,
         clientesComDebito: clientesComDebito.length,

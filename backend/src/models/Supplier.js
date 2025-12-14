@@ -74,7 +74,7 @@ const Supplier = sequelize.define('Supplier', {
     type: DataTypes.INTEGER, // 1 a 5 estrelas
     defaultValue: 0
   },
-  tenantId: {
+  tenant_id: {
     type: DataTypes.STRING(255),
     allowNull: true,
     field: 'tenant_id',

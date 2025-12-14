@@ -1,3 +1,26 @@
+const Loja = require('../models/Loja');
+/**
+ * Remover uma loja pelo id
+ * @route DELETE /api/tenants/:id
+ * @access Super Admin
+ */
+const deleteLojaById = async (req, res) => {
+  try {
+    if (req.user.funcao !== 'super-admin') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas super-administradores podem remover lojas.' });
+    }
+    const { id } = req.params;
+    const loja = await Loja.findByPk(id);
+    if (!loja) {
+      return res.status(404).json({ error: 'Loja não encontrada' });
+    }
+    await loja.destroy();
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Erro ao remover loja:', error);
+    return res.status(500).json({ error: 'Erro ao remover loja', details: error.message });
+  }
+};
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 const User = require('../models/User');
@@ -22,7 +45,7 @@ const getAllTenants = async (req, res) => {
         [sequelize.fn('DISTINCT', sequelize.col('tenant_id')), 'tenantId']
       ],
       where: {
-        tenantId: { [Op.ne]: null }
+        tenant_id: { [Op.ne]: null }
       },
       raw: true
     });
@@ -33,7 +56,7 @@ const getAllTenants = async (req, res) => {
         // Buscar primeiro usuário admin do tenant para pegar nome da loja
         const adminUser = await User.findOne({
           where: { 
-            tenantId: tenant.tenantId,
+            tenant_id: tenant.tenantId,
             funcao: 'admin'
           },
           attributes: ['id', 'nome', 'email', 'criado_em']
@@ -41,7 +64,7 @@ const getAllTenants = async (req, res) => {
 
         // Contar usuários do tenant
         const userCount = await User.count({
-          where: { tenantId: tenant.tenantId }
+          where: { tenant_id: tenant.tenantId }
         });
 
         return {
@@ -178,6 +201,7 @@ const accessTenant = async (req, res) => {
 module.exports = {
   getAllTenants,
   getTenantById,
-  accessTenant
+  accessTenant,
+  deleteLojaById
 };
 
