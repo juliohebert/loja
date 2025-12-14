@@ -29,7 +29,7 @@ const AccountReceivable = sequelize.define('AccountReceivable', {
     }
   },
   saleId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: 'vendas',
       key: 'id'
