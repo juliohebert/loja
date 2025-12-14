@@ -10,6 +10,8 @@ router.get('/', accountReceivableController.getContasReceber);
 router.get('/upcoming', accountReceivableController.getRecebimentosProximos);
 router.get('/debtors', accountReceivableController.getDevedores);
 router.get('/:id', accountReceivableController.getContaReceberById);
+router.put('/:id', accountReceivableController.updateContaReceber);
+router.delete('/:id', accountReceivableController.inativarContaReceber);
 router.post('/:id/receive', accountReceivableController.receberPagamento);
 router.patch('/:id/cancel', accountReceivableController.cancelarConta);
 

@@ -44,9 +44,27 @@ const Trocas = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // Carregar vendas do localStorage
-      const vendasStorage = JSON.parse(localStorage.getItem('vendas') || '[]');
-      setVendas(vendasStorage);
+      // Carregar vendas da API
+      try {
+        const responseSales = await fetch('http://localhost:3001/api/sales', {
+          headers: getAuthHeaders()
+        });
+
+        if (responseSales.ok) {
+          const dataSales = await responseSales.json();
+          const vendasAPI = dataSales.data || [];
+          console.log('✅ [TROCAS] Vendas carregadas da API:', vendasAPI.length);
+          setVendas(vendasAPI);
+        } else {
+          console.warn('⚠️ [TROCAS] Falha ao buscar vendas da API, usando localStorage');
+          const vendasStorage = JSON.parse(localStorage.getItem('vendas') || '[]');
+          setVendas(vendasStorage);
+        }
+      } catch (error) {
+        console.error('❌ [TROCAS] Erro ao buscar vendas da API:', error);
+        const vendasStorage = JSON.parse(localStorage.getItem('vendas') || '[]');
+        setVendas(vendasStorage);
+      }
 
       // Carregar produtos da API
       const response = await fetch('http://localhost:3001/api/products', {

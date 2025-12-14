@@ -123,8 +123,14 @@ exports.createProduct = async (req, res) => {
  */
 exports.getAllProducts = async (req, res) => {
   try {
+    // Se o tenantId for 'default' ou não existir, não filtrar (super-admin)
+    const whereClause = {};
+    if (req.tenantId && req.tenantId !== 'default') {
+      whereClause.tenant_id = req.tenantId;
+    }
+    
     const products = await Product.findAll({
-      where: { tenant_id: req.tenantId }, // Filtrar por tenant
+      where: whereClause,
       include: [
         {
           model: Variation,

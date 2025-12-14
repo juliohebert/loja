@@ -12,5 +12,6 @@ router.get('/period', saleController.getSalesByPeriod);
 router.get('/vendedor/:vendedor', saleController.getSalesByVendedor);
 router.get('/:id', saleController.getSaleById);
 router.post('/', saleController.createSale);
+router.post('/:id/cancel', saleController.cancelSale);
 
 module.exports = router;

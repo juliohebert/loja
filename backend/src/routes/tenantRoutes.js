@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const tenantController = require('../controllers/tenantController');
@@ -6,6 +7,13 @@ const subscriptionController = require('../controllers/subscriptionController');
 
 // Endpoint para super-admin: listar todas as lojas com status de assinatura/trial
 router.get('/assinaturas', subscriptionController.listLojasComAssinaturaStatus);
+
+/**
+ * @route DELETE /api/tenants/:id
+ * @desc Remove uma loja do banco de dados
+ * @access Super Admin
+ */
+router.delete('/:id', authMiddleware, tenantController.deleteLojaById);
 
 /**
  * @route GET /api/tenants

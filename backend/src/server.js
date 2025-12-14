@@ -3,9 +3,6 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 require('dotenv').config();
-console.log('📂 Diretório atual:', process.cwd());
-console.log('🔑 JWT_SECRET carregado:', process.env.JWT_SECRET ? '[DEFINIDO]' : '[NÃO DEFINIDO]');
-console.log('🔑 JWT_SECRET carregado:', process.env.JWT_SECRET ? '[DEFINIDO]' : '[NÃO DEFINIDO]');
 
 const { sequelize } = require('./models/Schema');
 const productRoutes = require('./routes/productRoutes');
@@ -21,6 +18,7 @@ const accountPayableRoutes = require('./routes/accountPayableRoutes');
 const accountReceivableRoutes = require('./routes/accountReceivableRoutes');
 const tenantRoutes = require('./routes/tenantRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes'); // Importar rotas de assinatura
+const planRoutes = require('./routes/planRoutes'); // Importar rotas de planos
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
@@ -35,18 +33,24 @@ app.use(express.urlencoded({ extended: true }));
 
 // Middleware de log
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  console.log('Body:', JSON.stringify(req.body));
-  console.log('Headers:', JSON.stringify(req.headers));
   next();
 });
 
 
 // Middleware para capturar o tenantId, exceto para /api/subscriptions/metrics
-app.use((req, res, next) => {
-  if (req.path === '/api/subscriptions/metrics') {
-    return next();
-  }
+
+// Aplicar tenantMiddleware apenas nas rotas que precisam de tenantId
+app.use('/api/products', tenantMiddleware);
+app.use('/api/sales', tenantMiddleware);
+app.use('/api/configurations', tenantMiddleware);
+app.use('/api/users', tenantMiddleware);
+app.use('/api/suppliers', tenantMiddleware);
+app.use('/api/purchase-orders', tenantMiddleware);
+app.use('/api/accounts-payable', tenantMiddleware);
+app.use('/api/accounts-receivable', tenantMiddleware);
+app.use('/api/customers', tenantMiddleware);
+app.use('/api/subscriptions', (req, res, next) => {
+  if (req.path === '/metrics') return next();
   return tenantMiddleware(req, res, next);
 });
 
@@ -70,6 +74,7 @@ app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api/accounts-payable', accountPayableRoutes);
 app.use('/api/accounts-receivable', accountReceivableRoutes);
 app.use('/api/subscriptions', subscriptionRoutes); // Registrar rota de assinatura
+app.use('/api/plans', planRoutes); // Registrar rota de planos
 
 // Rota de health check
 app.get('/health', (req, res) => {
@@ -106,12 +111,8 @@ const createDatabaseIfNotExists = async (databaseName) => {
     await client.connect();
     const res = await client.query(`SELECT 1 FROM pg_database WHERE datname = $1`, [databaseName]);
     if (res.rowCount === 0) {
-      console.log(`🛠️  Criando banco de dados: ${databaseName}`);
       await client.query(`CREATE DATABASE ${databaseName}`);
-      console.log(`✅ Banco de dados ${databaseName} criado com sucesso!`);
-    } else {
-      console.log(`📂 Banco de dados ${databaseName} já existe.`);
-    }
+    } 
   } catch (error) {
     console.error(`❌ Erro ao verificar/criar banco de dados: ${error.message}`);
     throw error;
@@ -128,17 +129,12 @@ const startServer = async () => {
     await createDatabaseIfNotExists(databaseName);
 
     // Sincronizar modelos (usar force: true apenas em desenvolvimento para recriar tabelas)
-    await sequelize.sync({ alter: true });
-    console.log('✅ Modelos sincronizados com o banco de dados');
+    // await sequelize.sync({ alter: true }); // Removido para evitar conflitos com migrations
     
     // Inicializar configurações padrão com tenantId padrão
     await initializeDefaultConfigurations({ tenantId: 'default' });
 
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor rodando na porta ${PORT}`);
-      console.log(`📍 API: http://localhost:${PORT}/api`);
-      console.log(`📚 Swagger Docs: http://localhost:${PORT}/api-docs`);
-      console.log(`💚 Health: http://localhost:${PORT}/health`);
     });
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);

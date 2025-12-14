@@ -6,7 +6,6 @@ const User = require('./src/models/User');
 const createSuperAdmin = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Conexão com banco de dados estabelecida');
 
     // Verificar se já existe um super-admin
     const existingSuperAdmin = await User.findOne({
@@ -14,9 +13,6 @@ const createSuperAdmin = async () => {
     });
 
     if (existingSuperAdmin) {
-      console.log('⚠️  Já existe um super-administrador cadastrado:');
-      console.log(`   Email: ${existingSuperAdmin.email}`);
-      console.log(`   Nome: ${existingSuperAdmin.nome}`);
       return;
     }
 
@@ -37,11 +33,6 @@ const createSuperAdmin = async () => {
         viewReports: true
       }
     });
-
-    console.log('\n✅ Super-administrador criado com sucesso!');
-    console.log('📧 Email: admin@sistema.com');
-    console.log('🔑 Senha: admin123');
-    console.log('\n⚠️  IMPORTANTE: Altere a senha após o primeiro login!\n');
 
   } catch (error) {
     console.error('❌ Erro ao criar super-administrador:', error.message);

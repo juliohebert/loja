@@ -114,10 +114,16 @@ const SelecionarLoja = () => {
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => navigate('/admin/assinaturas')}
-                className="flex items-center space-x-2 px-4 py-2 text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow hover:from-purple-700 hover:to-blue-700 transition-colors mr-2"
+                onClick={() => navigate('/admin/planos')}
+                className="flex items-center space-x-2 px-4 py-2 text-purple-700 bg-purple-100 rounded-lg shadow hover:bg-purple-200 transition-colors"
               >
                 <span>Ver Planos</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin/assinaturas')}
+                className="flex items-center space-x-2 px-4 py-2 text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow hover:from-purple-700 hover:to-blue-700 transition-colors"
+              >
+                <span>Ver Assinaturas</span>
               </button>
               <button
                 onClick={handleLogout}

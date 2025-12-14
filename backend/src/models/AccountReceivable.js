@@ -20,6 +20,14 @@ const AccountReceivable = sequelize.define('AccountReceivable', {
   clienteTelefone: {
     type: DataTypes.STRING
   },
+  customerId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'clientes',
+      key: 'id'
+    }
+  },
   saleId: {
     type: DataTypes.INTEGER,
     references: {
@@ -67,7 +75,11 @@ const AccountReceivable = sequelize.define('AccountReceivable', {
   comprovante: {
     type: DataTypes.STRING
   },
-  tenantId: {
+  ativo: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  tenant_id: {
     type: DataTypes.STRING,
     allowNull: true,
     field: 'tenant_id',

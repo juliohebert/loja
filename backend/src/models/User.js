@@ -77,7 +77,7 @@ const User = sequelize.define('User', {
     allowNull: true,
     field: 'ultimo_login'
   },
-  tenantId: {
+  tenant_id: {
     type: DataTypes.STRING,
     allowNull: true, // Permitir NULL para super-admin
     field: 'tenant_id'

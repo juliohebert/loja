@@ -395,20 +395,33 @@ const Relatorios = () => {
 
   const gerarRelatorioMargens = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/products', {
+      // Buscar produtos da API
+      const responseProducts = await fetch('http://localhost:3001/api/products', {
         headers: getAuthHeaders()
       });
 
-      if (!response.ok) throw new Error('Falha ao buscar produtos');
+      if (!responseProducts.ok) throw new Error('Falha ao buscar produtos');
 
-      const data = await response.json();
-      const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+      const data = await responseProducts.json();
       
-      // Filtrar vendas por período
-      const vendasFiltradas = vendas.filter(venda => {
-        const dataVenda = venda.data || venda.dataHora?.split(' ')[0];
-        return dataVenda >= dataInicio && dataVenda <= dataFim;
+      // Buscar vendas da API
+      const responseSales = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
+        headers: getAuthHeaders()
       });
+
+      let vendasFiltradas = [];
+      if (responseSales.ok) {
+        const resultSales = await responseSales.json();
+        vendasFiltradas = resultSales.data || [];
+        console.log('✅ [RELATÓRIO MARGENS] Vendas carregadas da API:', vendasFiltradas.length);
+      } else {
+        console.warn('⚠️ [RELATÓRIO MARGENS] Falha ao buscar vendas da API, usando localStorage');
+        const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+        vendasFiltradas = vendas.filter(venda => {
+          const dataVenda = venda.data || venda.dataHora?.split(' ')[0];
+          return dataVenda >= dataInicio && dataVenda <= dataFim;
+        });
+      }
 
       // Calcular vendas por produto
       const vendasPorProduto = {};
@@ -460,20 +473,33 @@ const Relatorios = () => {
 
   const gerarRelatorioCurvaABC = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/products', {
+      // Buscar produtos da API
+      const responseProducts = await fetch('http://localhost:3001/api/products', {
         headers: getAuthHeaders()
       });
 
-      if (!response.ok) throw new Error('Falha ao buscar produtos');
+      if (!responseProducts.ok) throw new Error('Falha ao buscar produtos');
 
-      const data = await response.json();
-      const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+      const data = await responseProducts.json();
       
-      // Filtrar vendas por período
-      const vendasFiltradas = vendas.filter(venda => {
-        const dataVenda = venda.data || venda.dataHora?.split(' ')[0];
-        return dataVenda >= dataInicio && dataVenda <= dataFim;
+      // Buscar vendas da API
+      const responseSales = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
+        headers: getAuthHeaders()
       });
+
+      let vendasFiltradas = [];
+      if (responseSales.ok) {
+        const resultSales = await responseSales.json();
+        vendasFiltradas = resultSales.data || [];
+        console.log('✅ [RELATÓRIO CURVA ABC] Vendas carregadas da API:', vendasFiltradas.length);
+      } else {
+        console.warn('⚠️ [RELATÓRIO CURVA ABC] Falha ao buscar vendas da API, usando localStorage');
+        const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+        vendasFiltradas = vendas.filter(venda => {
+          const dataVenda = venda.data || venda.dataHora?.split(' ')[0];
+          return dataVenda >= dataInicio && dataVenda <= dataFim;
+        });
+      }
 
       // Calcular faturamento por produto
       const faturamentoPorProduto = {};

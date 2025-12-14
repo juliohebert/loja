@@ -12,16 +12,12 @@ const updateTenantIdColumn = async () => {
 
   try {
     await client.connect();
-    console.log('✅ Conectado ao banco de dados');
 
     // Alterar coluna tenant_id para permitir NULL
     await client.query(`
       ALTER TABLE usuarios 
       ALTER COLUMN tenant_id DROP NOT NULL;
     `);
-
-    console.log('✅ Coluna tenant_id atualizada para permitir NULL');
-    console.log('   Isso permite a criação de super-administradores');
 
   } catch (error) {
     console.error('❌ Erro ao atualizar coluna:', error.message);

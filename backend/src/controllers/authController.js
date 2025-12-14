@@ -135,7 +135,7 @@ exports.login = async (req, res) => {
         funcao: user.funcao,
         permissoes: user.permissoes,
         ativo: user.ativo,
-        tenantId: user.tenantId
+        tenantId: user.tenant_id
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }

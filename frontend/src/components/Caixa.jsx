@@ -252,7 +252,7 @@ export default function Caixa() {
     setLoading(true);
     try {
       const response = await fetch(`http://localhost:3001/api/cash-registers/${caixaAberto.id}/close`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           saldoFinal: parseFloat(modalFechar.saldoFinal),
@@ -359,7 +359,7 @@ export default function Caixa() {
               <button
                 onClick={() => {
                   const saldoTotal = parseFloat(caixaAberto.saldoInicial) + parseFloat(vendasDoCaixa.total);
-                  setModalFechar({ ...modalFechar, saldoFinal: formatarPreco(saldoTotal), observacoes: '' });
+                  setModalFechar({ ...modalFechar, saldoFinal: saldoTotal.toFixed(2), observacoes: '' });
                   setModalConfirmar({
                     isOpen: true,
                     message: 'Deseja realmente fechar o caixa?',

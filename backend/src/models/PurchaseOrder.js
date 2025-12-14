@@ -29,7 +29,7 @@ const PurchaseOrder = sequelize.define('PurchaseOrder', {
       key: 'id'
     }
   },
-  tenantId: {
+  tenant_id: {
     type: DataTypes.STRING(255),
     allowNull: true,
     field: 'tenant_id',

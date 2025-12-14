@@ -17,7 +17,9 @@ exports.getContasReceber = async (req, res) => {
   try {
     const { status, mes, ano, clienteNome } = req.query;
     
-    const where = {};
+    const where = {
+      tenant_id: req.tenantId
+    };
     if (status) where.status = status;
     if (clienteNome) {
       where.clienteNome = {
@@ -73,6 +75,52 @@ exports.getContaReceberById = async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar conta:', error);
     res.status(500).json({ success: false, message: 'Erro ao buscar conta', error: error.message });
+  }
+};
+
+// Atualizar conta a receber
+exports.updateContaReceber = async (req, res) => {
+  try {
+    const conta = await ContaReceber.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
+    
+    if (!conta) {
+      return res.status(404).json({ success: false, message: 'Conta não encontrada' });
+    }
+    
+    await conta.update(req.body);
+    
+    res.json({ success: true, data: conta });
+  } catch (error) {
+    console.error('Erro ao atualizar conta:', error);
+    res.status(500).json({ success: false, message: 'Erro ao atualizar conta', error: error.message });
+  }
+};
+
+// Inativar conta a receber
+exports.inativarContaReceber = async (req, res) => {
+  try {
+    const conta = await ContaReceber.findOne({
+      where: { 
+        id: req.params.id,
+        tenant_id: req.tenantId 
+      }
+    });
+    
+    if (!conta) {
+      return res.status(404).json({ success: false, message: 'Conta não encontrada' });
+    }
+    
+    await conta.update({ ativo: false });
+    
+    res.json({ success: true, data: conta, message: 'Conta inativada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao inativar conta:', error);
+    res.status(500).json({ success: false, message: 'Erro ao inativar conta', error: error.message });
   }
 };
 

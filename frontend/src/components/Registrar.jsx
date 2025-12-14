@@ -120,8 +120,6 @@ export default function Register() {
     setSuccessMessage('');
 
     try {
-      console.log('📤 Criando conta:', { name: formData.name, email: formData.email });
-
       const response = await fetch('http://localhost:3001/api/users/register', {
         method: 'POST',
         headers: {
@@ -141,7 +139,6 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('✅ Conta criada com sucesso:', data);
 
         // Limpar formulário
         setFormData({

@@ -35,8 +35,8 @@ const GerenciarDebitos = () => {
       setCliente(data.data);
       
       // Carregar transações do cliente
-      if (data.data.transactions) {
-        setHistorico(data.data.transactions);
+      if (data.data.transacoes) {
+        setHistorico(data.data.transacoes);
       }
     } catch (error) {
       console.error('Erro ao carregar cliente:', error);
@@ -272,21 +272,25 @@ const GerenciarDebitos = () => {
                             item.tipo === 'adicionar' ? 'bg-red-100 text-red-700' : 
                             item.tipo === 'pagar' ? 'bg-green-100 text-green-700' :
                             item.tipo === 'aumentar-credito' ? 'bg-blue-100 text-blue-700' :
-                            'bg-orange-100 text-orange-700'
+                            item.tipo === 'diminuir-credito' ? 'bg-orange-100 text-orange-700' :
+                            item.tipo === 'usar-credito' ? 'bg-purple-100 text-purple-700' :
+                            'bg-gray-100 text-gray-700'
                           }`}>
-                            {item.tipo === 'adicionar' ? '📈 Débito' : 
+                            {item.tipo === 'adicionar' ? '📈 Débito Adicionado' : 
                              item.tipo === 'pagar' ? '💵 Pagamento' :
                              item.tipo === 'aumentar-credito' ? '⬆️ Aumento Crédito' :
-                             '⬇️ Redução Crédito'}
+                             item.tipo === 'diminuir-credito' ? '⬇️ Redução Crédito' :
+                             item.tipo === 'usar-credito' ? '💳 Crédito Utilizado' :
+                             item.tipo}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-700">
                           {item.descricao}
                         </td>
                         <td className={`px-6 py-4 text-sm text-right font-semibold ${
-                          item.tipo === 'adicionar' || item.tipo === 'aumentar-credito' ? 'text-green-600' : 'text-red-600'
+                          item.tipo === 'adicionar' || item.tipo === 'aumentar-credito' || item.tipo === 'usar-credito' ? 'text-red-600' : 'text-green-600'
                         }`}>
-                          {item.tipo === 'adicionar' || item.tipo === 'aumentar-credito' ? '+' : '-'} {formatarValor(item.valor)}
+                          {item.tipo === 'adicionar' || item.tipo === 'aumentar-credito' || item.tipo === 'usar-credito' ? '+' : '-'} {formatarValor(item.valor)}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <button

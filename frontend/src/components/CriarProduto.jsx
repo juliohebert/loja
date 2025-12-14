@@ -71,13 +71,28 @@ const CriarProduto = () => {
       const data = await response.json();
       const produto = data.data;
 
+      console.log('📦 Produto carregado do backend:', produto);
+      console.log('💰 Preço de custo original:', produto.precoCusto);
+      console.log('💰 Preço de venda original:', produto.precoVenda);
+
       // Preencher formulário com dados do produto
+      // Converter valores numéricos para formato brasileiro (R$)
+      const precoCustoFormatado = produto.precoCusto 
+        ? parseFloat(produto.precoCusto).toFixed(2).replace('.', ',')
+        : '';
+      const precoVendaFormatado = produto.precoVenda 
+        ? parseFloat(produto.precoVenda).toFixed(2).replace('.', ',')
+        : '';
+
+      console.log('💵 Preço de custo formatado:', precoCustoFormatado);
+      console.log('💵 Preço de venda formatado:', precoVendaFormatado);
+
       setFormData({
         nome: produto.nome || '',
         descricao: produto.descricao || '',
         skuBase: produto.sku || '',
-        precoCusto: produto.precoCusto ? `R$ ${parseFloat(produto.precoCusto).toFixed(2)}` : '',
-        precoVenda: produto.precoVenda ? `R$ ${parseFloat(produto.precoVenda).toFixed(2)}` : '',
+        precoCusto: precoCustoFormatado ? `R$ ${precoCustoFormatado}` : '',
+        precoVenda: precoVendaFormatado ? `R$ ${precoVendaFormatado}` : '',
         marca: produto.marca || '',
         categoria: produto.categoria || 'Camisetas'
       });

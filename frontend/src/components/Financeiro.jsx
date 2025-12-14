@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Plus, Filter, Search, Edit, Trash2, Banknote, CreditCard, Smartphone, QrCode } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Plus, Filter, Search, Edit, Trash2, Banknote, CreditCard, Smartphone, QrCode, Info } from 'lucide-react';
+import { getAuthHeaders } from '../utils/auth';
 
 const Financeiro = () => {
   // Função utilitária para formatar valores monetários no padrão brasileiro
@@ -17,9 +18,14 @@ const Financeiro = () => {
   const [filtroDataInicio, setFiltroDataInicio] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
   const [periodoSelecionado, setPeriodoSelecionado] = useState('mes-atual');
+  const [modalEditar, setModalEditar] = useState({ isOpen: false, lancamento: null });
+  const [modalCancelar, setModalCancelar] = useState({ isOpen: false, vendaId: null, numeroVenda: '' });
+  const [motivoCancelamento, setMotivoCancelamento] = useState('');
+  const [vendasCanceladas, setVendasCanceladas] = useState([]);
 
   useEffect(() => {
     carregarLancamentos();
+    carregarVendasCanceladas();
     aplicarFiltroPeriodo('mes-atual');
   }, []);
 
@@ -64,23 +70,263 @@ const Financeiro = () => {
     setFiltroDataFim(dataFim);
   };
 
-  const carregarLancamentos = () => {
-    const lancamentosSalvos = localStorage.getItem('lancamentos');
-    if (lancamentosSalvos) {
-      setLancamentos(JSON.parse(lancamentosSalvos));
+  const carregarLancamentos = async () => {
+    console.log('💰 [FINANCEIRO] Carregando lançamentos...');
+    
+    try {
+      // Buscar vendas da API
+      const responseVendas = await fetch('http://localhost:3001/api/sales', {
+        headers: getAuthHeaders()
+      });
+
+      let lancamentosVendas = [];
+      if (responseVendas.ok) {
+        const dataVendas = await responseVendas.json();
+        const vendas = dataVendas.data || [];
+        console.log('✅ [FINANCEIRO] Vendas carregadas da API:', vendas.length);
+        
+        // Converter vendas em lançamentos (filtrar vendas canceladas)
+        lancamentosVendas = vendas
+          .filter(venda => venda.status !== 'cancelado') // Não exibir vendas canceladas
+          .map(venda => {
+            // Formatar itens para descrição
+            const itensDescricao = venda.itens && Array.isArray(venda.itens)
+              ? venda.itens.map(item => `${item.quantidade}x ${item.nome || item.produto}`).join(', ')
+              : '';
+
+            return {
+              id: venda.id,
+              tipo: 'receita',
+              categoria: 'Venda',
+              descricao: `Venda #${venda.numeroVenda}${itensDescricao ? ' - ' + itensDescricao : ''}`,
+              valor: parseFloat(venda.total) || 0,
+              data: venda.data || (venda.criadoEm ? venda.criadoEm.split('T')[0] : new Date().toISOString().split('T')[0]),
+              dataHora: venda.dataHora || venda.criadoEm,
+              formaPagamento: venda.formaPagamento || 'Não informado',
+              status: 'pago',
+              observacoes: venda.observacoes || null,
+              isVenda: true // Marcador para identificar que veio da API de vendas
+            };
+          });
+      } else {
+        console.warn('⚠️ [FINANCEIRO] Falha ao buscar vendas da API');
+      }
+
+      // Buscar contas a receber da API
+      let lancamentosReceber = [];
+      try {
+        const responseReceber = await fetch('http://localhost:3001/api/accounts-receivable', {
+          headers: getAuthHeaders()
+        });
+        if (responseReceber.ok) {
+          const dataReceber = await responseReceber.json();
+          const contasReceber = dataReceber.data || [];
+          console.log('✅ [FINANCEIRO] Contas a receber carregadas:', contasReceber.length);
+          
+          lancamentosReceber = contasReceber
+            .filter(conta => conta.ativo !== false) // Filtrar apenas contas ativas
+            .map(conta => ({
+              id: conta.id,
+              tipo: 'receita',
+              categoria: 'Conta a Receber',
+              descricao: conta.descricao,
+              valor: parseFloat(conta.valor) || 0,
+              data: conta.dataEmissao,
+              dataHora: conta.createdAt || conta.dataEmissao,
+              formaPagamento: conta.formaPagamento || 'Não informado',
+              status: conta.status,
+              observacoes: conta.observacoes
+            }));
+        }
+      } catch (error) {
+        console.warn('⚠️ [FINANCEIRO] Erro ao buscar contas a receber:', error);
+      }
+
+      // Buscar contas a pagar da API
+      let lancamentosPagar = [];
+      try {
+        const responsePagar = await fetch('http://localhost:3001/api/accounts-payable', {
+          headers: getAuthHeaders()
+        });
+        if (responsePagar.ok) {
+          const dataPagar = await responsePagar.json();
+          const contasPagar = dataPagar.data || [];
+          console.log('✅ [FINANCEIRO] Contas a pagar carregadas:', contasPagar.length);
+          
+          lancamentosPagar = contasPagar
+            .filter(conta => conta.ativo !== false) // Filtrar apenas contas ativas
+            .map(conta => ({
+              id: conta.id,
+              tipo: 'despesa',
+              categoria: 'Conta a Pagar',
+              descricao: conta.descricao,
+              valor: parseFloat(conta.valor) || 0,
+              data: conta.dataEmissao,
+              dataHora: conta.createdAt || conta.dataEmissao,
+              formaPagamento: conta.formaPagamento || 'Não informado',
+              status: conta.status,
+              observacoes: conta.observacoes,
+              fornecedor: conta.fornecedor?.nome
+            }));
+        }
+      } catch (error) {
+        console.warn('⚠️ [FINANCEIRO] Erro ao buscar contas a pagar:', error);
+      }
+
+      // Buscar lançamentos manuais do localStorage (apenas para backward compatibility)
+      const lancamentosSalvos = localStorage.getItem('lancamentos');
+      let lancamentosManuais = lancamentosSalvos ? JSON.parse(lancamentosSalvos) : [];
+      
+      // Filtrar apenas lançamentos que não são vendas (para evitar duplicação)
+      lancamentosManuais = lancamentosManuais.filter(lanc => 
+        !lanc.descricao?.startsWith('Venda #') || lanc.tipo === 'despesa'
+      );
+
+      console.log('📝 [FINANCEIRO] Lançamentos manuais (localStorage):', lancamentosManuais.length);
+      
+      // Combinar todos os lançamentos
+      const todosLancamentos = [...lancamentosVendas, ...lancamentosReceber, ...lancamentosPagar, ...lancamentosManuais];
+      
+      // Ordenar por data (mais recente primeiro)
+      todosLancamentos.sort((a, b) => {
+        const dataA = new Date(a.dataHora || a.data);
+        const dataB = new Date(b.dataHora || b.data);
+        return dataB - dataA;
+      });
+
+      console.log('📊 [FINANCEIRO] Total de lançamentos:', todosLancamentos.length);
+      setLancamentos(todosLancamentos);
+    } catch (error) {
+      console.error('❌ [FINANCEIRO] Erro ao carregar lançamentos:', error);
+      
+      // Fallback: usar apenas localStorage
+      const lancamentosSalvos = localStorage.getItem('lancamentos');
+      if (lancamentosSalvos) {
+        setLancamentos(JSON.parse(lancamentosSalvos));
+      }
     }
   };
 
-  const handleEditar = (id) => {
-    navigate(`/financeiro/editar/${id}`);
+  const carregarVendasCanceladas = async () => {
+    console.log('🔴 [FINANCEIRO] Carregando vendas canceladas...');
+    
+    try {
+      const response = await fetch('http://localhost:3001/api/sales', {
+        headers: getAuthHeaders()
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const vendas = data.data || [];
+        
+        // Filtrar apenas vendas canceladas
+        const canceladas = vendas
+          .filter(venda => venda.status === 'cancelado')
+          .map(venda => ({
+            id: venda.id,
+            numeroVenda: venda.numeroVenda,
+            total: parseFloat(venda.total) || 0,
+            data: venda.data,
+            dataHora: venda.dataHora,
+            motivoCancelamento: venda.motivoCancelamento,
+            canceladoEm: venda.canceladoEm,
+            canceladoPor: venda.canceladoPor,
+            usuario: venda.usuario,
+            cliente: venda.cliente,
+            itens: venda.itens,
+            formaPagamento: venda.formaPagamento
+          }));
+        
+        console.log('✅ [FINANCEIRO] Vendas canceladas:', canceladas.length);
+        setVendasCanceladas(canceladas);
+      } else {
+        console.warn('⚠️ [FINANCEIRO] Falha ao buscar vendas canceladas');
+      }
+    } catch (error) {
+      console.error('❌ [FINANCEIRO] Erro ao carregar vendas canceladas:', error);
+    }
   };
 
-  const handleRemover = (id) => {
-    if (window.confirm('Deseja realmente remover este lançamento?')) {
-      const novosLancamentos = lancamentos.filter(l => l.id !== id);
-      localStorage.setItem('lancamentos', JSON.stringify(novosLancamentos));
-      setLancamentos(novosLancamentos);
-      alert('Lançamento removido com sucesso!');
+  const handleEditar = async (id) => {
+    const lancamento = lancamentos.find(l => l.id === id);
+    
+    console.log('🔍 [EDITAR] Lançamento encontrado:', {
+      id,
+      categoria: lancamento?.categoria,
+      isVenda: lancamento?.isVenda,
+      descricao: lancamento?.descricao,
+      bloqueado: lancamento?.isVenda || lancamento?.categoria === 'Venda' || lancamento?.descricao?.startsWith('Venda #')
+    });
+    
+    // Não permitir editar vendas vindas da API, com categoria Venda ou descrição começando com "Venda #"
+    if (lancamento?.isVenda || lancamento?.categoria === 'Venda' || lancamento?.descricao?.startsWith('Venda #')) {
+      alert('Vendas do sistema não podem ser editadas manualmente. Use o sistema de vendas.');
+      return;
+    }
+    
+    // Abrir modal de edição
+    setModalEditar({ isOpen: true, lancamento: { ...lancamento } });
+  };
+
+  const handleRemover = async (id) => {
+    const lancamento = lancamentos.find(l => l.id === id);
+    
+    console.log('🗑️ [REMOVER] Lançamento encontrado:', {
+      id,
+      categoria: lancamento?.categoria,
+      isVenda: lancamento?.isVenda,
+      descricao: lancamento?.descricao,
+      tipo: lancamento?.tipo,
+      bloqueado: lancamento?.isVenda || lancamento?.categoria === 'Venda' || lancamento?.descricao?.startsWith('Venda #')
+    });
+    
+    // Não permitir remover vendas vindas da API, com categoria Venda ou descrição começando com "Venda #"
+    if (lancamento?.isVenda || lancamento?.categoria === 'Venda' || lancamento?.descricao?.startsWith('Venda #')) {
+      alert('Vendas do sistema não podem ser removidas manualmente.');
+      return;
+    }
+    
+    if (!window.confirm('Deseja realmente inativar este lançamento?')) {
+      return;
+    }
+
+    try {
+      // Determinar o endpoint baseado no tipo de lançamento
+      let endpoint = '';
+      if (lancamento.tipo === 'receita') {
+        endpoint = `http://localhost:3001/api/accounts-receivable/${id}`;
+      } else if (lancamento.tipo === 'despesa') {
+        endpoint = `http://localhost:3001/api/accounts-payable/${id}`;
+      } else {
+        // Lançamento manual do localStorage
+        const lancamentosSalvos = localStorage.getItem('lancamentos');
+        const lancamentosLocais = lancamentosSalvos ? JSON.parse(lancamentosSalvos) : [];
+        const novosLancamentosLocais = lancamentosLocais.filter(l => l.id !== id);
+        localStorage.setItem('lancamentos', JSON.stringify(novosLancamentosLocais));
+        
+        const novosLancamentos = lancamentos.filter(l => l.id !== id);
+        setLancamentos(novosLancamentos);
+        alert('Lançamento removido com sucesso!');
+        return;
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+
+      if (response.ok) {
+        // Remover do estado local
+        const novosLancamentos = lancamentos.filter(l => l.id !== id);
+        setLancamentos(novosLancamentos);
+        alert('Lançamento inativado com sucesso!');
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erro ao inativar lançamento');
+      }
+    } catch (error) {
+      console.error('Erro ao remover lançamento:', error);
+      alert('Erro ao inativar lançamento. Tente novamente.');
     }
   };
 
@@ -126,6 +372,102 @@ const Financeiro = () => {
       const dataB = new Date(b.dataHora || b.dataHoraCompleta || b.data);
       return dataB - dataA;
     });
+  };
+
+  const salvarEdicao = async () => {
+    try {
+      const { lancamento } = modalEditar;
+      
+      // Determinar endpoint baseado na categoria
+      let endpoint = '';
+      if (lancamento.categoria === 'Conta a Receber') {
+        endpoint = `http://localhost:3001/api/accounts-receivable/${lancamento.id}`;
+      } else if (lancamento.categoria === 'Conta a Pagar') {
+        endpoint = `http://localhost:3001/api/accounts-payable/${lancamento.id}`;
+      } else {
+        // Lançamento manual do localStorage
+        const lancamentosSalvos = localStorage.getItem('lancamentos');
+        const lancamentosLocais = lancamentosSalvos ? JSON.parse(lancamentosSalvos) : [];
+        const index = lancamentosLocais.findIndex(l => l.id === lancamento.id);
+        if (index !== -1) {
+          lancamentosLocais[index] = lancamento;
+          localStorage.setItem('lancamentos', JSON.stringify(lancamentosLocais));
+        }
+        
+        // Atualizar estado
+        const novosLancamentos = lancamentos.map(l => l.id === lancamento.id ? lancamento : l);
+        setLancamentos(novosLancamentos);
+        setModalEditar({ isOpen: false, lancamento: null });
+        alert('Lançamento atualizado com sucesso!');
+        return;
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          descricao: lancamento.descricao,
+          valor: parseFloat(lancamento.valor),
+          dataEmissao: lancamento.data,
+          dataVencimento: lancamento.data,
+          status: lancamento.status,
+          observacoes: lancamento.observacoes
+        })
+      });
+
+      if (response.ok) {
+        // Recarregar lançamentos
+        await carregarLancamentos();
+        setModalEditar({ isOpen: false, lancamento: null });
+        alert('Lançamento atualizado com sucesso!');
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erro ao atualizar lançamento');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar edição:', error);
+      alert('Erro ao atualizar lançamento. Tente novamente.');
+    }
+  };
+
+  const handleCancelarVenda = (id, numeroVenda) => {
+    console.log('🔴 [CANCELAR VENDA] Abrindo modal para venda:', { id, numeroVenda });
+    setModalCancelar({ isOpen: true, vendaId: id, numeroVenda });
+    setMotivoCancelamento('');
+  };
+
+  const confirmarCancelamento = async () => {
+    if (!motivoCancelamento.trim()) {
+      alert('Por favor, informe o motivo do cancelamento.');
+      return;
+    }
+
+    try {
+      console.log('🔴 [CANCELAR VENDA] Enviando cancelamento:', {
+        vendaId: modalCancelar.vendaId,
+        motivo: motivoCancelamento
+      });
+
+      const response = await fetch(`http://localhost:3001/api/sales/${modalCancelar.vendaId}/cancel`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ motivo: motivoCancelamento })
+      });
+
+      if (response.ok) {
+        await carregarLancamentos();
+        await carregarVendasCanceladas();
+        setModalCancelar({ isOpen: false, vendaId: null, numeroVenda: '' });
+        setMotivoCancelamento('');
+        alert('Venda cancelada com sucesso!');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Erro ao cancelar venda');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao cancelar venda:', error);
+      alert('Erro ao cancelar venda. Tente novamente.');
+    }
   };
 
   const resumo = calcularResumo();
@@ -226,6 +568,18 @@ const Financeiro = () => {
                   }`}
                 >
                   <p className="text-sm font-bold leading-normal tracking-[0.015em]">Despesas</p>
+                </button>
+                <button
+                  onClick={() => setAbaAtiva('canceladas')}
+                  className={`flex items-center justify-center border-b-[3px] pb-[13px] pt-4 ${
+                    abaAtiva === 'canceladas'
+                      ? 'border-b-orange-500 text-orange-600'
+                      : 'border-b-transparent text-slate-500 hover:border-b-slate-300'
+                  }`}
+                >
+                  <p className="text-sm font-bold leading-normal tracking-[0.015em]">
+                    Canceladas {vendasCanceladas.length > 0 && `(${vendasCanceladas.length})`}
+                  </p>
                 </button>
               </div>
             </div>
@@ -354,6 +708,64 @@ const Financeiro = () => {
 
             {/* Tabela */}
             <div className="overflow-x-auto">
+              {abaAtiva === 'canceladas' ? (
+                /* Tabela de Vendas Canceladas */
+                <table className="w-full">
+                  <thead className="bg-orange-50 border-y border-orange-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase tracking-wider">Venda</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase tracking-wider">Data Venda</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase tracking-wider">Cliente</th>
+                      <th className="px-6 py-3 text-right text-xs font-bold text-orange-900 uppercase tracking-wider">Valor</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase tracking-wider">Cancelado Em</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-orange-900 uppercase tracking-wider">Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {vendasCanceladas.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
+                          Nenhuma venda cancelada encontrada
+                        </td>
+                      </tr>
+                    ) : (
+                      vendasCanceladas.map((venda) => (
+                        <tr key={venda.id} className="hover:bg-orange-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-slate-900">Venda #{venda.numeroVenda}</div>
+                            <div className="text-xs text-slate-500">
+                              {venda.itens && Array.isArray(venda.itens) 
+                                ? venda.itens.map(item => `${item.quantidade}x ${item.nome || item.produto}`).join(', ')
+                                : ''}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {new Date(venda.data).toLocaleDateString('pt-BR')}
+                            <div className="text-xs text-slate-500">
+                              {venda.dataHora ? new Date(venda.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                            {venda.cliente?.nome || 'Cliente não informado'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-orange-600">
+                            {formatarPreco(venda.total)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {venda.canceladoEm ? new Date(venda.canceladoEm).toLocaleString('pt-BR') : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600 max-w-md">
+                            <div className="line-clamp-2" title={venda.motivoCancelamento}>
+                              {venda.motivoCancelamento || 'Motivo não informado'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              ) : (
+                /* Tabela Normal de Lançamentos */
               <table className="w-full">
                 <thead className="bg-slate-50 border-y border-slate-200">
                   <tr>
@@ -376,8 +788,8 @@ const Financeiro = () => {
                       </td>
                     </tr>
                   ) : (
-                    lancamentosFiltrados.map((lancamento) => (
-                      <tr key={lancamento.id} className="hover:bg-slate-50">
+                    lancamentosFiltrados.map((lancamento, index) => (
+                      <tr key={`${lancamento.categoria}-${lancamento.id}-${index}`} className="hover:bg-slate-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                           {new Date(lancamento.data).toLocaleDateString('pt-BR')}
                         </td>
@@ -395,7 +807,37 @@ const Financeiro = () => {
                           })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-slate-900">{lancamento.descricao}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-slate-900">{lancamento.descricao}</div>
+                            {(() => {
+                              // Filtrar apenas informações relevantes (desconto, crédito, débito)
+                              if (!lancamento.observacoes) return null;
+                              
+                              const observacoes = lancamento.observacoes.trim();
+                              if (observacoes === '') return null;
+                              
+                              // Filtrar apenas linhas que contenham desconto, crédito ou débito
+                              const linhasRelevantes = observacoes.split('|').map(l => l.trim()).filter(linha => 
+                                linha.toLowerCase().includes('desconto') || 
+                                linha.toLowerCase().includes('crédito') || 
+                                linha.toLowerCase().includes('débito')
+                              );
+                              
+                              if (linhasRelevantes.length === 0) return null;
+                              
+                              const textoFiltrado = linhasRelevantes.join(' | ');
+                              
+                              return (
+                                <div className="relative group inline-block">
+                                  <Info className="w-4 h-4 text-blue-500 cursor-help" />
+                                  <div className="absolute left-0 top-full mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none min-w-max max-w-md">
+                                    {textoFiltrado}
+                                    <div className="absolute bottom-full left-4 border-4 border-transparent border-b-gray-900"></div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                           {lancamento.categoria}
@@ -455,20 +897,33 @@ const Financeiro = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleEditar(lancamento.id)}
-                              className="p-1.5 text-primary hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Editar"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleRemover(lancamento.id)}
-                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Remover"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {/* Botão de Cancelar apenas para vendas ativas */}
+                            {(lancamento.isVenda || lancamento.categoria === 'Venda' || lancamento.descricao?.startsWith('Venda #')) ? (
+                              <button
+                                onClick={() => handleCancelarVenda(lancamento.id, lancamento.descricao)}
+                                className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                                title="Cancelar Venda"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleEditar(lancamento.id)}
+                                  className="p-1.5 text-primary hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Editar"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleRemover(lancamento.id)}
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Remover"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -476,10 +931,159 @@ const Financeiro = () => {
                   )}
                 </tbody>
               </table>
+              )}
             </div>
           </div>
         </main>
       </div>
+
+      {/* Modal de Edição */}
+      {modalEditar.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Editar Lançamento</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Descrição
+                </label>
+                <input
+                  type="text"
+                  value={modalEditar.lancamento.descricao}
+                  onChange={(e) => setModalEditar({
+                    ...modalEditar,
+                    lancamento: { ...modalEditar.lancamento, descricao: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Valor
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={modalEditar.lancamento.valor}
+                  onChange={(e) => setModalEditar({
+                    ...modalEditar,
+                    lancamento: { ...modalEditar.lancamento, valor: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Data
+                </label>
+                <input
+                  type="date"
+                  value={modalEditar.lancamento.data}
+                  onChange={(e) => setModalEditar({
+                    ...modalEditar,
+                    lancamento: { ...modalEditar.lancamento, data: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Observações
+                </label>
+                <textarea
+                  value={modalEditar.lancamento.observacoes || ''}
+                  onChange={(e) => setModalEditar({
+                    ...modalEditar,
+                    lancamento: { ...modalEditar.lancamento, observacoes: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows="3"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setModalEditar({ isOpen: false, lancamento: null })}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarEdicao}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Cancelamento de Venda */}
+      {modalCancelar.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-orange-100 p-2 rounded-full">
+                <Trash2 className="w-6 h-6 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Cancelar Venda</h2>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                Você está prestes a cancelar a venda:
+              </p>
+              <p className="text-base font-semibold text-gray-900">
+                {modalCancelar.numeroVenda}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Motivo do cancelamento <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={motivoCancelamento}
+                onChange={(e) => setMotivoCancelamento(e.target.value)}
+                placeholder="Descreva o motivo do cancelamento..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                rows="4"
+                required
+              />
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-yellow-800">
+                ⚠️ Esta ação não pode ser desfeita. A venda será marcada como cancelada e permanecerá no histórico para auditoria.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setModalCancelar({ isOpen: false, vendaId: null, numeroVenda: '' });
+                  setMotivoCancelamento('');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={confirmarCancelamento}
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium"
+              >
+                Confirmar Cancelamento
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
