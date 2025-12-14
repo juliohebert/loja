@@ -131,9 +131,11 @@ const createDatabaseIfNotExists = async (databaseName) => {
 // Sincronizar banco de dados e iniciar servidor
 const startServer = async () => {
   try {
-    // Verificar e criar banco de dados, se necessário
-    const databaseName = process.env.DB_NAME;
-    await createDatabaseIfNotExists(databaseName);
+    // Verificar e criar banco de dados apenas se não estiver usando DATABASE_URL
+    if (!process.env.DATABASE_URL) {
+      const databaseName = process.env.DB_NAME;
+      await createDatabaseIfNotExists(databaseName);
+    }
 
     // Sincronizar modelos (usar force: true apenas em desenvolvimento para recriar tabelas)
     // await sequelize.sync({ alter: true }); // Removido para evitar conflitos com migrations
@@ -142,6 +144,7 @@ const startServer = async () => {
     await initializeDefaultConfigurations({ tenantId: 'default' });
 
     app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando na porta ${PORT}`);
     });
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);
