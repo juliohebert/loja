@@ -3,21 +3,39 @@ require('dotenv').config();
 
 /**
  * Configuração da conexão com PostgreSQL usando Sequelize
- * Variáveis de ambiente devem estar definidas no arquivo .env
+ * Suporta DATABASE_URL (produção) ou variáveis individuais (desenvolvimento)
  */
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || 'loja_roupas',
-  process.env.DB_USER || 'postgres',
-  process.env.DB_PASSWORD || 'postgres',
-  {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 5,
-      min: 0,
+// Usar DATABASE_URL se disponível (produção), senão usar variáveis individuais
+const sequelize = process.env.DATABASE_URL 
+  ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false // Necessário para Render/Neon
+        }
+      },
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      }
+    })
+  : new Sequelize(
+      process.env.DB_NAME || 'loja_roupas',
+      process.env.DB_USER || 'postgres',
+      process.env.DB_PASSWORD || 'postgres',
+      {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        dialect: 'postgres',
+        logging: process.env.NODE_ENV === 'development' ? console.log : false,
+        pool: {
+          max: 5,
+          min: 0,
       acquire: 30000,
       idle: 10000
     },
