@@ -126,7 +126,9 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    service: 'Loja de Roupas API'
+    service: 'Loja de Roupas API',
+    version: 'v1.0.1-cors-fix',
+    corsFixed: true
   });
 });
 
