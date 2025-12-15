@@ -41,7 +41,8 @@ const corsOptions = {
     // Permitir qualquer subdomínio do Vercel
     if (origin && (origin.includes('.vercel.app') || allowedOrigins.indexOf(origin) !== -1)) {
       console.log('✅ CORS permitido para origin:', origin);
-      return callback(null, true);
+      // IMPORTANTE: Retornar a origin específica, não true
+      return callback(null, origin);
     } else {
       console.log('❌ CORS bloqueado para origin:', origin);
       return callback(new Error('Not allowed by CORS'));
