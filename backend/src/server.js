@@ -28,15 +28,39 @@ const PORT = process.env.PORT || 3001;
 
 // Configuração de CORS
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Permitir requisições sem origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      process.env.CORS_ORIGIN
+    ].filter(Boolean);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ CORS bloqueado para origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
 };
 
 // Middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Log de requisições
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.path} - Origin: ${req.get('origin') || 'no-origin'}`);
+  next();
+});
 
 // Middleware de log
 app.use((req, res, next) => {
@@ -50,7 +74,14 @@ app.use((req, res, next) => {
 app.use('/api/products', tenantMiddleware);
 app.use('/api/sales', tenantMiddleware);
 app.use('/api/configurations', tenantMiddleware);
-app.use('/api/users', tenantMiddleware);
+// NÃO aplicar tenant middleware em /api/users/register e /api/auth/*
+app.use('/api/users', (req, res, next) => {
+  // Pular tenant middleware para registro e algumas rotas de auth
+  if (req.path === '/register' || req.path.startsWith('/auth')) {
+    return next();
+  }
+  return tenantMiddleware(req, res, next);
+});
 app.use('/api/suppliers', tenantMiddleware);
 app.use('/api/purchase-orders', tenantMiddleware);
 app.use('/api/accounts-payable', tenantMiddleware);
