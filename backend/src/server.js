@@ -38,7 +38,8 @@ const corsOptions = {
       process.env.CORS_ORIGIN
     ].filter(Boolean);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Permitir qualquer subdomínio do Vercel
+    if (origin && (origin.includes('.vercel.app') || allowedOrigins.indexOf(origin) !== -1)) {
       callback(null, true);
     } else {
       console.log('❌ CORS bloqueado para origin:', origin);
