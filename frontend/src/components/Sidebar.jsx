@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuthHeaders, decodeToken } from '../utils/auth';
+import { Menu, X } from 'lucide-react';
 import API_URL from '../config/apiUrl';
 
 const Sidebar = () => {
@@ -9,6 +10,7 @@ const Sidebar = () => {
   const [usuario, setUsuario] = useState(null);
   const [logoUrl, setLogoUrl] = useState('');
   const [nomeLoja, setNomeLoja] = useState('ModaStore');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const carregarUsuario = () => {
@@ -75,12 +77,23 @@ const Sidebar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
+    setIsMobileMenuOpen(false);
     navigate('/login');
   };
 
   const isActive = (path) => {
     return location.pathname === path;
   };
+
+  const handleMenuItemClick = (path) => {
+    navigate(path);
+    setIsMobileMenuOpen(false); // Fecha o menu ao clicar em um item
+  };
+
+  // Fecha o menu ao mudar de rota
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const menuItems = [
     {
@@ -236,7 +249,34 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <>
+      {/* Botão Hambúrguer - Mobile Only */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-3 rounded-lg shadow-lg hover:bg-primary/90 transition-all"
+        aria-label="Menu"
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay - Mobile Only */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden animate-fadeIn"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:static
+        top-0 left-0
+        w-64 bg-white border-r border-gray-200 
+        flex flex-col h-screen
+        z-40
+        transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
       <div className="flex-shrink-0 p-4">
         {/* Logo */}
         <div className="flex items-center gap-3 px-2">
@@ -281,8 +321,8 @@ const Sidebar = () => {
               return (
                 <div
                   key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer ${
+                  onClick={() => handleMenuItemClick(item.path)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                     isActive(item.path)
                       ? 'bg-primary/10 text-primary'
                       : 'text-gray-600 hover:bg-gray-100'
@@ -331,7 +371,10 @@ const Sidebar = () => {
           </button>
         </div>
         <button
-          onClick={() => navigate('/selecionar-loja')}
+          onClick={() => {
+            navigate('/selecionar-loja');
+            setIsMobileMenuOpen(false);
+          }}
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:text-primary hover:bg-gray-100 transition-colors"
           title="Trocar de Loja"
         >
@@ -343,6 +386,7 @@ const Sidebar = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
