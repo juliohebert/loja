@@ -2,7 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
-require('dotenv').config();
+
+// Carregar variáveis de ambiente se não estiverem definidas (Render já define)
+if (!process.env.DATABASE_URL) {
+  require('dotenv').config();
+}
 
 const { sequelize } = require('./models/Schema');
 const productRoutes = require('./routes/productRoutes');
