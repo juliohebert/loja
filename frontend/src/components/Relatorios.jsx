@@ -777,19 +777,19 @@ const Relatorios = () => {
                     <Calendar className="w-5 h-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700">Comparar meses:</span>
                   </div>
-                  <div className="flex flex-col xs:flex-row gap-2 items-start xs:items-center w-full max-w-xs">
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto max-w-xs">
                     <input
                       type="month"
                       value={mesAtual}
                       onChange={(e) => setMesAtual(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                     />
                     <span className="text-gray-500">vs</span>
                     <input
                       type="month"
                       value={mesAnterior}
                       onChange={(e) => setMesAnterior(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                     />
                   </div>
                 </div>
@@ -804,11 +804,11 @@ const Relatorios = () => {
                     <Calendar className="w-5 h-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700">Comparar trimestres:</span>
                   </div>
-                  <div className="flex flex-col xs:flex-row gap-2 items-start xs:items-center w-full max-w-xs">
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto max-w-xs">
                     <select
                       value={trimestreAtual}
                       onChange={(e) => setTrimestreAtual(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                     >
                       {gerarOpcoesTrimestre().map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -818,7 +818,7 @@ const Relatorios = () => {
                     <select
                       value={trimestreAnterior}
                       onChange={(e) => setTrimestreAnterior(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                     >
                       {gerarOpcoesTrimestre().map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -837,19 +837,19 @@ const Relatorios = () => {
                     <Calendar className="w-5 h-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700">Período:</span>
                   </div>
-                  <div className="flex flex-col xs:flex-row gap-2 items-start xs:items-center w-full max-w-xs">
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto max-w-xs">
                     <input
                       type="date"
                       value={dataInicio}
                       onChange={(e) => setDataInicio(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                     />
                     <span className="text-gray-500">até</span>
                     <input
                       type="date"
                       value={dataFim}
                       onChange={(e) => setDataFim(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-auto"
                     />
                   </div>
                   <button
