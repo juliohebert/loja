@@ -1031,7 +1031,7 @@ const PDV = () => {
                     type="number"
                     value={desconto}
                     onChange={(e) => setDesconto(e.target.value)}
-                    className="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary h-10 placeholder:text-slate-500 px-3 text-sm bg-background-light border border-slate-300"
+                    className="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary h-12 placeholder:text-slate-500 px-3 text-base bg-background-light border border-slate-300"
                     placeholder={tipoDesconto === 'percentual' ? "0" : "0.00"}
                     min="0"
                     step={tipoDesconto === 'percentual' ? "1" : "0.01"}
