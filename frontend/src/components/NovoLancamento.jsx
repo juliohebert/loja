@@ -88,10 +88,7 @@ const NovoLancamento = () => {
     if (!validarFormulario()) {
       return;
     }
-
-    const lancamentosSalvos = localStorage.getItem('lancamentos');
-    let lancamentos = lancamentosSalvos ? JSON.parse(lancamentosSalvos) : [];
-
+    let lancamentos = JSON.parse(localStorage.getItem('lancamentos') || '[]');
     if (isEdicao) {
       // Atualizar lançamento existente
       lancamentos = lancamentos.map(l => 
@@ -108,7 +105,6 @@ const NovoLancamento = () => {
       lancamentos.push(novoLancamento);
       alert('Lançamento cadastrado com sucesso!');
     }
-
     localStorage.setItem('lancamentos', JSON.stringify(lancamentos));
     navigate('/financeiro');
   };
@@ -180,7 +176,7 @@ const NovoLancamento = () => {
                 </div>
 
                 {/* Descrição */}
-                <label className="flex flex-col w-full">
+                <label className="flex flex-col w-full gap-1">
                   <p className="text-slate-800 text-sm font-medium leading-normal pb-2">
                     Descrição <span className="text-red-500">*</span>
                   </p>
@@ -188,7 +184,7 @@ const NovoLancamento = () => {
                     name="descricao"
                     value={formData.descricao}
                     onChange={handleInputChange}
-                    className={`form-input rounded-lg h-12 px-3 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary ${
+                    className={`form-input rounded-lg h-14 px-4 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary text-base ${
                       erros.descricao ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-primary'
                     }`}
                     placeholder="Ex: Venda #001, Aluguel, etc."
@@ -198,9 +194,9 @@ const NovoLancamento = () => {
                   )}
                 </label>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {/* Valor */}
-                  <label className="flex flex-col w-full">
+                  <label className="flex flex-col w-full gap-1">
                     <p className="text-slate-800 text-sm font-medium leading-normal pb-2">
                       Valor <span className="text-red-500">*</span>
                     </p>
@@ -210,7 +206,7 @@ const NovoLancamento = () => {
                       step="0.01"
                       value={formData.valor}
                       onChange={handleInputChange}
-                      className={`form-input rounded-lg h-12 px-3 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary ${
+                      className={`form-input rounded-lg h-14 px-4 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary text-base ${
                         erros.valor ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-primary'
                       }`}
                       placeholder="0,00"
@@ -221,7 +217,7 @@ const NovoLancamento = () => {
                   </label>
 
                   {/* Categoria */}
-                  <label className="flex flex-col w-full">
+                  <label className="flex flex-col w-full gap-1">
                     <p className="text-slate-800 text-sm font-medium leading-normal pb-2">
                       Categoria <span className="text-red-500">*</span>
                     </p>
@@ -229,7 +225,7 @@ const NovoLancamento = () => {
                       name="categoria"
                       value={formData.categoria}
                       onChange={handleInputChange}
-                      className={`form-select rounded-lg h-12 px-3 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary ${
+                      className={`form-select rounded-lg h-14 px-4 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary text-base ${
                         erros.categoria ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-primary'
                       }`}
                     >
@@ -244,9 +240,9 @@ const NovoLancamento = () => {
                   </label>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {/* Data */}
-                  <label className="flex flex-col w-full">
+                  <label className="flex flex-col w-full gap-1">
                     <p className="text-slate-800 text-sm font-medium leading-normal pb-2">
                       Data <span className="text-red-500">*</span>
                     </p>
@@ -255,7 +251,7 @@ const NovoLancamento = () => {
                       type="date"
                       value={formData.data}
                       onChange={handleInputChange}
-                      className={`form-input rounded-lg h-12 px-3 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary ${
+                      className={`form-input rounded-lg h-14 px-4 border-2 bg-white text-slate-900 focus:ring-2 focus:ring-primary text-base ${
                         erros.data ? 'border-red-500 focus:border-red-500' : 'border-slate-300 focus:border-primary'
                       }`}
                     />
@@ -265,7 +261,7 @@ const NovoLancamento = () => {
                   </label>
 
                   {/* Status */}
-                  <label className="flex flex-col w-full">
+                  <label className="flex flex-col w-full gap-1">
                     <p className="text-slate-800 text-sm font-medium leading-normal pb-2">
                       Status <span className="text-red-500">*</span>
                     </p>
@@ -273,7 +269,7 @@ const NovoLancamento = () => {
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="form-select rounded-lg h-12 px-3 border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="form-select rounded-lg h-14 px-4 border-2 border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-primary focus:border-primary text-base"
                     >
                       <option value="pago">Pago</option>
                       <option value="pendente">Pendente</option>
@@ -282,13 +278,13 @@ const NovoLancamento = () => {
                 </div>
 
                 {/* Observações */}
-                <label className="flex flex-col w-full">
+                <label className="flex flex-col w-full gap-1">
                   <p className="text-slate-800 text-sm font-medium leading-normal pb-2">Observações</p>
                   <textarea 
                     name="observacoes"
                     value={formData.observacoes}
                     onChange={handleInputChange}
-                    className="form-input flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 bg-white focus:border-primary min-h-24 placeholder:text-slate-400 p-3 text-sm font-normal leading-normal" 
+                    className="form-input flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 bg-white focus:border-primary min-h-24 placeholder:text-slate-400 p-4 text-base font-normal leading-normal" 
                     placeholder="Informações adicionais sobre o lançamento"
                   ></textarea>
                 </label>
