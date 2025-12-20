@@ -709,14 +709,14 @@ const CriarProduto = () => {
 
                 {/* Tabela de Variações */}
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-6">Variações Adicionadas</h3>
-                <div className="overflow-x-auto border rounded-lg">
-                  <table className="w-full text-sm text-left text-slate-500">
+                <div className="overflow-x-auto border rounded-lg scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 max-w-full">
+                  <table className="min-w-[480px] w-full text-sm text-left text-slate-500">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50">
                       <tr>
-                        <th className="px-6 py-3" scope="col">Tamanho</th>
-                        <th className="px-6 py-3" scope="col">Cor</th>
-                        <th className="px-6 py-3" scope="col">Estoque</th>
-                        <th className="px-6 py-3 text-right" scope="col">Ações</th>
+                        <th className="px-4 py-3" scope="col">Tamanho</th>
+                        <th className="px-4 py-3" scope="col">Cor</th>
+                        <th className="px-4 py-3" scope="col">Estoque</th>
+                        <th className="px-4 py-3 text-right" scope="col">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -729,17 +729,17 @@ const CriarProduto = () => {
                       ) : (
                         variacoes.map((variacao, index) => (
                           <tr key={variacao.id} className={`bg-white ${index < variacoes.length - 1 ? 'border-b' : ''}`}>
-                            <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{variacao.tamanho}</td>
-                            <td className="px-6 py-4">{variacao.cor}</td>
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{variacao.tamanho}</td>
+                            <td className="px-4 py-3">{variacao.cor}</td>
+                            <td className="px-4 py-3">
                               <input 
-                                className="form-input w-20 h-8 rounded-md bg-slate-50 border-slate-300 text-center" 
+                                className="form-input w-16 h-8 rounded-md bg-slate-50 border-slate-300 text-center text-xs" 
                                 type="number" 
                                 value={variacao.estoque}
                                 onChange={(e) => atualizarEstoque(variacao.id, e.target.value)}
                               />
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            <td className="px-4 py-3 text-right">
                               <button 
                                 onClick={() => removerVariacao(variacao.id)}
                                 className="p-1 text-slate-500 hover:text-red-500"
