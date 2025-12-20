@@ -116,7 +116,7 @@ export default function Login() {
               {/* Header */}
               <div className="flex flex-col gap-2 text-center mb-8">
                 <h1 className="text-[#111318] dark:text-white text-3xl sm:text-4xl font-bold leading-tight tracking-tight">
-                  Bem-vindo(a) de volta!
+                  Bem-vindo(a)
                 </h1>
                 <h2 className="text-[#616f89] dark:text-gray-300 text-sm sm:text-base font-normal leading-normal">
                   Acesse sua conta para gerenciar sua loja.
