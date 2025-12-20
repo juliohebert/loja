@@ -251,7 +251,7 @@ export default function Login() {
           </a>
         </div>
         <p className="text-[#616f89] dark:text-gray-500 text-sm font-normal text-center mt-4">
-          © 2024 Loja de Roupas. Todos os direitos reservados.
+          © Vitrine360 - 2025 Loja de Roupas. Todos os direitos reservados a 3TEC.
         </p>
       </footer>
     </div>
