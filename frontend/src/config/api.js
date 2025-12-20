@@ -7,13 +7,13 @@
 export const API_CONFIG = {
   // URL base da API
   BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
-  
+
   // Endpoints principais
   API: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:3001/api',
-  
+
   // Timeout para requisições (ms)
   TIMEOUT: 30000,
-  
+
   // Headers padrão
   HEADERS: {
     'Content-Type': 'application/json'
@@ -37,13 +37,13 @@ export const getApiUrl = (endpoint) => {
 export const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   const tenantId = localStorage.getItem('currentTenantId');
-  
+
   const headers = {
     ...API_CONFIG.HEADERS,
     ...(token && { 'Authorization': `Bearer ${token}` }),
     ...(tenantId && { 'x-tenant-id': tenantId })
   };
-  
+
   return headers;
 };
 

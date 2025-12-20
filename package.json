@@ -1,7 +1,10 @@
 {
   "dependencies": {
+    "@sentry/node": "^10.32.0",
     "axios": "^1.13.2",
-    "bcrypt": "^6.0.0"
+    "bcrypt": "^6.0.0",
+    "pg": "^8.16.3",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

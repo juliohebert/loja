@@ -22,6 +22,7 @@ const planRoutes = require('./routes/planRoutes'); // Importar rotas de planos
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
+// const Sentry = require('@sentry/node'); // Importar Sentry para monitoramento de erros
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,16 +36,16 @@ const corsOptions = {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5173',
+      'http://192.168.0.14:5173',
+      'http://192.168.0.14:3000',
+      'https://loja-seven-theta.vercel.app',
       process.env.CORS_ORIGIN
     ].filter(Boolean);
     
     // Permitir qualquer subdomínio do Vercel
     if (origin && (origin.includes('.vercel.app') || allowedOrigins.indexOf(origin) !== -1)) {
-      console.log('✅ CORS permitido para origin:', origin);
-      // IMPORTANTE: Retornar a origin específica, não true
       return callback(null, origin);
     } else {
-      console.log('❌ CORS bloqueado para origin:', origin);
       return callback(new Error('Not allowed by CORS'));
     }
   },
@@ -54,23 +55,29 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
 };
 
+// Desativar temporariamente o Sentry para depuração
+// Sentry.init({
+//   dsn: process.env.SENTRY_DSN,
+//   integrations: [
+//     new Sentry.Integrations.Http({ tracing: true }),
+//   ],
+//   tracesSampleRate: 1.0,
+// });
+
+console.log('Sentry desativado temporariamente para depuração.');
+
 // Middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Log de requisições
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.path} - Origin: ${req.get('origin') || 'no-origin'}`);
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
-  next();
-});
-
-// Middleware de log
-app.use((req, res, next) => {
-  next();
-});
-
+// Log simplificado de requisições em produção
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`📥 ${req.method} ${req.path}`);
+    next();
+  });
+}
 
 // Middleware para capturar o tenantId, exceto para /api/subscriptions/metrics
 
@@ -138,6 +145,7 @@ app.use((req, res) => {
 });
 
 // Error handler
+// app.use(Sentry.Handlers.errorHandler()); // Middleware do Sentry para tratar erros
 app.use((err, req, res, next) => {
   console.error('Erro não tratado:', err);
   res.status(500).json({ 
@@ -191,6 +199,16 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
+// Tratamento de erros não capturados
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
 
 startServer();
 

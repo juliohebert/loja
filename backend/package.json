@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "start:prod": "node start-production.js",
     "dev": "nodemon src/server.js",
     "db:sync": "node -e \"require('./src/models/Schema').sequelize.sync({ force: true }).then(() => console.log('Database synced'))\"",
     "db:seed": "node src/seeders/index.js"

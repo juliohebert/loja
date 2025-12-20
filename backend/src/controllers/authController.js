@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
@@ -117,7 +117,7 @@ exports.login = async (req, res) => {
 
     // Comparar senha
     const isPasswordValid = await bcrypt.compare(senha, user.senha);
-    
+
     if (!isPasswordValid) {
       return res.status(401).json({ 
         error: 'E-mail ou senha incorretos' 
@@ -140,6 +140,8 @@ exports.login = async (req, res) => {
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
+
+    console.log('Login realizado com sucesso para o usuário:', email);
 
     res.status(200).json({
       message: 'Login realizado com sucesso',

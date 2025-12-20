@@ -4,26 +4,29 @@ services:
     name: loja-api
     env: node
     plan: free
-    buildCommand: npm install
-    startCommand: node src/server.js
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm run start:prod
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3001
       - key: DATABASE_URL
-        fromDatabase:
-          name: loja-db
-          property: connectionString
+        value: postgresql://neondb_owner:npg_aqfY3Ih6vZUj@ep-delicate-forest-ackskoii-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require
+      - key: DB_HOST
+        value: ep-delicate-forest-ackskoii-pooler.sa-east-1.aws.neon.tech
+      - key: DB_NAME
+        value: neondb
+      - key: DB_USER
+        value: neondb_owner
+      - key: DB_PASSWORD
+        value: npg_aqfY3Ih6vZUj
+      - key: DB_PORT
+        value: 5432
       - key: JWT_SECRET
-        generateValue: true
+        value: f7d6ce856e4e18dbb61c684810e6cffc77bb209dbc249ad7e34347ec08010b0d
+      - key: JWT_EXPIRES_IN
+        value: 7d
       - key: CORS_ORIGIN
-        sync: false
+        value: https://loja-seven-theta.vercel.app
     healthCheckPath: /health
-
-databases:
-  # PostgreSQL Database
-  - name: loja-db
-    plan: free
-    databaseName: loja_roupas
-    user: postgres

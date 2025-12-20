@@ -1,5 +1,4 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
 
 /**
  * Configuração da conexão com PostgreSQL usando Sequelize
@@ -67,6 +66,26 @@ const createTenantDatabase = (dbName) => {
     }
   });
 };
+
+// Adicionar log para depurar conexão com o banco de dados
+console.log('Tentando conectar ao banco de dados:', process.env.DATABASE_URL || {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'loja_roupas',
+  user: process.env.DB_USER || 'postgres'
+});
+
+// Adicionar log para verificar se DATABASE_URL está sendo lida corretamente
+console.log('Valor de DATABASE_URL:', process.env.DATABASE_URL);
+
+// Adicionar validação para garantir que DATABASE_URL e DB_PASSWORD sejam strings válidas
+if (process.env.DATABASE_URL && typeof process.env.DATABASE_URL !== 'string') {
+  throw new Error('DATABASE_URL deve ser uma string válida. Valor atual: ' + process.env.DATABASE_URL);
+}
+
+if (!process.env.DATABASE_URL && typeof process.env.DB_PASSWORD !== 'string') {
+  throw new Error('DB_PASSWORD deve ser uma string válida. Valor atual: ' + process.env.DB_PASSWORD);
+}
 
 // Teste de conexão
 const testConnection = async () => {
