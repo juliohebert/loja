@@ -1149,18 +1149,18 @@ const PDV = () => {
                   <FaUser className="w-4 h-4 text-slate-600" />
                   <span className="text-sm font-medium text-slate-700">Vendedor</span>
                 </div>
-                <select
+                <CustomSelect
                   value={vendedorSelecionado || ''}
-                  onChange={(e) => setVendedorSelecionado(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-base font-semibold"
-                >
-                  <option value="" className="py-3 text-base">Sistema</option>
-                  {vendedores.map((vendedor) => (
-                    <option key={vendedor.id} value={vendedor.nome} className="py-3 text-base">
-                      {vendedor.nome} • {vendedor.funcao === 'admin' ? 'Admin' : vendedor.funcao === 'gerente' ? 'Gerente' : 'Vendedor'}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setVendedorSelecionado}
+                  options={[
+                    { value: '', label: 'Sistema' },
+                    ...vendedores.map(vendedor => ({
+                      value: vendedor.nome,
+                      label: `${vendedor.nome} • ${vendedor.funcao === 'admin' ? 'Admin' : vendedor.funcao === 'gerente' ? 'Gerente' : 'Vendedor'}`
+                    }))
+                  ]}
+                  placeholder="Selecione o vendedor"
+                />
                 <p className="text-xs text-slate-500 mt-1">
                   Selecione o vendedor responsável por esta venda
                 </p>
