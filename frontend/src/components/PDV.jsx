@@ -1041,10 +1041,10 @@ const PDV = () => {
                       setTipoDesconto(e.target.value);
                       setDesconto('');
                     }}
-                    className="flex min-w-[90px] cursor-pointer items-center justify-center rounded-lg h-10 px-3 bg-slate-100 border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-200"
+                    className="flex min-w-[90px] cursor-pointer items-center justify-center rounded-lg h-12 px-4 bg-slate-100 border border-slate-300 text-slate-700 text-base font-semibold hover:bg-slate-200 focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value="valor">R$</option>
-                    <option value="percentual">%</option>
+                    <option value="valor" className="py-3 text-base">R$</option>
+                    <option value="percentual" className="py-3 text-base">%</option>
                   </select>
                 </div>
                 {desconto && parseFloat(desconto) > 0 && (
@@ -1063,11 +1063,11 @@ const PDV = () => {
                 <select
                   value={clienteSelecionado || ''}
                   onChange={(e) => setClienteSelecionado(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-base font-semibold"
                 >
-                  <option value="">Cliente não identificado</option>
+                  <option value="" className="py-3 text-base">Cliente não identificado</option>
                   {Array.isArray(clientes) && clientes.map((cliente) => (
-                    <option key={cliente.id} value={cliente.id}>
+                    <option key={cliente.id} value={cliente.id} className="py-3 text-base">
                       {cliente.nome}
                     </option>
                   ))}
@@ -1154,11 +1154,11 @@ const PDV = () => {
                 <select
                   value={vendedorSelecionado || ''}
                   onChange={(e) => setVendedorSelecionado(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-base font-semibold"
                 >
-                  <option value="">Sistema</option>
+                  <option value="" className="py-3 text-base">Sistema</option>
                   {vendedores.map((vendedor) => (
-                    <option key={vendedor.id} value={vendedor.nome}>
+                    <option key={vendedor.id} value={vendedor.nome} className="py-3 text-base">
                       {vendedor.nome} • {vendedor.funcao === 'admin' ? 'Admin' : vendedor.funcao === 'gerente' ? 'Gerente' : 'Vendedor'}
                     </option>
                   ))}
