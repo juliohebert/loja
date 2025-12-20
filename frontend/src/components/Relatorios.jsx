@@ -796,19 +796,19 @@ const Relatorios = () => {
               </div>
             )}
 
-            {/* Filtros para Comparativo Trimestral */}
+            {/* Filtros Comparativo Trimestral */}
             {relatorioAtivo === 'trimestral' && (
-              <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
-                <div className="flex items-center gap-4">
+              <div className="p-2 sm:p-4 bg-gray-50 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700">Comparar trimestres:</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col xs:flex-row gap-2 items-start xs:items-center w-full max-w-xs">
                     <select
                       value={trimestreAtual}
                       onChange={(e) => setTrimestreAtual(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
                     >
                       {gerarOpcoesTrimestre().map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -818,7 +818,7 @@ const Relatorios = () => {
                     <select
                       value={trimestreAnterior}
                       onChange={(e) => setTrimestreAnterior(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
                     >
                       {gerarOpcoesTrimestre().map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -829,30 +829,32 @@ const Relatorios = () => {
               </div>
             )}
 
-            {/* Filtros */}
+            {/* Filtros Gerais (exceto comparativo, trimestral, estoque) */}
             {!['comparativo', 'trimestral', 'estoque'].includes(relatorioAtivo) && (
-              <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
-                <div className="flex items-center gap-4">
+              <div className="p-2 sm:p-4 bg-gray-50 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700">Período:</span>
                   </div>
-                  <input
-                    type="date"
-                    value={dataInicio}
-                    onChange={(e) => setDataInicio(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <span className="text-gray-500">até</span>
-                  <input
-                    type="date"
-                    value={dataFim}
-                    onChange={(e) => setDataFim(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <div className="flex flex-col xs:flex-row gap-2 items-start xs:items-center w-full max-w-xs">
+                    <input
+                      type="date"
+                      value={dataInicio}
+                      onChange={(e) => setDataInicio(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                    />
+                    <span className="text-gray-500">até</span>
+                    <input
+                      type="date"
+                      value={dataFim}
+                      onChange={(e) => setDataFim(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                    />
+                  </div>
                   <button
                     onClick={limparFiltros}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors mt-2 sm:mt-0"
                   >
                     <X className="w-4 h-4" />
                     Limpar
@@ -1244,7 +1246,7 @@ const Relatorios = () => {
 
                   {/* Tabela */}
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[700px] text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nº Venda</th>
@@ -1311,7 +1313,7 @@ const Relatorios = () => {
 
                   {/* Tabela */}
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[700px] text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
@@ -1389,7 +1391,7 @@ const Relatorios = () => {
                       <h3 className="text-lg font-semibold text-gray-800">Lançamentos do Período</h3>
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full min-w-[700px] text-sm">
                         <thead className="bg-gray-50 border-b border-gray-200">
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
@@ -1469,7 +1471,7 @@ const Relatorios = () => {
 
                   {/* Tabela */}
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[700px] text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
@@ -1692,7 +1694,7 @@ const Relatorios = () => {
 
                   {/* Tabela */}
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[700px] text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ranking</th>
