@@ -1036,17 +1036,15 @@ const PDV = () => {
                     min="0"
                     step={tipoDesconto === 'percentual' ? "1" : "0.01"}
                   />
-                  <select
+                  <CustomSelect
                     value={tipoDesconto}
-                    onChange={(e) => {
-                      setTipoDesconto(e.target.value);
-                      setDesconto('');
-                    }}
-                    className="flex min-w-[90px] cursor-pointer items-center justify-center rounded-lg h-12 px-4 bg-slate-100 border border-slate-300 text-slate-700 text-base font-semibold hover:bg-slate-200 focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="valor" className="py-3 text-base">R$</option>
-                    <option value="percentual" className="py-3 text-base">%</option>
-                  </select>
+                    onChange={val => { setTipoDesconto(val); setDesconto(''); }}
+                    options={[
+                      { value: 'valor', label: 'R$' },
+                      { value: 'percentual', label: '%' }
+                    ]}
+                    placeholder="Tipo"
+                  />
                 </div>
                 {desconto && parseFloat(desconto) > 0 && (
                   <span className="text-xs text-green-600 mt-1">
