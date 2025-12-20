@@ -148,7 +148,7 @@ const Trocas = () => {
           v.tamanho === produtoDevolver.tamanho && v.cor === produtoDevolver.cor
         );
         if (variacaoAntiga) {
-          await fetch(`http://localhost:3001/api/products/stock/${variacaoAntiga.id}`, {
+          await fetch(`${API_URL}/api/products/stock/${variacaoAntiga.id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -161,7 +161,7 @@ const Trocas = () => {
 
       // 2. Atualizar estoque - retirar produto novo
       if (produtoNovo.variacao) {
-        await fetch(`http://localhost:3001/api/products/stock/${produtoNovo.variacao.id}`, {
+        await fetch(`${API_URL}/api/products/stock/${produtoNovo.variacao.id}`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -252,7 +252,7 @@ export default function Caixa() {
   const fecharCaixa = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/cash-registers/${caixaAberto.id}/close`, {
+      const response = await fetch(`${API_URL}/api/cash-registers/${caixaAberto.id}/close`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({

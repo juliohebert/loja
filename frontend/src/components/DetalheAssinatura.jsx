@@ -42,7 +42,7 @@ export default function DetalheAssinatura() {
         'Content-Type': 'application/json'
       };
       if (tenantId) headers['x-tenant-id'] = tenantId;
-      const response = await fetch(`http://localhost:3001/api/subscriptions/${id}`, {
+      const response = await fetch(`${API_URL}/api/subscriptions/${id}`, {
         headers
       });
       if (!response.ok) throw new Error('Erro ao buscar assinatura');
@@ -81,7 +81,7 @@ export default function DetalheAssinatura() {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/subscriptions/${id}`, {
+      const response = await fetch(`${API_URL}/api/subscriptions/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

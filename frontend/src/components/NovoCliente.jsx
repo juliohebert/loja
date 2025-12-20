@@ -40,7 +40,7 @@ const NovoCliente = () => {
 
   const carregarCliente = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/customers/${id}`, {
+      const response = await fetch(`${API_URL}/api/customers/${id}`, {
         headers: getAuthHeaders()
       });
 
@@ -157,7 +157,7 @@ const NovoCliente = () => {
     try {
       const token = localStorage.getItem('token');
       const url = isEdicao 
-        ? `http://localhost:3001/api/customers/${id}`
+        ? `${API_URL}/api/customers/${id}`
         : API_URL + '/api/customers';
       
       const method = isEdicao ? 'PUT' : 'POST';

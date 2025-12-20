@@ -208,7 +208,7 @@ const OrdensCompra = () => {
   const confirmarRecebimento = async (pedido) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/purchase-orders/${pedido.id}/receive`, {
+      const response = await fetch(`${API_URL}/api/purchase-orders/${pedido.id}/receive`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -240,7 +240,7 @@ const OrdensCompra = () => {
 
   const confirmarCancelamento = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/purchase-orders/${id}/cancel`, {
+      const response = await fetch(`${API_URL}/api/purchase-orders/${id}/cancel`, {
         method: 'PATCH',
         headers: getAuthHeaders()
       });

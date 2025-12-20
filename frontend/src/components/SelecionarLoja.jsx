@@ -51,7 +51,7 @@ const SelecionarLoja = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:3001/api/tenants/${tenantId}/access`, {
+      const response = await fetch(`${API_URL}/api/tenants/${tenantId}/access`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

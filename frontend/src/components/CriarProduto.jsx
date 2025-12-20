@@ -61,7 +61,7 @@ const CriarProduto = () => {
   const carregarProduto = async (id) => {
     try {
       setCarregando(true);
-      const response = await fetch(`http://localhost:3001/api/products/${id}`, {
+      const response = await fetch(`${API_URL}/api/products/${id}`, {
         headers: getAuthHeaders()
       });
 
@@ -360,7 +360,7 @@ const CriarProduto = () => {
       };
 
       const url = modoEdicao 
-        ? `http://localhost:3001/api/products/${produtoId}`
+        ? `${API_URL}/api/products/${produtoId}`
         : API_URL + '/api/products';
       
       const method = modoEdicao ? 'PUT' : 'POST';

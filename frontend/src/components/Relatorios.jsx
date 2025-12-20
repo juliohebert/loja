@@ -267,7 +267,7 @@ const Relatorios = () => {
       const token = localStorage.getItem('token');
       
       // Buscar vendas do backend
-      const response = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
+      const response = await fetch(`${API_URL}/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
         headers: getAuthHeaders()
       });
 
@@ -406,7 +406,7 @@ const Relatorios = () => {
       const data = await responseProducts.json();
       
       // Buscar vendas da API
-      const responseSales = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
+      const responseSales = await fetch(`${API_URL}/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
         headers: getAuthHeaders()
       });
 
@@ -484,7 +484,7 @@ const Relatorios = () => {
       const data = await responseProducts.json();
       
       // Buscar vendas da API
-      const responseSales = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
+      const responseSales = await fetch(`${API_URL}/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
         headers: getAuthHeaders()
       });
 
@@ -552,7 +552,7 @@ const Relatorios = () => {
       const token = localStorage.getItem('token');
       
       // Buscar vendas do backend
-      const response = await fetch(`http://localhost:3001/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
+      const response = await fetch(`${API_URL}/api/sales/period?dataInicio=${dataInicio}&dataFim=${dataFim}`, {
         headers: getAuthHeaders()
       });
 

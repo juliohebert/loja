@@ -213,7 +213,7 @@ const ControleEstoque = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/products/${produtoId}`, {
+      const response = await fetch(`${API_URL}/api/products/${produtoId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

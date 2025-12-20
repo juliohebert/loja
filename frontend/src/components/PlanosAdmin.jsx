@@ -50,7 +50,7 @@ export default function PlanosAdmin() {
   async function togglePlanStatus(id) {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/plans/${id}/toggle-status`, {
+      const response = await fetch(`${API_URL}/api/plans/${id}/toggle-status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -70,7 +70,7 @@ export default function PlanosAdmin() {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/plans/${id}`, {
+      const response = await fetch(`${API_URL}/api/plans/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

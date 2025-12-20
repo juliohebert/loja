@@ -30,7 +30,7 @@ export default function PlanosDisponiveis() {
       const token = localStorage.getItem('token');
       const tenantId = localStorage.getItem('currentTenantId');
       
-      const response = await fetch(`http://localhost:3001/api/subscriptions?tenantId=${tenantId}`, {
+      const response = await fetch(`${API_URL}/api/subscriptions?tenantId=${tenantId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

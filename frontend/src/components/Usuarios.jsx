@@ -65,7 +65,7 @@ const Usuarios = () => {
     try {
       const token = localStorage.getItem('token');
       const url = modalUsuario.usuario 
-        ? `http://localhost:3001/api/users/${modalUsuario.usuario.id}`
+        ? `${API_URL}/api/users/${modalUsuario.usuario.id}`
         : API_URL + '/api/users';
       
       const method = modalUsuario.usuario ? 'PUT' : 'POST';
@@ -144,8 +144,8 @@ const Usuarios = () => {
     try {
       const token = localStorage.getItem('token');
       const url = acao === 'desativar'
-        ? `http://localhost:3001/api/users/${usuarioId}`
-        : `http://localhost:3001/api/users/${usuarioId}/reactivate`;
+        ? `${API_URL}/api/users/${usuarioId}`
+        : `${API_URL}/api/users/${usuarioId}/reactivate`;
       
       const method = acao === 'desativar' ? 'DELETE' : 'PATCH';
 

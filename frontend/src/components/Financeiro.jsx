@@ -295,9 +295,9 @@ const Financeiro = () => {
       // Determinar o endpoint baseado no tipo de lançamento
       let endpoint = '';
       if (lancamento.tipo === 'receita') {
-        endpoint = `http://localhost:3001/api/accounts-receivable/${id}`;
+        endpoint = `${API_URL}/api/accounts-receivable/${id}`;
       } else if (lancamento.tipo === 'despesa') {
-        endpoint = `http://localhost:3001/api/accounts-payable/${id}`;
+        endpoint = `${API_URL}/api/accounts-payable/${id}`;
       } else {
         // Lançamento manual do localStorage
         const lancamentosSalvos = localStorage.getItem('lancamentos');
@@ -382,9 +382,9 @@ const Financeiro = () => {
       // Determinar endpoint baseado na categoria
       let endpoint = '';
       if (lancamento.categoria === 'Conta a Receber') {
-        endpoint = `http://localhost:3001/api/accounts-receivable/${lancamento.id}`;
+        endpoint = `${API_URL}/api/accounts-receivable/${lancamento.id}`;
       } else if (lancamento.categoria === 'Conta a Pagar') {
-        endpoint = `http://localhost:3001/api/accounts-payable/${lancamento.id}`;
+        endpoint = `${API_URL}/api/accounts-payable/${lancamento.id}`;
       } else {
         // Lançamento manual do localStorage
         const lancamentosSalvos = localStorage.getItem('lancamentos');
@@ -449,7 +449,7 @@ const Financeiro = () => {
         motivo: motivoCancelamento
       });
 
-      const response = await fetch(`http://localhost:3001/api/sales/${modalCancelar.vendaId}/cancel`, {
+      const response = await fetch(`${API_URL}/api/sales/${modalCancelar.vendaId}/cancel`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ motivo: motivoCancelamento })

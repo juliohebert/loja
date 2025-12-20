@@ -87,7 +87,7 @@ const Fornecedores = () => {
     try {
       const token = localStorage.getItem('token');
       const url = modoEdicao 
-        ? `http://localhost:3001/api/suppliers/${formulario.id}`
+        ? `${API_URL}/api/suppliers/${formulario.id}`
         : API_URL + '/api/suppliers';
       
       const response = await fetch(url, {
@@ -132,7 +132,7 @@ const Fornecedores = () => {
   const confirmarExclusao = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/suppliers/${id}`, {
+      const response = await fetch(`${API_URL}/api/suppliers/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

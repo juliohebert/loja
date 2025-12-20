@@ -60,8 +60,8 @@ const ContasPagarReceber = () => {
       const [ano, mes] = mesAtual.split('-');
       
       const [pagarRes, receberRes, fornecedoresRes] = await Promise.all([
-        fetch(`http://localhost:3001/api/accounts-payable?mes=${mes}&ano=${ano}`, { headers }),
-        fetch(`http://localhost:3001/api/accounts-receivable?mes=${mes}&ano=${ano}`, { headers }),
+        fetch(`${API_URL}/api/accounts-payable?mes=${mes}&ano=${ano}`, { headers }),
+        fetch(`${API_URL}/api/accounts-receivable?mes=${mes}&ano=${ano}`, { headers }),
         fetch(API_URL + '/api/suppliers?ativo=true', { headers })
       ]);
 
@@ -125,8 +125,8 @@ const ContasPagarReceber = () => {
     try {
       const endpoint = aba === 'pagar' ? 'pay' : 'receive';
       const url = aba === 'pagar'
-        ? `http://localhost:3001/api/accounts-payable/${modalPagamento.conta.id}/${endpoint}`
-        : `http://localhost:3001/api/accounts-receivable/${modalPagamento.conta.id}/${endpoint}`;
+        ? `${API_URL}/api/accounts-payable/${modalPagamento.conta.id}/${endpoint}`
+        : `${API_URL}/api/accounts-receivable/${modalPagamento.conta.id}/${endpoint}`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -160,8 +160,8 @@ const ContasPagarReceber = () => {
   const confirmarCancelamento = async (id) => {
     try {
       const url = aba === 'pagar'
-        ? `http://localhost:3001/api/accounts-payable/${id}/cancel`
-        : `http://localhost:3001/api/accounts-receivable/${id}/cancel`;
+        ? `${API_URL}/api/accounts-payable/${id}/cancel`
+        : `${API_URL}/api/accounts-receivable/${id}/cancel`;
 
       const response = await fetch(url, {
         method: 'PATCH',

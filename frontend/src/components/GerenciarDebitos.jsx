@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { getAuthHeaders } from '../utils/auth';
+import API_URL from '../config/apiUrl';
 
 const GerenciarDebitos = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const GerenciarDebitos = () => {
 
   const carregarCliente = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/customers/${id}`, {
+      const response = await fetch(`${API_URL}/api/customers/${id}`, {
         headers: getAuthHeaders()
       });
 
@@ -85,7 +86,7 @@ const GerenciarDebitos = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/customers/${id}/transactions`, {
+      const response = await fetch(`${API_URL}/api/customers/${id}/transactions`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -124,7 +125,7 @@ const GerenciarDebitos = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/customers/transactions/${historicoId}`, {
+      const response = await fetch(`${API_URL}/api/customers/transactions/${historicoId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

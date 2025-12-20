@@ -54,7 +54,7 @@ const Clientes = () => {
 
     if (confirm('Deseja realmente remover este cliente?')) {
       try {
-        const response = await fetch(`http://localhost:3001/api/customers/${clienteId}`, {
+        const response = await fetch(`${API_URL}/api/customers/${clienteId}`, {
           method: 'DELETE',
           headers: getAuthHeaders()
         });

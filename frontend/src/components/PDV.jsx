@@ -428,7 +428,7 @@ const PDV = () => {
         }
         
         // Atualizar estoque usando a rota correta
-        const responseEstoque = await fetch(`http://localhost:3001/api/products/stock/${item.variacaoId}`, {
+        const responseEstoque = await fetch(`${API_URL}/api/products/stock/${item.variacaoId}`, {
           method: 'PATCH',
           headers: getAuthHeaders(),
           body: JSON.stringify({
@@ -591,7 +591,7 @@ const PDV = () => {
     if (usarCredito && clienteSelecionado && valorCreditoUtilizado > 0) {
       try {
         // Buscar dados atuais do cliente
-        const responseCliente = await fetch(`http://localhost:3001/api/customers/${clienteSelecionado}`, {
+        const responseCliente = await fetch(`${API_URL}/api/customers/${clienteSelecionado}`, {
           headers: getAuthHeaders()
         });
 
@@ -609,7 +609,7 @@ const PDV = () => {
 
             console.log('📤 Enviando transação:', transacaoCliente);
 
-            const responseTransacaoCliente = await fetch(`http://localhost:3001/api/customers/${clienteSelecionado}/transactions`, {
+            const responseTransacaoCliente = await fetch(`${API_URL}/api/customers/${clienteSelecionado}/transactions`, {
               method: 'POST',
               headers: getAuthHeaders(),
               body: JSON.stringify(transacaoCliente)
@@ -642,7 +642,7 @@ const PDV = () => {
 
         console.log('📤 Enviando transação de pagamento:', transacaoPagamento);
 
-        const responseTransacaoPagamento = await fetch(`http://localhost:3001/api/customers/${clienteSelecionado}/transactions`, {
+        const responseTransacaoPagamento = await fetch(`${API_URL}/api/customers/${clienteSelecionado}/transactions`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(transacaoPagamento)
@@ -735,7 +735,7 @@ const PDV = () => {
     
     try {
       // Buscar dados atualizados do cliente da API
-      const response = await fetch(`http://localhost:3001/api/customers/${clienteId}`, {
+      const response = await fetch(`${API_URL}/api/customers/${clienteId}`, {
         headers: getAuthHeaders()
       });
 

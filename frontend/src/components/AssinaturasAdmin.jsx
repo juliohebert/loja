@@ -167,7 +167,7 @@ function AssinaturasAdmin() {
             page,
             pageSize
           });
-          const response = await fetch(`http://localhost:3001/api/subscriptions?${params.toString()}`, {
+          const response = await fetch(`${API_URL}/api/subscriptions?${params.toString()}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
@@ -502,7 +502,7 @@ function AssinaturasAdmin() {
                                   const token = localStorage.getItem('token');
                                   const lojaId = lojaRemover?.id;
                                   if (!lojaId) throw new Error('ID da loja não encontrado.');
-                                  const resp = await fetch(`http://localhost:3001/api/tenants/${lojaId}`, {
+                                  const resp = await fetch(`${API_URL}/api/tenants/${lojaId}`, {
                                     method: 'DELETE',
                                     headers: {
                                       'Authorization': `Bearer ${token}`,
@@ -540,7 +540,7 @@ function AssinaturasAdmin() {
                                       const tenantId = assinaturaEditando?.tenantId || assinaturaEditando?.lojaId;
                                       const assinaturaId = assinaturaEditando?.assinatura?.id || assinaturaEditando?.id;
                                       if (!assinaturaId) throw new Error('ID da assinatura não encontrado.');
-                                      const resp = await fetch(`http://localhost:3001/api/subscriptions/${assinaturaId}`, {
+                                      const resp = await fetch(`${API_URL}/api/subscriptions/${assinaturaId}`, {
                                         method: 'PUT',
                                         headers: {
                                           'Authorization': `Bearer ${token}`,

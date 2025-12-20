@@ -31,7 +31,7 @@ export default function FormPlano() {
   async function fetchPlan() {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/plans/${id}`, {
+      const response = await fetch(`${API_URL}/api/plans/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -91,7 +91,7 @@ export default function FormPlano() {
     try {
       const token = localStorage.getItem('token');
       const url = isEdit
-        ? `http://localhost:3001/api/plans/${id}`
+        ? `${API_URL}/api/plans/${id}`
         : API_URL + '/api/plans';
       
       const response = await fetch(url, {
