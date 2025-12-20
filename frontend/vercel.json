@@ -1,11 +1,11 @@
 {
   "rewrites": [{ "source": "/(.*)", "destination": "/" }],
   "env": {
-    "VITE_API_URL": "https://loja-1ovh.onrender.com"
+    "VITE_API_URL": "https://loja-tovh.onrender.com"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://loja-1ovh.onrender.com"
+      "VITE_API_URL": "https://loja-tovh.onrender.com"
     }
   }
 }
