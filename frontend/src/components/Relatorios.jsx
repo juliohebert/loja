@@ -771,7 +771,7 @@ const Relatorios = () => {
 
             {/* Filtros para Comparativo Mensal */}
             {relatorioAtivo === 'comparativo' && (
-              <div className="p-4 bg-gray-50 border-b border-gray-200">
+              <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-gray-500" />
@@ -798,7 +798,7 @@ const Relatorios = () => {
 
             {/* Filtros para Comparativo Trimestral */}
             {relatorioAtivo === 'trimestral' && (
-              <div className="p-4 bg-gray-50 border-b border-gray-200">
+              <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-gray-500" />
@@ -831,7 +831,7 @@ const Relatorios = () => {
 
             {/* Filtros */}
             {!['comparativo', 'trimestral', 'estoque'].includes(relatorioAtivo) && (
-              <div className="p-4 bg-gray-50 border-b border-gray-200">
+              <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-gray-500" />
@@ -862,8 +862,8 @@ const Relatorios = () => {
             )}
 
             {/* Ações */}
-            <div className="p-4 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+            <div className="p-2 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div className="text-sm text-gray-600 mb-2 sm:mb-0">
                 {relatorioAtivo === 'vendas' && `${dadosVendas.length} vendas encontradas`}
                 {relatorioAtivo === 'estoque' && `${dadosEstoque.length} produtos em estoque`}
                 {relatorioAtivo === 'financeiro' && `${dadosFinanceiro.receitas.length + dadosFinanceiro.despesas.length} lançamentos`}
@@ -871,10 +871,10 @@ const Relatorios = () => {
                 {relatorioAtivo === 'curva-abc' && `${(dadosCurvaABC.classeA?.length || 0) + (dadosCurvaABC.classeB?.length || 0) + (dadosCurvaABC.classeC?.length || 0)} produtos classificados`}
                 {relatorioAtivo === 'vendedores' && `${dadosVendedores.length} vendedores`}
               </div>
-              <div className="flex gap-2">
+              <div className="flex w-full sm:w-auto">
                 <button
                   onClick={exportarExcel}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="flex-1 sm:flex-none w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Exportar CSV
@@ -973,11 +973,11 @@ const Relatorios = () => {
 
               {/* Comparativo Mensal */}
               {relatorioAtivo === 'comparativo' && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Cards Comparativos */}
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="flex flex-col md:grid md:grid-cols-2 gap-2 sm:gap-6">
                     {/* Mês Anterior */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                       <h3 className="text-lg font-semibold text-gray-700 mb-4">
                         {mesAnterior ? new Date(mesAnterior + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Mês Anterior'}
                       </h3>
@@ -1010,7 +1010,7 @@ const Relatorios = () => {
                     </div>
 
                     {/* Mês Atual */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                       <h3 className="text-lg font-semibold text-gray-700 mb-4">
                         {mesAtual ? new Date(mesAtual + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Mês Atual'}
                       </h3>
@@ -1044,7 +1044,7 @@ const Relatorios = () => {
                   </div>
 
                   {/* Variações */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                     <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
                       <TrendingUp className="w-5 h-5" />
                       Variação Percentual
