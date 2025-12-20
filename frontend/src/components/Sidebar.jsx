@@ -253,8 +253,9 @@ const Sidebar = () => {
       {/* Botão Hambúrguer - Mobile Only */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-primary text-white p-3 rounded-lg shadow-lg hover:bg-primary/90 transition-all"
+        className="fixed top-4 left-4 z-[60] lg:hidden bg-primary text-white p-3 rounded-lg shadow-xl hover:bg-primary/90 transition-all active:scale-95"
         aria-label="Menu"
+        style={{ touchAction: 'manipulation' }}
       >
         {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
@@ -262,7 +263,7 @@ const Sidebar = () => {
       {/* Overlay - Mobile Only */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden animate-fadeIn"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[45] lg:hidden animate-fadeIn"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -273,7 +274,7 @@ const Sidebar = () => {
         top-0 left-0
         w-64 bg-white border-r border-gray-200 
         flex flex-col h-screen
-        z-40
+        z-[50]
         transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
