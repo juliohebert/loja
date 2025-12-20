@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config/apiUrl';
-import { FaSearch, FaShoppingBag, FaUser, FaMoneyBill, FaCreditCard, FaQrcode, FaMinus, FaPlus, FaTrash } from 'react-icons/fa'; // Importando ícones
+import { FaSearch, FaShoppingBag, FaUser, FaMoneyBill, FaCreditCard, FaQrcode, FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
+import CustomSelect from './CustomSelect';
 import Sidebar from './Sidebar';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
 import { getAuthHeaders } from '../utils/auth';
@@ -1060,18 +1061,15 @@ const PDV = () => {
                   <FaUser className="w-4 h-4 text-slate-600" />
                   <span className="text-sm font-medium text-slate-700">Cliente</span>
                 </div>
-                <select
+                <CustomSelect
                   value={clienteSelecionado || ''}
-                  onChange={(e) => setClienteSelecionado(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-base font-semibold"
-                >
-                  <option value="" className="py-3 text-base">Cliente não identificado</option>
-                  {Array.isArray(clientes) && clientes.map((cliente) => (
-                    <option key={cliente.id} value={cliente.id} className="py-3 text-base">
-                      {cliente.nome}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setClienteSelecionado}
+                  options={[
+                    { value: '', label: 'Cliente não identificado' },
+                    ...((Array.isArray(clientes) ? clientes : []).map(cliente => ({ value: cliente.id, label: cliente.nome })) )
+                  ]}
+                  placeholder="Selecione o cliente"
+                />
                 {statusFinanceiroCliente === 'debito' && (
                   <div className="mt-2 flex items-center gap-2 px-2 py-1 rounded-md bg-red-50 border border-red-200">
                     <svg className="w-3.5 h-3.5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
