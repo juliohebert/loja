@@ -814,10 +814,10 @@ const PDV = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 grid grid-cols-12 gap-6 p-6 overflow-hidden">
+        <main className="flex-1 grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 p-2 sm:p-4 md:p-6 overflow-hidden">
         {/* Coluna Esquerda: Produtos */}
-        <section className="col-span-12 lg:col-span-5 flex flex-col gap-4 overflow-hidden">
-          <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col overflow-hidden max-h-full">
+        <section className="col-span-12 lg:col-span-5 flex flex-col gap-3 sm:gap-4 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm p-2 sm:p-4 flex flex-col overflow-hidden max-h-full">
             {/* Busca */}
             <div className="relative">
               {/* Substituindo o componente Search pelo ícone FaSearch */}
@@ -832,7 +832,7 @@ const PDV = () => {
             </div>
 
             {/* Filtro de Categorias */}
-            <div className="flex gap-3 py-4 overflow-x-auto">
+            <div className="flex gap-2 sm:gap-3 py-2 sm:py-4 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
               {categorias.map(categoria => (
                 <button
                   key={categoria}
@@ -849,7 +849,7 @@ const PDV = () => {
             </div>
 
             {/* Grid de Produtos */}
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 overflow-y-auto max-h-[60vh] pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2 sm:gap-3 overflow-y-auto max-h-[60vh] pr-1 sm:pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
               {carregando ? (
                 <div className="col-span-full flex justify-center items-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -1251,7 +1251,7 @@ const PDV = () => {
             </div>
 
             {/* Ações */}
-            <div className="mt-auto pt-6 flex flex-col gap-3">
+            <div className="mt-auto pt-4 sm:pt-6 flex flex-col gap-2 sm:gap-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -1264,18 +1264,18 @@ const PDV = () => {
               
               <button
                 onClick={finalizarVenda}
-                className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-blue-700 text-white text-base font-bold tracking-[0.015em]"
+                className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-4 bg-primary hover:bg-blue-700 text-white text-lg font-bold tracking-[0.015em]"
               >
                 Finalizar Venda
               </button>
               
-              <div className="grid grid-cols-2 gap-3">
-                <button className="w-full flex items-center justify-center text-sm font-medium rounded-lg h-10 border border-slate-300 hover:bg-slate-100">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <button className="w-full flex items-center justify-center text-base font-medium rounded-lg h-12 border border-slate-300 hover:bg-slate-100">
                   Salvar Orçamento
                 </button>
                 <button
                   onClick={limparVenda}
-                  className="w-full flex items-center justify-center text-sm font-medium rounded-lg h-10 border border-red-300 text-red-600 hover:bg-red-50"
+                  className="w-full flex items-center justify-center text-base font-medium rounded-lg h-12 border border-red-300 text-red-600 hover:bg-red-50"
                 >
                   Cancelar Venda
                 </button>
