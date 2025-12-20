@@ -9,6 +9,7 @@ import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
+import API_URL from '../config/apiUrl';
 
 const Trocas = () => {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const Trocas = () => {
       
       // Carregar vendas da API
       try {
-        const responseSales = await fetch('http://localhost:3001/api/sales', {
+        const responseSales = await fetch(API_URL + '/api/sales', {
           headers: getAuthHeaders()
         });
 
@@ -67,7 +68,7 @@ const Trocas = () => {
       }
 
       // Carregar produtos da API
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(API_URL + '/api/products', {
         headers: getAuthHeaders()
       });
 

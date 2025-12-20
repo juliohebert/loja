@@ -6,6 +6,7 @@ import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalConfirmacao from './ModalConfirmacao';
 import { Users, Plus, Edit, Trash2, Star, Phone, Mail, MapPin, Clock, FileText } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 const Fornecedores = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const Fornecedores = () => {
 
   const carregarFornecedores = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/suppliers', {
+      const response = await fetch(API_URL + '/api/suppliers', {
         headers: getAuthHeaders()
       });
 
@@ -87,7 +88,7 @@ const Fornecedores = () => {
       const token = localStorage.getItem('token');
       const url = modoEdicao 
         ? `http://localhost:3001/api/suppliers/${formulario.id}`
-        : 'http://localhost:3001/api/suppliers';
+        : API_URL + '/api/suppliers';
       
       const response = await fetch(url, {
         method: modoEdicao ? 'PUT' : 'POST',

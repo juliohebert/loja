@@ -4,6 +4,7 @@ import Modal from './Modal';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { getAuthHeaders } from '../utils/auth';
+import API_URL from '../config/apiUrl';
 
 // Função utilitária para formatar valores monetários no padrão brasileiro
 const formatarPreco = (valor) => {
@@ -83,7 +84,7 @@ const Dashboard = () => {
       // Buscar vendas da API
       let vendas = [];
       try {
-        const responseVendas = await fetch('http://localhost:3001/api/sales', {
+        const responseVendas = await fetch(API_URL + '/api/sales', {
           headers: getAuthHeaders()
         });
         
@@ -103,7 +104,7 @@ const Dashboard = () => {
       // Buscar clientes da API
       let clientes = [];
       try {
-        const responseClientes = await fetch('http://localhost:3001/api/customers', {
+        const responseClientes = await fetch(API_URL + '/api/customers', {
           headers: getAuthHeaders()
         });
         
@@ -123,7 +124,7 @@ const Dashboard = () => {
       // Buscar produtos da API
       let produtos = [];
       try {
-        const responseProdutos = await fetch('http://localhost:3001/api/products', {
+        const responseProdutos = await fetch(API_URL + '/api/products', {
           headers: getAuthHeaders()
         });
         if (responseProdutos.ok) {

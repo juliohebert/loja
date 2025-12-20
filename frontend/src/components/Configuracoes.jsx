@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import Toast from './Toast';
 import { getAuthHeaders } from '../utils/auth';
 import PlanosDisponiveis from './PlanosDisponiveis';
+import API_URL from '../config/apiUrl';
 
 export default function Configuracoes() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function Configuracoes() {
 
   const carregarConfiguracoes = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/configurations', {
+      const response = await fetch(API_URL + '/api/configurations', {
         headers: getAuthHeaders()
       });
 
@@ -78,7 +79,7 @@ export default function Configuracoes() {
 
       for (const [chave, valor] of Object.entries(alteracoes)) {
         const config = configs.find(c => c.chave === chave);
-        const response = await fetch('http://localhost:3001/api/configurations', {
+        const response = await fetch(API_URL + '/api/configurations', {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify({

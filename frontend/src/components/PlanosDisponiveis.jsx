@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import API_URL from '../config/apiUrl';
 
 export default function PlanosDisponiveis() {
   const [planos, setPlanos] = useState([]);
@@ -13,7 +14,7 @@ export default function PlanosDisponiveis() {
 
   async function fetchPlanos() {
     try {
-      const response = await fetch('http://localhost:3001/api/plans/available');
+      const response = await fetch(API_URL + '/api/plans/available');
       if (!response.ok) throw new Error('Erro ao buscar planos');
       const data = await response.json();
       setPlanos(data.data || []);
@@ -55,7 +56,7 @@ export default function PlanosDisponiveis() {
       const token = localStorage.getItem('token');
       const tenantId = localStorage.getItem('currentTenantId');
       
-      const response = await fetch('http://localhost:3001/api/subscriptions', {
+      const response = await fetch(API_URL + '/api/subscriptions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

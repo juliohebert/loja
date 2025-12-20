@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import API_URL from '../config/apiUrl';
 
 export default function FormPlano() {
   const { id } = useParams();
@@ -91,7 +92,7 @@ export default function FormPlano() {
       const token = localStorage.getItem('token');
       const url = isEdit
         ? `http://localhost:3001/api/plans/${id}`
-        : 'http://localhost:3001/api/plans';
+        : API_URL + '/api/plans';
       
       const response = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',

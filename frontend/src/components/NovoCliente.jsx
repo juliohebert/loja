@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { getAuthHeaders } from '../utils/auth';
+import API_URL from '../config/apiUrl';
 
 const NovoCliente = () => {
   const navigate = useNavigate();
@@ -157,7 +158,7 @@ const NovoCliente = () => {
       const token = localStorage.getItem('token');
       const url = isEdicao 
         ? `http://localhost:3001/api/customers/${id}`
-        : 'http://localhost:3001/api/customers';
+        : API_URL + '/api/customers';
       
       const method = isEdicao ? 'PUT' : 'POST';
 

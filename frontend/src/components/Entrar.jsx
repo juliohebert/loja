@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 /**
  * Componente de Login
@@ -43,7 +44,7 @@ export default function Login() {
       console.log('📤 Tentando login:', formData);
 
       // Simulação de API call
-      const response = await fetch('http://localhost:3001/api/auth/login', {
+      const response = await fetch(API_URL + '/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config/apiUrl';
 import { FaSearch, FaShoppingBag, FaUser, FaMoneyBill, FaCreditCard, FaQrcode, FaMinus, FaPlus, FaTrash } from 'react-icons/fa'; // Importando ícones
 import Sidebar from './Sidebar';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
@@ -85,7 +86,7 @@ const PDV = () => {
 
   const carregarConfiguracoes = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/configurations/exigir_caixa_aberto', {
+      const response = await fetch(API_URL + '/api/configurations/exigir_caixa_aberto', {
         headers: getAuthHeaders()
       });
 
@@ -100,7 +101,7 @@ const PDV = () => {
 
   const verificarCaixaAberto = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/cash-registers/open/current', {
+      const response = await fetch(API_URL + '/api/cash-registers/open/current', {
         headers: getAuthHeaders()
       });
 
@@ -125,7 +126,7 @@ const PDV = () => {
   const buscarVendedores = async () => {
     try {
       console.log('🔍 Buscando vendedores...');
-      const response = await fetch('http://localhost:3001/api/users', {
+      const response = await fetch(API_URL + '/api/users', {
         headers: getAuthHeaders()
       });
 
@@ -162,7 +163,7 @@ const PDV = () => {
   const buscarProdutos = async () => {
     try {
       setCarregando(true);
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(API_URL + '/api/products', {
         headers: getAuthHeaders()
       });
 
@@ -570,7 +571,7 @@ const PDV = () => {
 
     // Salvar venda no backend (banco de dados)
     try {
-      const responseSale = await fetch('http://localhost:3001/api/sales', {
+      const responseSale = await fetch(API_URL + '/api/sales', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(vendaCompleta)

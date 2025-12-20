@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import API_URL from '../config/apiUrl';
 
 const statusOptions = [
   { value: 'ativa', label: 'Ativa' },
@@ -58,7 +59,7 @@ export default function DetalheAssinatura() {
     setLoadingPlanos(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/plans', {
+      const response = await fetch(API_URL + '/api/plans', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

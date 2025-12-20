@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { getAuthHeaders } from '../utils/auth';
 import { FileText, Download, Calendar, TrendingUp, Package, DollarSign, Filter, X, PieChart, Award, Users, ArrowUp, ArrowDown } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 const Relatorios = () => {
   const navigate = useNavigate();
@@ -314,7 +315,7 @@ const Relatorios = () => {
 
   const gerarRelatorioEstoque = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(API_URL + '/api/products', {
         headers: getAuthHeaders()
       });
 
@@ -396,7 +397,7 @@ const Relatorios = () => {
   const gerarRelatorioMargens = async () => {
     try {
       // Buscar produtos da API
-      const responseProducts = await fetch('http://localhost:3001/api/products', {
+      const responseProducts = await fetch(API_URL + '/api/products', {
         headers: getAuthHeaders()
       });
 
@@ -474,7 +475,7 @@ const Relatorios = () => {
   const gerarRelatorioCurvaABC = async () => {
     try {
       // Buscar produtos da API
-      const responseProducts = await fetch('http://localhost:3001/api/products', {
+      const responseProducts = await fetch(API_URL + '/api/products', {
         headers: getAuthHeaders()
       });
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Store, Users, Calendar, ArrowRight, LogOut } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 const SelecionarLoja = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const SelecionarLoja = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch('http://localhost:3001/api/tenants', {
+      const response = await fetch(API_URL + '/api/tenants', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

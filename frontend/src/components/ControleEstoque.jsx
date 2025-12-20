@@ -6,6 +6,7 @@ import { Package, TrendingDown, TrendingUp, Search, MoreHorizontal, ChevronLeft,
 import ModalConfirmacao from './ModalConfirmacao';
 import Toast from './Toast';
 import ModalErro from './ModalErro';
+import API_URL from '../config/apiUrl';
 
 console.log('🌟🌟🌟 ARQUIVO ControleEstoque.jsx FOI CARREGADO! 🌟🌟🌟');
 console.log('🌟 Timestamp do carregamento:', new Date().toISOString());
@@ -68,7 +69,7 @@ const ControleEstoque = () => {
       setCarregando(true);
       setErro(null);
       
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(API_URL + '/api/products', {
         headers: getAuthHeaders()
       });
 

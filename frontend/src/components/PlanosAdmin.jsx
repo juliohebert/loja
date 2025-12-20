@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config/apiUrl';
 
 export default function PlanosAdmin() {
   const [planos, setPlanos] = useState([]);
@@ -19,7 +20,7 @@ export default function PlanosAdmin() {
     try {
       const token = localStorage.getItem('token');
       
-      let url = 'http://localhost:3001/api/plans';
+      let url = API_URL + '/api/plans';
       if (filter !== 'all') {
         url += `?active=${filter === 'active' ? 'true' : 'false'}`;
       }

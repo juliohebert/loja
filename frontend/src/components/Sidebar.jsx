@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuthHeaders, decodeToken } from '../utils/auth';
+import API_URL from '../config/apiUrl';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const Sidebar = () => {
 
   const carregarConfiguracoes = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/configurations', {
+      const response = await fetch(API_URL + '/api/configurations', {
         headers: getAuthHeaders()
       });
 

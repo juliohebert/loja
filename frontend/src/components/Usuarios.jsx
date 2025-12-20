@@ -5,6 +5,7 @@ import { getAuthHeaders } from '../utils/auth';
 import { Users, Plus, Edit, Trash2, CheckCircle, XCircle, Shield, Search, Eye, EyeOff } from 'lucide-react';
 import ModalConfirmacao from './ModalConfirmacao';
 import Toast from './Toast';
+import API_URL from '../config/apiUrl';
 
 const Usuarios = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const Usuarios = () => {
   const buscarUsuarios = async () => {
     try {
       setCarregando(true);
-      const response = await fetch('http://localhost:3001/api/users', {
+      const response = await fetch(API_URL + '/api/users', {
         headers: getAuthHeaders()
       });
 
@@ -65,7 +66,7 @@ const Usuarios = () => {
       const token = localStorage.getItem('token');
       const url = modalUsuario.usuario 
         ? `http://localhost:3001/api/users/${modalUsuario.usuario.id}`
-        : 'http://localhost:3001/api/users';
+        : API_URL + '/api/users';
       
       const method = modalUsuario.usuario ? 'PUT' : 'POST';
       

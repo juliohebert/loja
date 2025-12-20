@@ -9,6 +9,7 @@ import { FaCashRegister, FaLock, FaUnlock, FaHistory, FaPlus, FaMinus } from 're
 import Sidebar from './Sidebar';
 import ModalConfirmacao from './ModalConfirmacao';
 import Toast from './Toast';
+import API_URL from '../config/apiUrl';
 
 export default function Caixa() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export default function Caixa() {
 
     try {
       // Buscar vendas da API ao invés do localStorage
-      const response = await fetch('http://localhost:3001/api/sales', {
+      const response = await fetch(API_URL + '/api/sales', {
         headers: getAuthHeaders()
       });
 
@@ -105,7 +106,7 @@ export default function Caixa() {
     if (!caixaAberto) return;
 
     try {
-      const response = await fetch('http://localhost:3001/api/sales', {
+      const response = await fetch(API_URL + '/api/sales', {
         headers: getAuthHeaders()
       });
 
@@ -128,7 +129,7 @@ export default function Caixa() {
 
   const abrirDetalhesCaixaFechado = async (caixa) => {
     try {
-      const response = await fetch('http://localhost:3001/api/sales', {
+      const response = await fetch(API_URL + '/api/sales', {
         headers: getAuthHeaders()
       });
 
@@ -190,7 +191,7 @@ export default function Caixa() {
 
   const carregarCaixaAberto = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/cash-registers/open/current', {
+      const response = await fetch(API_URL + '/api/cash-registers/open/current', {
         headers: getAuthHeaders()
       });
 
@@ -207,7 +208,7 @@ export default function Caixa() {
 
   const carregarHistorico = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/cash-registers?limit=10', {
+      const response = await fetch(API_URL + '/api/cash-registers?limit=10', {
         headers: getAuthHeaders()
       });
 
@@ -223,7 +224,7 @@ export default function Caixa() {
   const abrirCaixa = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/cash-registers/open', {
+      const response = await fetch(API_URL + '/api/cash-registers/open', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({

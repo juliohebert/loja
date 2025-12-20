@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 /**
  * Componente de Recuperação de Senha
@@ -27,7 +28,7 @@ export default function ForgotPassword() {
     try {
       console.log('📤 Solicitando recuperação de senha para:', email);
 
-      const response = await fetch('http://localhost:3001/api/auth/forgot-password', {
+      const response = await fetch(API_URL + '/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

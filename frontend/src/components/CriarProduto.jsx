@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { getAuthHeaders } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
+import API_URL from '../config/apiUrl';
 
 const CriarProduto = () => {
   const navigate = useNavigate();
@@ -360,7 +361,7 @@ const CriarProduto = () => {
 
       const url = modoEdicao 
         ? `http://localhost:3001/api/products/${produtoId}`
-        : 'http://localhost:3001/api/products';
+        : API_URL + '/api/products';
       
       const method = modoEdicao ? 'PUT' : 'POST';
 
@@ -426,7 +427,7 @@ const CriarProduto = () => {
         }))
       };
 
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(API_URL + '/api/products', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(produtoData)

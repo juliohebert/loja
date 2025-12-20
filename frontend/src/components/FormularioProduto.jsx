@@ -4,6 +4,7 @@ const formatarPreco = (valor) => {
 };
 import React, { useState } from 'react';
 import { Plus, Trash2, Save, Package, DollarSign, Tag } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 /**
  * 🎯 OBJECTIVE: Create a Responsive Product Form with dynamic Variation rows.
@@ -119,7 +120,7 @@ export default function ProductForm() {
 
     try {
       // Enviar para API
-      const response = await fetch('http://localhost:3001/api/products', {
+      const response = await fetch(API_URL + '/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { getAuthHeaders } from '../utils/auth';
 import { Edit, Trash2, DollarSign, Plus, Search } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 const Clientes = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const Clientes = () => {
     try {
       setCarregando(true);
       
-      const response = await fetch('http://localhost:3001/api/customers', {
+      const response = await fetch(API_URL + '/api/customers', {
         headers: getAuthHeaders()
       });
 

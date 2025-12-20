@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Plus, Filter, Search, Edit, Trash2, Banknote, CreditCard, Smartphone, QrCode, Info } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
+import API_URL from '../config/apiUrl';
 
 const Financeiro = () => {
   // Função utilitária para formatar valores monetários no padrão brasileiro
@@ -75,7 +76,7 @@ const Financeiro = () => {
     
     try {
       // Buscar vendas da API
-      const responseVendas = await fetch('http://localhost:3001/api/sales', {
+      const responseVendas = await fetch(API_URL + '/api/sales', {
         headers: getAuthHeaders()
       });
 
@@ -115,7 +116,7 @@ const Financeiro = () => {
       // Buscar contas a receber da API
       let lancamentosReceber = [];
       try {
-        const responseReceber = await fetch('http://localhost:3001/api/accounts-receivable', {
+        const responseReceber = await fetch(API_URL + '/api/accounts-receivable', {
           headers: getAuthHeaders()
         });
         if (responseReceber.ok) {
@@ -145,7 +146,7 @@ const Financeiro = () => {
       // Buscar contas a pagar da API
       let lancamentosPagar = [];
       try {
-        const responsePagar = await fetch('http://localhost:3001/api/accounts-payable', {
+        const responsePagar = await fetch(API_URL + '/api/accounts-payable', {
           headers: getAuthHeaders()
         });
         if (responsePagar.ok) {
@@ -211,7 +212,7 @@ const Financeiro = () => {
     console.log('🔴 [FINANCEIRO] Carregando vendas canceladas...');
     
     try {
-      const response = await fetch('http://localhost:3001/api/sales', {
+      const response = await fetch(API_URL + '/api/sales', {
         headers: getAuthHeaders()
       });
 

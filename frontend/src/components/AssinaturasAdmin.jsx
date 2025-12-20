@@ -22,6 +22,7 @@ function Tooltip({ label, children }) {
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from './Modal';
+import API_URL from '../config/apiUrl';
 
 function AssinaturasAdmin() {
       // Modal de confirmação de remoção
@@ -66,13 +67,13 @@ function AssinaturasAdmin() {
       try {
         const token = localStorage.getItem('token');
         // Buscar lojas
-        const lojasResp = await fetch('http://localhost:3001/api/tenants', {
+        const lojasResp = await fetch(API_URL + '/api/tenants', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const lojasData = await lojasResp.json();
         setLojas(lojasData.data || []);
         // Buscar planos
-        const planosResp = await fetch('http://localhost:3001/api/plans', {
+        const planosResp = await fetch(API_URL + '/api/plans', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const planosData = await planosResp.json();
@@ -96,7 +97,7 @@ function AssinaturasAdmin() {
         valor: novaAssinatura.valor !== '' ? Number(novaAssinatura.valor) : undefined,
         dataFim: novaAssinatura.dataFim ? novaAssinatura.dataFim : null
       };
-      const resp = await fetch('http://localhost:3001/api/subscriptions', {
+      const resp = await fetch(API_URL + '/api/subscriptions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -121,7 +122,7 @@ function AssinaturasAdmin() {
     async function fetchMetricas() {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3001/api/subscriptions/metrics', {
+        const response = await fetch(API_URL + '/api/subscriptions/metrics', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -147,7 +148,7 @@ function AssinaturasAdmin() {
         const token = localStorage.getItem('token');
         if (!tenantId) {
           // Visão super-admin: buscar todas as lojas e status de assinatura/trial
-          const response = await fetch('http://localhost:3001/api/tenants/assinaturas', {
+          const response = await fetch(API_URL + '/api/tenants/assinaturas', {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'

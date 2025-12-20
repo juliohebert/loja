@@ -11,6 +11,7 @@ import ModalErro from './ModalErro';
 import ModalConfirmacao from './ModalConfirmacao';
 import ModalSelecaoVariacao from './ModalSelecaoVariacao';
 import { ShoppingCart, Plus, Package, Truck, CheckCircle, XCircle, Eye, Calendar, DollarSign, Trash2 } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 const OrdensCompra = () => {
   const navigate = useNavigate();
@@ -53,9 +54,9 @@ const OrdensCompra = () => {
       const headers = getAuthHeaders();
       
       const [pedidosRes, fornecedoresRes, produtosRes] = await Promise.all([
-        fetch('http://localhost:3001/api/purchase-orders', { headers }),
-        fetch('http://localhost:3001/api/suppliers?ativo=true', { headers }),
-        fetch('http://localhost:3001/api/products', { headers })
+        fetch(API_URL + '/api/purchase-orders', { headers }),
+        fetch(API_URL + '/api/suppliers?ativo=true', { headers }),
+        fetch(API_URL + '/api/products', { headers })
       ]);
 
       const pedidosData = await pedidosRes.json();
@@ -172,7 +173,7 @@ const OrdensCompra = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/purchase-orders', {
+      const response = await fetch(API_URL + '/api/purchase-orders', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload)

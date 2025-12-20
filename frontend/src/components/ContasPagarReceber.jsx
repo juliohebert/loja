@@ -10,6 +10,7 @@ import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import ModalConfirmacao from './ModalConfirmacao';
 import { DollarSign, Plus, TrendingUp, TrendingDown, Calendar, AlertCircle, CheckCircle, XCircle, Eye, CreditCard } from 'lucide-react';
+import API_URL from '../config/apiUrl';
 
 const ContasPagarReceber = () => {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ const ContasPagarReceber = () => {
       const [pagarRes, receberRes, fornecedoresRes] = await Promise.all([
         fetch(`http://localhost:3001/api/accounts-payable?mes=${mes}&ano=${ano}`, { headers }),
         fetch(`http://localhost:3001/api/accounts-receivable?mes=${mes}&ano=${ano}`, { headers }),
-        fetch('http://localhost:3001/api/suppliers?ativo=true', { headers })
+        fetch(API_URL + '/api/suppliers?ativo=true', { headers })
       ]);
 
       const pagarData = await pagarRes.json();
@@ -94,8 +95,8 @@ const ContasPagarReceber = () => {
 
     try {
       const url = formulario.tipo === 'pagar' 
-        ? 'http://localhost:3001/api/accounts-payable'
-        : 'http://localhost:3001/api/accounts-receivable';
+        ? API_URL + '/api/accounts-payable'
+        : API_URL + '/api/accounts-receivable';
 
       const response = await fetch(url, {
         method: 'POST',
