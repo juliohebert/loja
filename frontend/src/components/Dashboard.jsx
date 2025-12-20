@@ -442,44 +442,48 @@ const Dashboard = () => {
           </div>
 
           {/* Cards de Estatísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-            <div className="flex items-center gap-4 bg-white px-4 py-5 rounded-xl border border-gray-200">
-              <div className="text-gray-800 flex items-center justify-center rounded-full bg-center bg-no-repeat aspect-square bg-gray-100 w-10 shrink-0">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Card 1 */}
+            <div className="flex items-center gap-4 bg-white px-4 py-5 rounded-xl border border-gray-200 min-w-0">
+              <div className="text-gray-800 flex items-center justify-center rounded-full bg-center bg-no-repeat aspect-square bg-gray-100 w-12 h-12 shrink-0">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
                 </svg>
               </div>
-              <div className="flex flex-col">
-                <p className="text-gray-800 text-2xl font-bold leading-tight">{formatarPreco(estatisticas.vendasDia)}</p>
-                <p className="text-gray-500 text-sm font-normal leading-normal">
+              <div className="flex flex-col min-w-0">
+                <p className="text-gray-800 text-xl sm:text-2xl font-bold leading-tight truncate">{formatarPreco(estatisticas.vendasDia)}</p>
+                <p className="text-gray-500 text-xs sm:text-sm font-normal leading-normal truncate">
                   Vendas {filtro === 'hoje' ? 'de Hoje' : '(7 dias)'}
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200">
-              <p className="text-gray-600 text-sm font-medium leading-normal">Ticket Médio</p>
-              <p className="text-gray-800 text-2xl font-bold leading-tight">
+            {/* Card 2 */}
+            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200 min-w-0">
+              <p className="text-gray-600 text-xs sm:text-sm font-medium leading-normal truncate">Ticket Médio</p>
+              <p className="text-gray-800 text-xl sm:text-2xl font-bold leading-tight truncate">
                 {carregando ? '...' : formatarPreco(estatisticas.ticketMedio)}
               </p>
-              <p className="text-gray-500 text-sm font-medium leading-normal">
+              <p className="text-gray-500 text-xs sm:text-sm font-medium leading-normal truncate">
                 por pedido
               </p>
             </div>
-            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200">
-              <p className="text-gray-600 text-sm font-medium leading-normal">Total de Clientes</p>
-              <p className="text-gray-800 text-2xl font-bold leading-tight">
+            {/* Card 3 */}
+            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200 min-w-0">
+              <p className="text-gray-600 text-xs sm:text-sm font-medium leading-normal truncate">Total de Clientes</p>
+              <p className="text-gray-800 text-xl sm:text-2xl font-bold leading-tight truncate">
                 {carregando ? '...' : estatisticas.totalClientes}
               </p>
-              <p className="text-green-600 text-sm font-medium leading-normal">
+              <p className="text-green-600 text-xs sm:text-sm font-medium leading-normal truncate">
                 +{estatisticas.novosClientes} hoje
               </p>
             </div>
-            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200">
-              <p className="text-gray-600 text-sm font-medium leading-normal">Débitos Pendentes</p>
-              <p className="text-gray-800 text-2xl font-bold leading-tight">
+            {/* Card 4 */}
+            <div className="flex flex-col gap-1.5 rounded-lg p-4 bg-white border border-gray-200 min-w-0">
+              <p className="text-gray-600 text-xs sm:text-sm font-medium leading-normal truncate">Débitos Pendentes</p>
+              <p className="text-gray-800 text-xl sm:text-2xl font-bold leading-tight truncate">
                 {carregando ? '...' : formatarPreco(estatisticas.totalDebitos)}
               </p>
-              <p className="text-red-600 text-sm font-medium leading-normal">
+              <p className="text-red-600 text-xs sm:text-sm font-medium leading-normal truncate">
                 {estatisticas.clientesComDebito} clientes
               </p>
             </div>
