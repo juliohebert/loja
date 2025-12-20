@@ -1031,20 +1031,22 @@ const PDV = () => {
                     type="number"
                     value={desconto}
                     onChange={(e) => setDesconto(e.target.value)}
-                    className="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary h-12 placeholder:text-slate-500 px-3 text-base bg-background-light border border-slate-300"
+                    className="form-input flex-grow min-w-0 rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-primary h-12 placeholder:text-slate-500 px-4 text-base bg-background-light border border-slate-300"
                     placeholder={tipoDesconto === 'percentual' ? "0" : "0.00"}
                     min="0"
                     step={tipoDesconto === 'percentual' ? "1" : "0.01"}
                   />
-                  <CustomSelect
-                    value={tipoDesconto}
-                    onChange={val => { setTipoDesconto(val); setDesconto(''); }}
-                    options={[
-                      { value: 'valor', label: 'R$' },
-                      { value: 'percentual', label: '%' }
-                    ]}
-                    placeholder="Tipo"
-                  />
+                  <div className="w-20">
+                    <CustomSelect
+                      value={tipoDesconto}
+                      onChange={val => { setTipoDesconto(val); setDesconto(''); }}
+                      options={[
+                        { value: 'valor', label: 'R$' },
+                        { value: 'percentual', label: '%' }
+                      ]}
+                      placeholder="Tipo"
+                    />
+                  </div>
                 </div>
                 {desconto && parseFloat(desconto) > 0 && (
                   <span className="text-xs text-green-600 mt-1">
