@@ -115,6 +115,7 @@ export default function Login() {
               
               {/* Header */}
               <div className="flex flex-col gap-2 text-center mb-8">
+                <img src="/bolsas.png" alt="Logo bolsas" className="mx-auto mb-2 w-16 h-16 object-contain" />
                 <h1 className="text-[#111318] dark:text-white text-3xl sm:text-4xl font-bold leading-tight tracking-tight">
                   Bem-vindo(a)
                 </h1>
