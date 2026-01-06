@@ -1,7 +1,3 @@
-// Função utilitária para formatar valores monetários no padrão brasileiro
-const formatarPreco = (valor) => {
-  return valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'R$ 0,00';
-};
 import React, { useState } from 'react';
 import { Plus, Trash2, Save, Package, DollarSign, Tag } from 'lucide-react';
 import API_URL from '../config/apiUrl';
@@ -17,6 +13,11 @@ import Sidebar from './Sidebar';
  * - Button to "Add Variation" row.
  * - Calculate "Margin %" automatically when prices change.
  */
+
+// Função utilitária para formatar valores monetários no padrão brasileiro
+const formatarPreco = (valor) => {
+  return valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'R$ 0,00';
+};
 
 export default function ProductForm() {
   // State for main product data

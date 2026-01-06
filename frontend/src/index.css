@@ -135,7 +135,7 @@
   }
 
   .main-content {
-    @apply flex-1 overflow-y-auto lg:ml-0;
+    @apply flex flex-col flex-1 overflow-hidden lg:ml-0;
   }
 
   /* Ajuste de padding para quando há botão hamburguer */
