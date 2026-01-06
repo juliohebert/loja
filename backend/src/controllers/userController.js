@@ -432,7 +432,7 @@ exports.registerStore = async (req, res) => {
       senha: senhaHash,
       funcao: 'admin', // campo correto para role
       ativo: true,
-      tenantId
+      tenant_id: tenantId // CORREÇÃO: usar tenant_id (com underscore)
     });
 
     console.log('✅ Usuário criado:', { id: usuario.id, email: usuario.email, tenantId });
