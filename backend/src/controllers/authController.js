@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
 const { Configuration } = require('../models/Schema');
 
@@ -40,8 +40,8 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(senha, salt);
 
-    // Gerar tenant_id único para esta loja usando crypto
-    const tenantId = crypto.randomUUID();
+    // Gerar tenant_id único para esta loja
+    const tenantId = uuidv4();
     
     console.log(`🏪 Criando nova loja com tenant_id: ${tenantId}`);
 
