@@ -18,7 +18,6 @@ export default function Configuracoes() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [nomeLoja, setNomeLoja] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
-  const [abaAtiva, setAbaAtiva] = useState('configuracoes');
 
   useEffect(() => {
     // Verificar autenticação
@@ -629,73 +628,63 @@ export default function Configuracoes() {
                             <div className="flex items-center justify-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
                               <img 
                                 src={getValorAtual(config)} 
-                                <div>
-                                  {config.chave === 'logo_url' ? (
-                                    <div className="space-y-4">
-                                      {/* Preview da logo */}
-                                      {getValorAtual(config) && (
-                                        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
-                                          <img 
-                                            src={getValorAtual(config)} 
-                                            alt="Preview da logo"
-                                            className="max-h-24 max-w-full object-contain"
-                                            onError={(e) => {
-                                              e.target.style.display = 'none';
-                                              e.target.nextSibling.style.display = 'flex';
-                                            }}
-                                          />
-                                          <div className="text-gray-400 text-sm items-center gap-2 hidden">
-                                            <span className="text-2xl">⚠️</span>
-                                            <span>Erro ao carregar imagem</span>
-                                          </div>
-                                        </div>
-                                      )}
-                                      {/* Upload de arquivo */}
-                                      <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                          Fazer upload de imagem (gera URL temporária)
-                                        </label>
-                                        <input
-                                          type="file"
-                                          accept="image/*"
-                                          onChange={(e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                              // Gera uma URL temporária local para preview
-                                              const url = URL.createObjectURL(file);
-                                              handleChange(config.chave, url);
-                                              // Aqui você pode implementar o upload para um serviço externo e salvar a URL retornada
-                                            }
-                                          }}
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">Ou cole a URL abaixo</p>
-                                        <input
-                                          type="text"
-                                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg mt-2"
-                                          placeholder="Cole a URL da logo aqui"
-                                          value={getValorAtual(config) || ''}
-                                          onChange={e => handleChange(config.chave, e.target.value)}
-                                        />
-                                      </div>
-                                    </div>
-                                  ) : config.chave === 'nome_loja' ? (
-                                    <input
-                                      type="text"
-                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
-                                      placeholder="Digite o nome da loja"
-                                      value={getValorAtual(config) || ''}
-                                      onChange={e => handleChange(config.chave, e.target.value)}
-                                    />
-                                  ) : (
-                                    <input
-                                      type="text"
-                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
-                                      value={getValorAtual(config) || ''}
-                                      onChange={e => handleChange(config.chave, e.target.value)}
-                                    />
-                                  )}
-                                </div>
-                      />
+                                alt="Preview da logo"
+                                className="max-h-24 max-w-full object-contain"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                              <div className="text-gray-400 text-sm items-center gap-2 hidden">
+                                <span className="text-2xl">⚠️</span>
+                                <span>Erro ao carregar imagem</span>
+                              </div>
+                            </div>
+                          )}
+                          {/* Upload de arquivo */}
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Fazer upload de imagem (gera URL temporária)
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  // Gera uma URL temporária local para preview
+                                  const url = URL.createObjectURL(file);
+                                  handleChange(config.chave, url);
+                                  // Aqui você pode implementar o upload para um serviço externo e salvar a URL retornada
+                                }
+                              }}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Ou cole a URL abaixo</p>
+                            <input
+                              type="text"
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg mt-2"
+                              placeholder="Cole a URL da logo aqui"
+                              value={getValorAtual(config) || ''}
+                              onChange={e => handleChange(config.chave, e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ) : config.chave === 'nome_loja' ? (
+                        <input
+                          type="text"
+                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
+                          placeholder="Digite o nome da loja"
+                          value={getValorAtual(config) || ''}
+                          onChange={e => handleChange(config.chave, e.target.value)}
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg"
+                          value={getValorAtual(config) || ''}
+                          onChange={e => handleChange(config.chave, e.target.value)}
+                        />
+                      )}
                       {config.chave === 'logo_url' && (
                         <p className="text-xs text-gray-500 mt-2">
                           🔗 Cole a URL de uma imagem hospedada
