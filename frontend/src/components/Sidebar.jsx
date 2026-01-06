@@ -293,30 +293,40 @@ const Sidebar = () => {
       <div className="flex-shrink-0 p-4">
         {/* Logo */}
         <div className="flex items-center gap-3 px-2">
-          {logoUrl ? (
-            <img 
-              src={logoUrl.startsWith('http') ? logoUrl : API_URL + logoUrl} 
-              alt={nomeLoja || 'Logo'}
-              className="w-8 h-8 object-contain"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-          ) : null}
-          <svg 
-            className="text-primary text-3xl w-8 h-8" 
-            fill="currentColor" 
-            viewBox="0 0 24 24"
-            style={{ display: logoUrl ? 'none' : 'block' }}
-          >
-            <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
-          </svg>
-          <h1 className="text-gray-800 text-lg font-bold">
-            {configuracoesCarregadas ? (nomeLoja || 'ModaStore') : (
+          {!configuracoesCarregadas ? (
+            // Skeleton enquanto carrega
+            <>
+              <div className="w-8 h-8 bg-gray-200 animate-pulse rounded"></div>
               <span className="inline-block w-32 h-6 bg-gray-200 animate-pulse rounded"></span>
-            )}
-          </h1>
+            </>
+          ) : (
+            <>
+              {logoUrl ? (
+                <img 
+                  src={logoUrl.startsWith('http') ? logoUrl : API_URL + logoUrl} 
+                  alt={nomeLoja || 'Logo'}
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    // Se falhar, mostra o ícone padrão
+                    e.target.style.display = 'none';
+                    const svg = e.target.parentElement.querySelector('svg');
+                    if (svg) svg.style.display = 'block';
+                  }}
+                />
+              ) : null}
+              <svg 
+                className="text-primary text-3xl w-8 h-8" 
+                fill="currentColor" 
+                viewBox="0 0 24 24"
+                style={{ display: logoUrl ? 'none' : 'block' }}
+              >
+                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+              </svg>
+              <h1 className="text-gray-800 text-lg font-bold">
+                {nomeLoja || 'ModaStore'}
+              </h1>
+            </>
+          )}
         </div>
       </div>
 
