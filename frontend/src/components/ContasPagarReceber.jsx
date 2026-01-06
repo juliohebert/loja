@@ -301,35 +301,35 @@ const ContasPagarReceber = () => {
 
           {/* Tabs e Filtro de Mês */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div className="flex items-center justify-between border-b p-4">
-              <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b p-4">
+              <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
                 <button
                   onClick={() => setAba('pagar')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     aba === 'pagar' ? 'bg-red-100 text-red-700' : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <TrendingDown className="w-5 h-5" />
-                  Contas a Pagar
+                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-sm sm:text-base">Contas a Pagar</span>
                 </button>
                 <button
                   onClick={() => setAba('receber')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     aba === 'receber' ? 'bg-green-100 text-green-700' : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <TrendingUp className="w-5 h-5" />
-                  Contas a Receber
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-sm sm:text-base">Contas a Receber</span>
                 </button>
               </div>
               
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-gray-500" />
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 flex-shrink-0" />
                 <input
                   type="month"
                   value={mesAtual}
                   onChange={(e) => setMesAtual(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 sm:flex-none px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
