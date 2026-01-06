@@ -70,8 +70,6 @@ const corsOptions = {
 //   tracesSampleRate: 1.0,
 // });
 
-console.log('Sentry desativado temporariamente para depuração.');
-
 // Middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -79,14 +77,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Log simplificado de requisições em produção
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    console.log(`📥 ${req.method} ${req.path}`);
-    next();
-  });
-}
 
 // Middleware para capturar o tenantId, exceto para /api/subscriptions/metrics
 
@@ -96,13 +86,10 @@ app.use('/api/sales', tenantMiddleware);
 app.use('/api/configurations', tenantMiddleware);
 // NÃO aplicar tenant middleware em /api/users/register e /api/auth/*
 app.use('/api/users', (req, res, next) => {
-  console.log('🔍 Middleware /api/users - path:', req.path);
   // Pular tenant middleware para registro e algumas rotas de auth
   if (req.path === '/register' || req.path.startsWith('/auth')) {
-    console.log('✅ Pulando tenant middleware para:', req.path);
     return next();
   }
-  console.log('⚠️ Aplicando tenant middleware para:', req.path);
   return tenantMiddleware(req, res, next);
 });
 app.use('/api/suppliers', tenantMiddleware);

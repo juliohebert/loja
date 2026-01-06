@@ -57,7 +57,6 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Login bem-sucedido:', data);
         
         // Limpar TODOS os dados do localStorage exceto configurações essenciais
         const keysParaManter = ['theme', 'language'];
