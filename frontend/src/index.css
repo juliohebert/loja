@@ -140,7 +140,12 @@
 
   /* Ajuste de padding para quando há botão hamburguer */
   .content-with-hamburger {
-    @apply pt-16 lg:pt-0;
+    @apply pt-20 lg:pt-0;
+  }
+
+  /* Espaçamento adicional no topo para mobile */
+  .mobile-header-spacing {
+    @apply mt-2 lg:mt-0;
   }
 }
 

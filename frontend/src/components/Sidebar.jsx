@@ -265,7 +265,7 @@ const Sidebar = () => {
       {/* Botão Hambúrguer - Mobile Only */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="fixed top-4 left-4 z-[60] lg:hidden bg-primary text-white p-3 rounded-lg shadow-xl hover:bg-primary/90 transition-all active:scale-95"
+        className="fixed top-4 left-4 z-40 lg:hidden bg-primary text-white p-3 rounded-lg shadow-xl hover:bg-primary/90 transition-all active:scale-95"
         aria-label="Menu"
         style={{ touchAction: 'manipulation' }}
       >

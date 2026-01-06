@@ -404,13 +404,13 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="flex flex-row min-h-screen bg-background-light">
+    <div className="layout-with-sidebar">
       {renderTrialModal()}
       <Sidebar />
-      <main className="flex-1 p-6 overflow-y-auto">
-        <div className="flex flex-col w-full">
+      <main className="main-content content-with-hamburger">
+        <div className="container-mobile">
           {/* Cabeçalho */}
-          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4 mobile-header-spacing">
             <div className="flex flex-col gap-1">
               <p className="text-gray-800 text-2xl font-bold leading-tight tracking-tight">Dashboard Principal</p>
               <p className="text-gray-500 text-sm font-normal leading-normal">

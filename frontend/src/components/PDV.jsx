@@ -790,18 +790,18 @@ const PDV = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background-light">
+    <div className="layout-with-sidebar">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Conteúdo Principal */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="main-content content-with-hamburger flex flex-col overflow-hidden">
         {/* Header do PDV */}
-        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 h-16 bg-white">
-          <h2 className="text-slate-900 text-3xl font-bold leading-tight">
+        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-4 sm:px-6 h-16 bg-white mobile-header-spacing">
+          <h2 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
             Ponto de Venda (PDV)
           </h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {configExigirCaixa && (
               <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${caixaAberto ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 <div className={`w-2 h-2 rounded-full ${caixaAberto ? 'bg-green-600' : 'bg-red-600'}`}></div>
