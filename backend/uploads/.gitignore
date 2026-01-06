@@ -1,0 +1,5 @@
+# Ignorar todas as imagens de upload
+*
+
+# Mas manter a estrutura de diretórios
+!.gitignore

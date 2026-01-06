@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCog, FaSave, FaUndo, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCog, FaSave, FaUndo, FaCheckCircle, FaTimesCircle, FaUpload, FaTrash, FaStore } from 'react-icons/fa';
 import Sidebar from './Sidebar';
 import Toast from './Toast';
 import { getAuthHeaders } from '../utils/auth';
@@ -13,6 +13,11 @@ export default function Configuracoes() {
   const [loading, setLoading] = useState(false);
   const [alteracoes, setAlteracoes] = useState({});
   const [toast, setToast] = useState({ isOpen: false, message: '', tipo: 'sucesso' });
+  const [abaAtiva, setAbaAtiva] = useState('configuracoes');
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [nomeLoja, setNomeLoja] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [abaAtiva, setAbaAtiva] = useState('configuracoes');
 
   useEffect(() => {
@@ -35,6 +40,17 @@ export default function Configuracoes() {
       if (response.ok) {
         const data = await response.json();
         setConfigs(data.data);
+        
+        // Extrair logo_url e nome_loja das configurações
+        const logoConfig = data.data.find(c => c.chave === 'logo_url');
+        const nomeConfig = data.data.find(c => c.chave === 'nome_loja');
+        
+        if (logoConfig && logoConfig.valor) {
+          setLogoUrl(logoConfig.valor);
+        }
+        if (nomeConfig && nomeConfig.valor) {
+          setNomeLoja(nomeConfig.valor);
+        }
       } else {
         setToast({ isOpen: true, message: 'Erro ao carregar configurações', tipo: 'erro' });
       }
@@ -115,6 +131,132 @@ export default function Configuracoes() {
   const descartarAlteracoes = () => {
     setAlteracoes({});
     setToast({ isOpen: true, message: 'Alterações descartadas', tipo: 'sucesso' });
+  };
+
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      setToast({ isOpen: true, message: 'Por favor, selecione uma imagem válida', tipo: 'erro' });
+      return;
+    }
+
+    // Validar tamanho (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({ isOpen: true, message: 'A imagem deve ter no máximo 5MB', tipo: 'erro' });
+      return;
+    }
+
+    // Preview local
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload para o servidor
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const response = await fetch(API_URL + '/api/configurations/logo/upload', {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          // Não incluir Content-Type, deixar o browser definir com boundary
+        },
+        body: formData
+      });
+
+      // Remover Content-Type do headers para FormData
+      const headers = getAuthHeaders();
+      delete headers['Content-Type'];
+
+      const responseWithCorrectHeaders = await fetch(API_URL + '/api/configurations/logo/upload', {
+        method: 'POST',
+        headers: headers,
+        body: formData
+      });
+
+      if (responseWithCorrectHeaders.ok) {
+        const data = await responseWithCorrectHeaders.json();
+        setLogoUrl(data.data.logoUrl);
+        setToast({ isOpen: true, message: 'Logo atualizado com sucesso!', tipo: 'sucesso' });
+        carregarConfiguracoes();
+      } else {
+        const error = await responseWithCorrectHeaders.json();
+        setToast({ isOpen: true, message: error.message || 'Erro ao fazer upload do logo', tipo: 'erro' });
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      setToast({ isOpen: true, message: 'Erro ao fazer upload do logo', tipo: 'erro' });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleDeleteLogo = async () => {
+    if (!confirm('Deseja realmente remover o logo da loja?')) return;
+
+    setUploadingLogo(true);
+    try {
+      const response = await fetch(API_URL + '/api/configurations/logo/delete', {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+
+      if (response.ok) {
+        setLogoUrl('');
+        setLogoPreview(null);
+        setToast({ isOpen: true, message: 'Logo removido com sucesso!', tipo: 'sucesso' });
+        carregarConfiguracoes();
+      } else {
+        const error = await response.json();
+        setToast({ isOpen: true, message: error.message || 'Erro ao remover logo', tipo: 'erro' });
+      }
+    } catch (error) {
+      console.error('Erro ao remover logo:', error);
+      setToast({ isOpen: true, message: 'Erro ao remover logo', tipo: 'erro' });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleSaveNomeLoja = async () => {
+    if (!nomeLoja.trim()) {
+      setToast({ isOpen: true, message: 'Digite um nome para a loja', tipo: 'aviso' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL + '/api/configurations', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          chave: 'nome_loja',
+          valor: nomeLoja,
+          tipo: 'texto',
+          descricao: 'Nome da loja exibido no menu sidebar'
+        })
+      });
+
+      if (response.ok) {
+        setToast({ isOpen: true, message: 'Nome da loja atualizado com sucesso!', tipo: 'sucesso' });
+        carregarConfiguracoes();
+      } else {
+        const error = await response.json();
+        setToast({ isOpen: true, message: error.message || 'Erro ao atualizar nome da loja', tipo: 'erro' });
+      }
+    } catch (error) {
+      console.error('Erro ao salvar nome da loja:', error);
+      setToast({ isOpen: true, message: 'Erro ao salvar nome da loja', tipo: 'erro' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getConfigIcone = (chave) => {
@@ -281,9 +423,109 @@ export default function Configuracoes() {
                 </div>
               </div>
 
+              {/* Seção de Identidade Visual */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <FaStore className="text-blue-600" />
+                  Identidade Visual da Loja
+                </h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Card do Nome da Loja */}
+                  <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-3xl">🏬</div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Nome da Loja</h3>
+                        <p className="text-sm text-gray-600">Nome exibido no menu lateral</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={nomeLoja}
+                        onChange={(e) => setNomeLoja(e.target.value)}
+                        placeholder="Digite o nome da loja"
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
+                        maxLength={50}
+                      />
+                      <button
+                        onClick={handleSaveNomeLoja}
+                        disabled={loading || !nomeLoja.trim()}
+                        className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-md"
+                      >
+                        <FaSave /> {loading ? 'Salvando...' : 'Salvar Nome'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card do Logo */}
+                  <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-3xl">🖼️</div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Logo da Loja</h3>
+                        <p className="text-sm text-gray-600">Imagem exibida no menu lateral</p>
+                      </div>
+                    </div>
+
+                    {/* Preview do Logo */}
+                    <div className="mb-4">
+                      {(logoPreview || logoUrl) ? (
+                        <div className="relative">
+                          <img
+                            src={logoPreview || (API_URL + logoUrl)}
+                            alt="Logo da loja"
+                            className="w-full h-48 object-contain bg-gray-50 rounded-lg border-2 border-gray-200"
+                          />
+                          <button
+                            onClick={handleDeleteLogo}
+                            disabled={uploadingLogo}
+                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-md"
+                            title="Remover logo"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                          <div className="text-center text-gray-400">
+                            <FaUpload className="mx-auto text-4xl mb-2" />
+                            <p className="text-sm">Nenhum logo cadastrado</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botão de Upload */}
+                    <label className="block">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        disabled={uploadingLogo}
+                        className="hidden"
+                      />
+                      <div className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-md cursor-pointer">
+                        <FaUpload /> {uploadingLogo ? 'Fazendo upload...' : 'Fazer Upload do Logo'}
+                      </div>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Configurações em Cards */}
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <FaCog className="text-blue-600" />
+                Configurações do Sistema
+              </h2>
+
               {/* Configurações em Cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {configs.map(config => (
+            {configs.filter(config => config.chave !== 'nome_loja' && config.chave !== 'logo_url').map(config => (
               <div
                 key={config.chave}
                 className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden ${

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
+const path = require('path');
 
 // Carregar variáveis de ambiente se não estiverem definidas (Render já define)
 if (!process.env.DATABASE_URL) {
@@ -75,6 +76,9 @@ console.log('Sentry desativado temporariamente para depuração.');
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir arquivos estáticos da pasta uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Log simplificado de requisições em produção
 if (process.env.NODE_ENV !== 'production') {

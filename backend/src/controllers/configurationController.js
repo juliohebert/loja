@@ -1,4 +1,6 @@
 const { Configuration } = require('../models/Schema');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * Obter todas as configurações
@@ -221,5 +223,118 @@ exports.initializeDefaultConfigurations = async (req) => {
     console.log('✅ Configurações padrão inicializadas');
   } catch (error) {
     console.error('❌ Erro ao inicializar configurações padrão:', error);
+  }
+};
+
+/**
+ * Upload de logo da loja
+ */
+exports.uploadLogo = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        message: 'Nenhum arquivo foi enviado'
+      });
+    }
+
+    // Construir URL do arquivo
+    const logoUrl = `/uploads/logos/${req.file.filename}`;
+
+    // Buscar configuração antiga de logo para deletar arquivo antigo
+    const oldConfig = await Configuration.findOne({
+      where: { chave: 'logo_url', tenant_id: req.tenantId }
+    });
+
+    // Deletar arquivo antigo se existir
+    if (oldConfig && oldConfig.valor) {
+      const oldFilePath = path.join(__dirname, '../../', oldConfig.valor);
+      if (fs.existsSync(oldFilePath)) {
+        try {
+          fs.unlinkSync(oldFilePath);
+        } catch (err) {
+          console.warn('Aviso: Não foi possível deletar logo antigo:', err.message);
+        }
+      }
+    }
+
+    // Atualizar ou criar configuração com nova logo
+    const [config, created] = await Configuration.findOrCreate({
+      where: { chave: 'logo_url', tenant_id: req.tenantId },
+      defaults: {
+        chave: 'logo_url',
+        valor: logoUrl,
+        tipo: 'texto',
+        descricao: 'URL da logo da loja exibida no menu sidebar',
+        tenant_id: req.tenantId
+      }
+    });
+
+    if (!created) {
+      await config.update({ valor: logoUrl });
+    }
+
+    res.status(200).json({
+      message: 'Logo atualizado com sucesso',
+      data: {
+        logoUrl,
+        filename: req.file.filename
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao fazer upload do logo:', error);
+    
+    // Deletar arquivo enviado em caso de erro
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.error('Erro ao deletar arquivo após falha:', err);
+      }
+    }
+    
+    res.status(500).json({
+      message: 'Erro ao fazer upload do logo',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Deletar logo da loja
+ */
+exports.deleteLogo = async (req, res) => {
+  try {
+    const config = await Configuration.findOne({
+      where: { chave: 'logo_url', tenant_id: req.tenantId }
+    });
+
+    if (!config || !config.valor) {
+      return res.status(404).json({
+        message: 'Logo não encontrado'
+      });
+    }
+
+    // Deletar arquivo físico
+    const filePath = path.join(__dirname, '../../', config.valor);
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.warn('Aviso: Não foi possível deletar arquivo do logo:', err.message);
+      }
+    }
+
+    // Atualizar configuração para valor vazio
+    await config.update({ valor: '' });
+
+    res.status(200).json({
+      message: 'Logo deletado com sucesso'
+    });
+  } catch (error) {
+    console.error('Erro ao deletar logo:', error);
+    res.status(500).json({
+      message: 'Erro ao deletar logo',
+      error: error.message
+    });
   }
 };

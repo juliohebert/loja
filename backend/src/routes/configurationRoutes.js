@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const configurationController = require('../controllers/configurationController');
 const { authMiddleware } = require('../middleware/auth');
+const upload = require('../config/upload');
 
 /**
  * @swagger
@@ -111,5 +112,47 @@ router.post('/', authMiddleware, configurationController.upsertConfiguration);
  *         description: Configuração não encontrada
  */
 router.delete('/:chave', authMiddleware, configurationController.deleteConfiguration);
+
+/**
+ * @swagger
+ * /api/configurations/logo/upload:
+ *   post:
+ *     summary: Upload do logo da loja
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Logo atualizado com sucesso
+ *       400:
+ *         description: Nenhum arquivo foi enviado
+ */
+router.post('/logo/upload', authMiddleware, upload.single('logo'), configurationController.uploadLogo);
+
+/**
+ * @swagger
+ * /api/configurations/logo/delete:
+ *   delete:
+ *     summary: Deletar logo da loja
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logo deletado com sucesso
+ *       404:
+ *         description: Logo não encontrado
+ */
+router.delete('/logo/delete', authMiddleware, configurationController.deleteLogo);
 
 module.exports = router;
