@@ -245,9 +245,9 @@ const ContasPagarReceber = () => {
       
       <main className="main-content content-with-hamburger">
         <div className="container-mobile">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-6 gap-4 mobile-header-spacing">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">Contas a Pagar/Receber</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Contas a Pagar/Receber</h1>
               <p className="text-gray-600">Controle financeiro e fluxo de caixa</p>
             </div>
             <button
@@ -255,10 +255,10 @@ const ContasPagarReceber = () => {
                 setFormulario({ ...formulario, tipo: aba });
                 setMostrarFormulario(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center justify-center gap-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 btn-touch w-full sm:w-auto"
             >
               <Plus className="w-5 h-5" />
-              Nova Conta
+              <span className="hide-text-mobile">Nova Conta</span>
             </button>
           </div>
 

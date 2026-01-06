@@ -201,7 +201,7 @@ const Fornecedores = () => {
       <main className="main-content content-with-hamburger">
         <div className="container-mobile">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 mobile-header-spacing">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-6 gap-4 mobile-header-spacing">
             <div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Fornecedores</h1>
               <p className="text-gray-600">Gestão de fornecedores e parceiros</p>
@@ -211,7 +211,7 @@ const Fornecedores = () => {
                 limparFormulario();
                 setMostrarFormulario(true);
               }}
-              className="flex items-center gap-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors btn-touch"
+              className="flex items-center justify-center gap-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors btn-touch w-full sm:w-auto"
             >
               <Plus className="w-5 h-5" />
               <span className="hide-text-mobile">Novo Fornecedor</span>
