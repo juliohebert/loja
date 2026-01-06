@@ -291,23 +291,22 @@ export default function Caixa() {
     <div className="layout-with-sidebar">
       <Sidebar />
 
-      <main className="main-content content-with-hamburger">
-        <div className="container-mobile">
-          {/* Toast */}
-          {toast.isOpen && (
-            <Toast
-              isOpen={toast.isOpen}
-              mensagem={toast.message}
-              tipo={toast.tipo}
-              onClose={() => setToast({ ...toast, isOpen: false })}
-            />
-          )}
+      <div className="main-content content-with-hamburger">
+        {/* Toast */}
+        {toast.isOpen && (
+          <Toast
+            isOpen={toast.isOpen}
+            mensagem={toast.message}
+            tipo={toast.tipo}
+            onClose={() => setToast({ ...toast, isOpen: false })}
+          />
+        )}
 
-          {/* Header */}
-          <div className="mb-6 mobile-header-spacing">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Controle de Caixa</h1>
-            <p className="text-gray-600">Gerencie a abertura e fechamento do caixa</p>
-          </div>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Controle de Caixa</h1>
+        </header>
+
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
 
       {/* Status do Caixa */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -816,8 +815,8 @@ export default function Caixa() {
           </div>
         </div>
       )}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

@@ -243,24 +243,22 @@ const ContasPagarReceber = () => {
     <div className="layout-with-sidebar">
       <Sidebar />
       
-      <main className="main-content content-with-hamburger">
-        <div className="container-mobile">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-6 gap-4 mobile-header-spacing">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Contas a Pagar/Receber</h1>
-              <p className="text-gray-600">Controle financeiro e fluxo de caixa</p>
-            </div>
-            <button
-              onClick={() => {
-                setFormulario({ ...formulario, tipo: aba });
-                setMostrarFormulario(true);
-              }}
-              className="flex items-center justify-center gap-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 btn-touch w-full sm:w-auto"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hide-text-mobile">Nova Conta</span>
-            </button>
-          </div>
+      <div className="main-content content-with-hamburger">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Contas a Pagar/Receber</h1>
+          <button
+            onClick={() => {
+              setFormulario({ ...formulario, tipo: aba });
+              setMostrarFormulario(true);
+            }}
+            className="flex items-center justify-center gap-2 cursor-pointer rounded-lg px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700 btn-touch"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="truncate hide-text-mobile">Nova Conta</span>
+          </button>
+        </header>
+
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
 
           {/* Resumo */}
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -599,8 +597,6 @@ const ContasPagarReceber = () => {
               })}
             </div>
           )}
-        </div>
-      </main>
 
       {/* Modal Pagamento */}
       {modalPagamento.isOpen && (
@@ -717,6 +713,8 @@ const ContasPagarReceber = () => {
           </div>
         </div>
       )}
+      </main>
+    </div>
 
       <ModalSucesso
         isOpen={modalSucesso.isOpen}
