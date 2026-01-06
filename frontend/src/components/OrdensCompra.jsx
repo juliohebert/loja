@@ -297,11 +297,11 @@ const OrdensCompra = () => {
   const { subtotal, frete, desconto, total } = calcularTotais();
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="layout-with-sidebar">
       <Sidebar />
       
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
+      <main className="main-content content-with-hamburger">
+        <div className="container-mobile">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">Ordens de Compra</h1>

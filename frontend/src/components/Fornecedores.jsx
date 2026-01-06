@@ -195,15 +195,15 @@ const Fornecedores = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="layout-with-sidebar">
       <Sidebar />
       
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
+      <main className="main-content content-with-hamburger">
+        <div className="container-mobile">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 mobile-header-spacing">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">Fornecedores</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Fornecedores</h1>
               <p className="text-gray-600">Gestão de fornecedores e parceiros</p>
             </div>
             <button
@@ -211,10 +211,10 @@ const Fornecedores = () => {
                 limparFormulario();
                 setMostrarFormulario(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors btn-touch"
             >
               <Plus className="w-5 h-5" />
-              Novo Fornecedor
+              <span className="hide-text-mobile">Novo Fornecedor</span>
             </button>
           </div>
 

@@ -287,12 +287,10 @@ export default function Configuracoes() {
   };
 
   return (
-    <div className="flex flex-row min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Sidebar */}
+    <div className="layout-with-sidebar">
       <Sidebar />
 
-      {/* Conteúdo Principal */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="main-content content-with-hamburger">
         {/* Toast */}
         {toast.isOpen && (
           <Toast
@@ -304,17 +302,17 @@ export default function Configuracoes() {
         )}
 
         {/* Header com gradiente */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
-          <div className="max-w-7xl mx-auto px-8 py-8">
-            <div className="flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg mobile-header-spacing">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-3 bg-white/20 backdrop-blur-sm rounded-lg">
-                    <FaCog className="text-3xl" />
+                    <FaCog className="text-2xl sm:text-3xl" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold">Configurações do Sistema</h1>
-                    <p className="text-blue-100 mt-1">Personalize e ajuste o comportamento da aplicação</p>
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Configurações do Sistema</h1>
+                    <p className="text-blue-100 mt-1 text-sm sm:text-base">Personalize e ajuste o comportamento da aplicação</p>
                   </div>
                 </div>
               </div>

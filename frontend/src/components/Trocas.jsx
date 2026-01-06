@@ -254,17 +254,17 @@ const Trocas = () => {
   );
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="layout-with-sidebar">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="main-content content-with-hamburger">
         {/* Header */}
-        <header className="flex items-center justify-between border-b border-slate-200 px-6 h-16 bg-white">
-          <h1 className="text-slate-900 text-3xl font-bold">Trocas</h1>
+        <header className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold">Trocas</h1>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             
             {/* Etapa 1: Selecionar Venda */}

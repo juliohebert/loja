@@ -240,11 +240,11 @@ const ContasPagarReceber = () => {
   const resumo = calcularResumo(contasAtivas);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="layout-with-sidebar">
       <Sidebar />
       
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
+      <main className="main-content content-with-hamburger">
+        <div className="container-mobile">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">Contas a Pagar/Receber</h1>
