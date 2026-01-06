@@ -877,29 +877,6 @@ const CriarProduto = () => {
                   <div>
                     <p className="text-slate-800 text-sm font-medium leading-normal pb-2">Margem de Lucro</p>
                     <div className="bg-slate-50 rounded-lg px-4 py-3 space-y-2">
-                                {/* Botões de ação no final do formulário */}
-                                <div className="flex flex-col sm:flex-row gap-3 justify-end mt-8">
-                                  <button 
-                                    onClick={handleCancelar}
-                                    className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 border-2 border-slate-300 bg-transparent text-slate-900 text-base font-bold leading-normal tracking-[0.015em] hover:bg-slate-100"
-                                  >
-                                    <span className="truncate">Cancelar</span>
-                                  </button>
-                                  {!modoEdicao && (
-                                    <button 
-                                      onClick={handleSalvarEAdicionar}
-                                      className="flex min-w-[180px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 text-slate-900 text-base font-bold leading-normal tracking-[0.015em] hover:bg-slate-300"
-                                    >
-                                      <span className="truncate">Salvar e Adicionar Outro</span>
-                                    </button>
-                                  )}
-                                  <button 
-                                    onClick={handleSalvar}
-                                    className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-700"
-                                  >
-                                    <span className="truncate">{modoEdicao ? 'Atualizar' : 'Salvar'}</span>
-                                  </button>
-                                </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-600 text-sm">Lucro por peça</span>
                         <span className="font-semibold text-green-600 text-base">R$ {calcularLucroPorPeca()}</span>
@@ -909,6 +886,30 @@ const CriarProduto = () => {
                         <span className="font-semibold text-green-600 text-base">{calcularMargem()}%</span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Botões de ação no final do formulário */}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-end mt-8">
+                    <button 
+                      onClick={handleCancelar}
+                      className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 border-2 border-slate-300 bg-transparent text-slate-900 text-base font-bold leading-normal tracking-[0.015em] hover:bg-slate-100"
+                    >
+                      <span className="truncate">Cancelar</span>
+                    </button>
+                    {!modoEdicao && (
+                      <button 
+                        onClick={handleSalvarEAdicionar}
+                        className="flex min-w-[180px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-200 text-slate-900 text-base font-bold leading-normal tracking-[0.015em] hover:bg-slate-300"
+                      >
+                        <span className="truncate">Salvar e Adicionar Outro</span>
+                      </button>
+                    )}
+                    <button 
+                      onClick={handleSalvar}
+                      className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-700"
+                    >
+                      <span className="truncate">{modoEdicao ? 'Atualizar' : 'Salvar'}</span>
+                    </button>
                   </div>
                 </div>
               </div>
