@@ -816,6 +816,7 @@ export default function Caixa() {
           </div>
         </div>
       )}
+        </div>
       </main>
     </div>
   );
