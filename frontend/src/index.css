@@ -145,7 +145,7 @@
 
   /* Espaçamento adicional no topo para mobile */
   .mobile-header-spacing {
-    @apply mt-2 lg:mt-0;
+    @apply mt-16 lg:mt-0;
   }
 }
 
