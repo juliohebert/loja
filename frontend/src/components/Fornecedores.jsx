@@ -198,26 +198,22 @@ const Fornecedores = () => {
     <div className="layout-with-sidebar">
       <Sidebar />
       
-      <main className="main-content content-with-hamburger">
-        <div className="container-mobile">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-6 gap-4 mobile-header-spacing">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Fornecedores</h1>
-              <p className="text-gray-600">Gestão de fornecedores e parceiros</p>
-            </div>
-            <button
-              onClick={() => {
-                limparFormulario();
-                setMostrarFormulario(true);
-              }}
-              className="flex items-center justify-center gap-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors btn-touch w-full sm:w-auto"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hide-text-mobile">Novo Fornecedor</span>
-            </button>
-          </div>
+      <div className="main-content content-with-hamburger">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Fornecedores</h1>
+          <button
+            onClick={() => {
+              limparFormulario();
+              setMostrarFormulario(true);
+            }}
+            className="flex items-center justify-center gap-2 cursor-pointer rounded-lg px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700 btn-touch"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="truncate hide-text-mobile">Novo Fornecedor</span>
+          </button>
+        </header>
 
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
           {/* Formulário */}
           {mostrarFormulario && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -586,8 +582,6 @@ const Fornecedores = () => {
               ))}
             </div>
           )}
-        </div>
-      </main>
 
       {/* Modais */}
       <ModalSucesso
@@ -609,6 +603,8 @@ const Fornecedores = () => {
         }}
         mensagem={modalConfirmacao.mensagem}
       />
+        </main>
+      </div>
     </div>
   );
 };
