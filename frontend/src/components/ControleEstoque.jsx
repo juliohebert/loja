@@ -311,9 +311,8 @@ const ControleEstoque = () => {
     );
   };
 
-  const handleRegistrarEntrada = () => {
-    // TODO: Implementar modal de registro de entrada
-    alert('Funcionalidade de Registrar Entrada em desenvolvimento');
+  const handleCadastrarProduto = () => {
+    navigate('/products');
   };
 
   const handleRegistrarPerda = () => {
@@ -339,11 +338,11 @@ const ControleEstoque = () => {
               <span className="truncate hide-text-mobile">Registrar Perda</span>
             </button>
             <button 
-              onClick={handleRegistrarEntrada}
+              onClick={handleCadastrarProduto}
               className="btn-touch flex items-center justify-center gap-2 cursor-pointer rounded-lg px-3 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700"
             >
-              <TrendingUp className="w-5 h-5" />
-              <span className="truncate hide-text-mobile">Registrar Entrada</span>
+              <Package className="w-5 h-5" />
+              <span className="truncate hide-text-mobile">Cadastrar Produto</span>
             </button>
           </div>
         </header>
