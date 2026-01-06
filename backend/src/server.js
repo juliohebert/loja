@@ -23,6 +23,7 @@ const accountReceivableRoutes = require('./routes/accountReceivableRoutes');
 const tenantRoutes = require('./routes/tenantRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes'); // Importar rotas de assinatura
 const planRoutes = require('./routes/planRoutes'); // Importar rotas de planos
+const adminRoutes = require('./routes/adminRoutes'); // Importar rotas de admin (TEMPORÁRIO)
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
@@ -119,6 +120,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/tenants', tenantRoutes);
+app.use('/api/admin', adminRoutes); // Rota de admin (TEMPORÁRIO - DELETE DEPOIS!)
 app.use('/api', productRoutes);
 app.use('/api', customerRoutes);
 app.use('/api/cash-registers', cashRegisterRoutes);
