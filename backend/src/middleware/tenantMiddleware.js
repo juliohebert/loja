@@ -30,8 +30,16 @@ const tenantMiddleware = (req, res, next) => {
         try {
           const token = parts[1];
           const decoded = jwt.verify(token, JWT_SECRET);
+          
+          // Se tem tenantId no token, usar ele
           if (decoded.tenantId) {
             req.tenantId = decoded.tenantId;
+            return next();
+          }
+          
+          // Se não tem tenantId mas é super-admin, usar 'default'
+          if (decoded.funcao === 'super-admin') {
+            req.tenantId = 'default';
             return next();
           }
         } catch (err) {
