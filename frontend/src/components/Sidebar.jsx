@@ -9,8 +9,9 @@ const Sidebar = () => {
   const location = useLocation();
   const [usuario, setUsuario] = useState(null);
   const [logoUrl, setLogoUrl] = useState('');
-  const [nomeLoja, setNomeLoja] = useState('ModaStore');
+  const [nomeLoja, setNomeLoja] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [configuracoesCarregadas, setConfiguracoesCarregadas] = useState(false);
 
   useEffect(() => {
     const carregarUsuario = () => {
@@ -66,11 +67,22 @@ const Sidebar = () => {
         const logoConfig = configs.find(c => c.chave === 'logo_url');
         const nomeConfig = configs.find(c => c.chave === 'nome_loja');
         
-        if (logoConfig?.valor) setLogoUrl(logoConfig.valor);
-        if (nomeConfig?.valor) setNomeLoja(nomeConfig.valor);
+        if (logoConfig?.valor) {
+          setLogoUrl(logoConfig.valor);
+        }
+        if (nomeConfig?.valor) {
+          setNomeLoja(nomeConfig.valor);
+        } else {
+          setNomeLoja('ModaStore'); // Valor padrão apenas se não houver configuração
+        }
+      } else {
+        setNomeLoja('ModaStore'); // Valor padrão em caso de erro
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
+      setNomeLoja('ModaStore'); // Valor padrão em caso de erro
+    } finally {
+      setConfiguracoesCarregadas(true);
     }
   };
 
@@ -283,8 +295,8 @@ const Sidebar = () => {
         <div className="flex items-center gap-3 px-2">
           {logoUrl ? (
             <img 
-              src={logoUrl} 
-              alt={nomeLoja}
+              src={logoUrl.startsWith('http') ? logoUrl : API_URL + logoUrl} 
+              alt={nomeLoja || 'Logo'}
               className="w-8 h-8 object-contain"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -300,7 +312,11 @@ const Sidebar = () => {
           >
             <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
           </svg>
-          <h1 className="text-gray-800 text-lg font-bold">{nomeLoja}</h1>
+          <h1 className="text-gray-800 text-lg font-bold">
+            {configuracoesCarregadas ? (nomeLoja || 'ModaStore') : (
+              <span className="inline-block w-32 h-6 bg-gray-200 animate-pulse rounded"></span>
+            )}
+          </h1>
         </div>
       </div>
 
