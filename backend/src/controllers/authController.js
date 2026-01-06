@@ -2,17 +2,18 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
+const { Configuration } = require('../models/Schema');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'seu_secret_super_seguro_aqui';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 /**
- * Registrar novo usuário
+ * Registrar novo usuário (cria automaticamente um tenant único para a loja)
  * @route POST /api/auth/register
  */
 exports.register = async (req, res) => {
   try {
-    const { nome, email, senha, funcao } = req.body;
+    const { nome, email, senha, funcao, nomeLoja } = req.body;
 
     // Validações
     if (!nome || !email || !senha) {
@@ -39,28 +40,59 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(senha, salt);
 
-    // Criar usuário
+    // Gerar tenant_id único para esta loja usando crypto
+    const tenantId = crypto.randomUUID();
+    
+    console.log(`🏪 Criando nova loja com tenant_id: ${tenantId}`);
+
+    // Criar usuário com tenant_id único
     const user = await User.create({
       nome,
       email: email.toLowerCase(),
       senha: hashedPassword,
-      funcao: funcao || 'usuario'
+      funcao: funcao || 'admin', // Primeiro usuário da loja é admin por padrão
+      tenant_id: tenantId
     });
 
-    // Gerar token JWT
+    // Criar configurações padrão para esta loja
+    await Configuration.create({
+      chave: 'nome_loja',
+      valor: nomeLoja || `Loja de ${nome}`,
+      tipo: 'texto',
+      descricao: 'Nome da loja',
+      tenant_id: tenantId
+    });
+
+    await Configuration.create({
+      chave: 'exigir_caixa_aberto',
+      valor: 'false',
+      tipo: 'booleano',
+      descricao: 'Exigir caixa aberto para realizar vendas',
+      tenant_id: tenantId
+    });
+
+    console.log(`✅ Loja criada com sucesso! Tenant: ${tenantId}`);
+
+    // Gerar token JWT com tenantId
     const token = jwt.sign(
-      { id: user.id, email: user.email, funcao: user.funcao },
+      { 
+        id: user.id, 
+        email: user.email, 
+        funcao: user.funcao,
+        tenantId: tenantId
+      },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.status(201).json({
-      message: 'Usuário criado com sucesso',
+      message: 'Loja criada com sucesso! Você é o administrador.',
       user: {
         id: user.id,
         nome: user.nome,
         email: user.email,
-        funcao: user.funcao
+        funcao: user.funcao,
+        tenantId: tenantId
       },
       token
     });
