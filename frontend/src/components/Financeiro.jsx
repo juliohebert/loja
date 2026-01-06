@@ -475,22 +475,22 @@ const Financeiro = () => {
   const lancamentosFiltrados = filtrarLancamentos();
 
   return (
-    <div className="flex min-h-screen bg-background-light">
+    <div className="layout-with-sidebar">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 h-16 bg-white">
-          <h1 className="text-slate-900 text-3xl font-bold leading-tight">Financeiro</h1>
+      <div className="main-content content-with-hamburger">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Financeiro</h1>
           <button 
             onClick={() => navigate('/financeiro/novo')}
-            className="flex items-center justify-center gap-2 min-w-[84px] cursor-pointer rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 cursor-pointer rounded-lg px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700 btn-touch"
           >
             <Plus className="w-5 h-5" />
-            <span className="truncate">Novo Lançamento</span>
+            <span className="truncate hide-text-mobile">Novo Lançamento</span>
           </button>
         </header>
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
           {/* Cards de Resumo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">

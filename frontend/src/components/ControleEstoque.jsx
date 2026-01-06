@@ -323,36 +323,32 @@ const ControleEstoque = () => {
 
   return (
     <div className="layout-with-sidebar">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Conteúdo Principal */}
-      <div className="main-content content-with-hamburger flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-4 sm:px-6 h-16 bg-white mobile-header-spacing">
+      <div className="main-content content-with-hamburger">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
           <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
             Controle de Estoque
           </h1>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
             <button 
               onClick={handleRegistrarPerda}
-              className="btn-touch flex items-center justify-center gap-2 min-w-[84px] cursor-pointer rounded-lg px-3 sm:px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300"
+              className="btn-touch flex items-center justify-center gap-2 cursor-pointer rounded-lg px-3 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300"
             >
               <TrendingDown className="w-5 h-5" />
               <span className="truncate hide-text-mobile">Registrar Perda</span>
             </button>
             <button 
               onClick={handleRegistrarEntrada}
-              className="flex items-center justify-center gap-2 min-w-[84px] cursor-pointer rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700"
+              className="btn-touch flex items-center justify-center gap-2 cursor-pointer rounded-lg px-3 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700"
             >
               <TrendingUp className="w-5 h-5" />
-              <span className="truncate">Registrar Entrada</span>
+              <span className="truncate hide-text-mobile">Registrar Entrada</span>
             </button>
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
           {/* Card do Estoque */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Abas */}
