@@ -5,6 +5,7 @@ const formatarPreco = (valor) => {
 import React, { useState } from 'react';
 import { Plus, Trash2, Save, Package, DollarSign, Tag } from 'lucide-react';
 import API_URL from '../config/apiUrl';
+import Sidebar from './Sidebar';
 
 /**
  * 🎯 OBJECTIVE: Create a Responsive Product Form with dynamic Variation rows.
@@ -154,21 +155,23 @@ export default function ProductForm() {
   const marginColor = parseFloat(margin) >= 30 ? 'text-green-600' : parseFloat(margin) >= 15 ? 'text-yellow-600' : 'text-red-600';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
-            <Package className="text-primary" size={32} />
-            <h1 className="text-3xl font-bold text-gray-800">Cadastro de Produto</h1>
-          </div>
+    <div className="layout-with-sidebar">
+      <Sidebar />
 
-          {/* Mensagem de feedback */}
-          {message.text && (
-            <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-              {message.text}
-            </div>
-          )}
+      <div className="main-content content-with-hamburger">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Cadastro de Produto</h1>
+        </header>
+
+        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
+          <div className="max-w-5xl mx-auto">
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+              {/* Mensagem de feedback */}
+              {message.text && (
+                <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                  {message.text}
+                </div>
+              )}
 
           {/* PRODUCT DETAILS SECTION */}
           <div className="mb-8">
@@ -455,6 +458,8 @@ export default function ProductForm() {
             </button>
           </div>
         </form>
+          </div>
+        </main>
       </div>
     </div>
   );
