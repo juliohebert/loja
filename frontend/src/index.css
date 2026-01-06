@@ -2,26 +2,221 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    /* Prevenir scroll horizontal no mobile */
+    overflow-x: hidden;
+    width: 100%;
+    /* Prevenir bounce no iOS durante scroll */
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #f6f6f8;
+  }
+
+  body.dark {
+    background-color: #101622;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+
+  /* Fix para inputs no iOS - previne zoom automático */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important; /* Previne zoom no iOS */
+  }
+}
+
+@layer utilities {
+  /* === Utilitários de Responsividade Mobile === */
+  
+  /* Container com padding responsivo */
+  .container-mobile {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Card padrão responsivo */
+  .card-mobile {
+    @apply rounded-lg shadow-sm border border-gray-200 bg-white;
+  }
+
+  /* Tabelas responsivas com scroll horizontal */
+  .table-responsive {
+    @apply overflow-x-auto -mx-4 sm:mx-0;
+  }
+
+  .table-mobile {
+    @apply min-w-full;
+  }
+
+  /* Scroll horizontal suave (touch-friendly) */
+  .scroll-smooth-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .scroll-smooth-x::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .scroll-smooth-x::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded;
+  }
+
+  .scroll-smooth-x::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded;
+  }
+
+  .scroll-smooth-x::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Buttons touch-friendly (44x44px mínimo) */
+  .btn-touch {
+    @apply min-h-[44px] min-w-[44px];
+    touch-action: manipulation;
+  }
+
+  /* Grid responsivo comum */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+
+  /* Espaçamento de seção responsivo */
+  .section-mobile {
+    @apply py-4 sm:py-6 lg:py-8;
+  }
+
+  /* Card de estatística mobile otimizado */
+  .card-stat-mobile {
+    @apply p-4 rounded-lg bg-white shadow-sm border border-gray-100;
+  }
+
+  /* Stack vertical no mobile, horizontal no desktop */
+  .stack-mobile {
+    @apply flex flex-col sm:flex-row gap-2 sm:gap-4;
+  }
+
+  /* Ocultar texto no mobile, mostrar no desktop */
+  .hide-text-mobile {
+    @apply hidden sm:inline;
+  }
+
+  /* Ícone apenas no mobile */
+  .icon-only-mobile {
+    @apply sm:mr-2;
+  }
+
+  /* Layout principal com sidebar */
+  .layout-with-sidebar {
+    @apply flex h-screen overflow-hidden bg-background-light;
+  }
+
+  .main-content {
+    @apply flex-1 overflow-y-auto lg:ml-0;
+  }
+
+  /* Ajuste de padding para quando há botão hamburguer */
+  .content-with-hamburger {
+    @apply pt-16 lg:pt-0;
+  }
+}
+
+/* === Animações === */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* === Melhorias de acessibilidade touch === */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"] {
+    @apply min-h-[44px]; /* Alvo de toque mínimo recomendado Apple/Google */
+  }
+}
+
+/* === Performance === */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f6f6f8;
-}
-
-body.dark {
-  background-color: #101622;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+button, a {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
