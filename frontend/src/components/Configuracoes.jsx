@@ -290,7 +290,7 @@ export default function Configuracoes() {
     <div className="layout-with-sidebar">
       <Sidebar />
 
-      <main className="main-content content-with-hamburger">
+      <div className="main-content content-with-hamburger">
         {/* Toast */}
         {toast.isOpen && (
           <Toast
@@ -302,7 +302,7 @@ export default function Configuracoes() {
         )}
 
         {/* Header com gradiente */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg mobile-header-spacing">
+        <header className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg mobile-header-spacing">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -375,9 +375,10 @@ export default function Configuracoes() {
               </button>
             </div>
           </div>
-        </div>
+        </header>
 
-        <div className="max-w-7xl mx-auto px-8 py-8">
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {abaAtiva === 'configuracoes' && (
             <>
               {/* Informações */}
@@ -710,8 +711,9 @@ export default function Configuracoes() {
           {abaAtiva === 'planos' && (
             <PlanosDisponiveis />
           )}
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
