@@ -261,39 +261,39 @@ const ContasPagarReceber = () => {
         <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
 
           {/* Resumo */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <AlertCircle className="w-6 h-6 text-yellow-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-lg flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Pendente</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatarPreco(resumo.pendente)}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">{aba === 'pagar' ? 'Pago' : 'Recebido'}</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatarPreco(resumo.pago)}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Pendente</p>
+                  <p className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{formatarPreco(resumo.pendente)}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <XCircle className="w-6 h-6 text-red-600" />
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Vencido</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatarPreco(resumo.vencido)}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">{aba === 'pagar' ? 'Pago' : 'Recebido'}</p>
+                  <p className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{formatarPreco(resumo.pago)}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                  <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Vencido</p>
+                  <p className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{formatarPreco(resumo.vencido)}</p>
                 </div>
               </div>
             </div>
