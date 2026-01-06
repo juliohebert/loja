@@ -261,6 +261,25 @@ npm run build     # Build para produção
 npm run preview   # Preview do build
 ```
 
+## 📚 Documentação
+
+### Documentação Principal
+- 📖 [README.md](./README.md) - Documentação geral do projeto
+- 👤 [SUPER_ADMIN_README.md](./SUPER_ADMIN_README.md) - Como criar super administrador
+
+### Documentação Organizada
+- 🚀 **Deploy**: [docs/deploy/](./docs/deploy/) - Guias de deploy (Render, Vercel, etc)
+- ✨ **Features**: [docs/features/](./docs/features/) - Documentação de funcionalidades
+- 📜 **Histórico**: [docs/history/](./docs/history/) - Correções aplicadas e checklists
+
+### Documentação Backend
+- 🗑️ [backend/RESET_DATABASE_README.md](./backend/RESET_DATABASE_README.md) - Como resetar banco de dados
+
+### Documentação Frontend
+- 🎨 [frontend/MODAIS.md](./frontend/MODAIS.md) - Guia de componentes de modal
+
+---
+
 ## 🤝 Contribuindo
 
 1. Fork o projeto
