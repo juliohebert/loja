@@ -160,7 +160,7 @@ export default function ProductForm() {
       <Sidebar />
 
       <div className="main-content content-with-hamburger">
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing mobile-header-no-button">
           <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Cadastro de Produto</h1>
         </header>
 

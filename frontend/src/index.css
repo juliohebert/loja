@@ -147,6 +147,11 @@
   .mobile-header-spacing {
     @apply mt-2 lg:mt-0;
   }
+
+  /* Header sem botão - precisa de mais espaço para o hamburguer não sobrepor */
+  .mobile-header-no-button {
+    @apply pt-16 lg:pt-0;
+  }
 }
 
 /* === Animações === */
