@@ -10,8 +10,7 @@ const PedidoCatalogo = sequelize.define('PedidoCatalogo', {
   numero_pedido: {
     type: DataTypes.STRING(20),
     allowNull: false,
-    unique: true,
-    comment: 'Número único do pedido (ex: #2458)'
+    comment: 'Número único do pedido por tenant (ex: #2458)'
   },
   cliente_nome: {
     type: DataTypes.STRING(200),
@@ -99,18 +98,36 @@ const PedidoCatalogo = sequelize.define('PedidoCatalogo', {
     },
     {
       fields: ['criado_em']
+    },
+    {
+      fields: ['tenant_id', 'numero_pedido'],
+      unique: true,
+      name: 'pedidos_catalogo_tenant_numero_unique'
     }
   ]
 });
 
 // Método para gerar número de pedido único
 PedidoCatalogo.gerarNumeroPedido = async function(tenantId) {
-  const ultimoPedido = await this.findOne({
-    where: { tenant_id: tenantId },
-    order: [['id', 'DESC']]
-  });
+  // Busca o maior numero_pedido numericamente por tenant
+  const result = await this.sequelize.query(
+    `SELECT numero_pedido 
+     FROM pedidos_catalogo 
+     WHERE tenant_id = :tenantId 
+     ORDER BY CAST(SUBSTRING(numero_pedido FROM 2) AS INTEGER) DESC 
+     LIMIT 1`,
+    {
+      replacements: { tenantId },
+      type: this.sequelize.QueryTypes.SELECT
+    }
+  );
 
-  const proximoNumero = ultimoPedido ? ultimoPedido.id + 1 : 1;
+  let proximoNumero = 1;
+  if (result && result.length > 0 && result[0].numero_pedido) {
+    const numeroAtual = parseInt(result[0].numero_pedido.replace('#', ''));
+    proximoNumero = numeroAtual + 1;
+  }
+
   return `#${String(proximoNumero).padStart(4, '0')}`;
 };
 

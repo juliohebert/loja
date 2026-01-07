@@ -1,4 +1,13 @@
 {
+  "name": "loja-v2",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && node src/server.js",
+    "start:frontend": "cd frontend && npm run dev",
+    "dev": "npm start",
+    "kill": "pkill -f 'node src/server.js' || true && pkill -f 'vite' || true"
+  },
   "dependencies": {
     "@sentry/node": "^10.32.0",
     "axios": "^1.13.2",
@@ -7,6 +16,7 @@
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.11"
   }
 }

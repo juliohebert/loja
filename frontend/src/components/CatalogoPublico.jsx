@@ -162,10 +162,22 @@ const CatalogoPublico = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {config.logo_url ? (
-                <img src={config.logo_url} alt={config.nome_loja} className="h-10" />
-              ) : (
-                <h1 className="text-2xl font-bold text-primary">{config.nome_loja}</h1>
-              )}
+                <img 
+                  src={config.logo_url.startsWith('http') ? config.logo_url : `${getApiUrl('')}${config.logo_url}`}
+                  alt={config.nome_loja} 
+                  className="h-10 max-w-[200px] object-contain" 
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+              ) : null}
+              <h1 
+                className="text-2xl font-bold text-primary" 
+                style={{ display: config.logo_url ? 'none' : 'block' }}
+              >
+                {config.nome_loja}
+              </h1>
             </div>
             
             <button
@@ -315,6 +327,7 @@ const CatalogoPublico = () => {
         onRemoverItem={removerDoCarrinho}
         onAtualizarQuantidade={atualizarQuantidade}
         configuracoes={config}
+        slug={slug}
       />
     </div>
   );

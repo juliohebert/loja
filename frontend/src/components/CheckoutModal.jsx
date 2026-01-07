@@ -10,7 +10,8 @@ const CheckoutModal = ({
   desconto, 
   total,
   configuracoes,
-  onConcluido 
+  onConcluido,
+  slug
 }) => {
   const [loading, setLoading] = useState(false);
   const [sucesso, setSucesso] = useState(false);
@@ -72,12 +73,23 @@ const CheckoutModal = ({
         origem: 'catalogo'
       };
 
-      const response = await fetch(getApiUrl('catalogo/pedidos'), {
+      // Se tem slug, usar endpoint específico do slug, senão usar x-tenant-id
+      const url = slug 
+        ? getApiUrl(`catalogo/${slug}/pedidos`)
+        : getApiUrl('catalogo/pedidos');
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Só adiciona x-tenant-id se NÃO tiver slug
+      if (!slug) {
+        headers['x-tenant-id'] = tenantId;
+      }
+
+      const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-tenant-id': tenantId
-        },
+        headers,
         body: JSON.stringify(pedido)
       });
 

@@ -187,6 +187,12 @@ exports.criarPedidoCatalogo = async (req, res) => {
 
     const tenantId = req.headers['x-tenant-id'] || 'default';
 
+    console.log('📦 Criando pedido do catálogo:', {
+      tenantId,
+      cliente_nome,
+      items: items?.map(i => ({ produto_id: i.produto_id, nome: i.nome }))
+    });
+
     // Validações
     if (!cliente_nome || !cliente_telefone) {
       return res.status(400).json({
@@ -207,6 +213,12 @@ exports.criarPedidoCatalogo = async (req, res) => {
     const itemsValidados = [];
 
     for (const item of items) {
+      console.log('🔍 Buscando produto:', { 
+        produto_id: item.produto_id, 
+        tenantId,
+        tipo: typeof item.produto_id 
+      });
+
       const produto = await Product.findOne({
         where: {
           id: item.produto_id,
@@ -215,6 +227,10 @@ exports.criarPedidoCatalogo = async (req, res) => {
       });
 
       if (!produto) {
+        console.error('❌ Produto não encontrado:', {
+          produto_id: item.produto_id,
+          tenantId
+        });
         return res.status(400).json({
           success: false,
           message: `Produto ${item.produto_id} não encontrado`

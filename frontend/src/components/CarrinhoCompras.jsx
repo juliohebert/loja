@@ -8,7 +8,8 @@ const CarrinhoCompras = ({
   itens, 
   onRemoverItem, 
   onAtualizarQuantidade,
-  configuracoes 
+  configuracoes,
+  slug
 }) => {
   const [checkoutAberto, setCheckoutAberto] = useState(false);
 
@@ -129,6 +130,7 @@ const CarrinhoCompras = ({
         total={total}
         configuracoes={configuracoes}
         onConcluido={handleCheckoutConcluido}
+        slug={slug}
       />
     </>
   );
