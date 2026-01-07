@@ -124,11 +124,18 @@ exports.upsertConfiguration = async (req, res) => {
 
     if (!created) {
       // Atualizar se já existir
-      await config.update({
+      const updateData = {
         valor: valorString,
         tipo: tipo || config.tipo,
         descricao: descricao !== undefined ? descricao : config.descricao
-      });
+      };
+      
+      // Se for slug_catalogo, atualizar também o campo slug_catalogo
+      if (chave === 'slug_catalogo') {
+        updateData.slug_catalogo = valorString;
+      }
+      
+      await config.update(updateData);
     }
 
     res.status(created ? 201 : 200).json({
@@ -360,9 +367,20 @@ exports.getCatalogoLink = async (req, res) => {
     }
 
     // Gerar URL completa do catálogo
-    const protocol = req.protocol; // http ou https
-    const host = req.get('host'); // localhost:3000 ou dominio.com
-    const catalogoUrl = `${protocol}://${host}/catalogo/${config.slug_catalogo}`;
+    // Usar origin do frontend se vier do header, senão construir baseado na requisição
+    const origin = req.get('origin') || req.get('referer');
+    let catalogoUrl;
+    
+    if (origin) {
+      // Extrair o host do origin/referer (ex: http://localhost:3002)
+      const frontendUrl = origin.replace(/\/$/, ''); // Remove trailing slash
+      catalogoUrl = `${frontendUrl}/catalogo/${config.slug_catalogo}`;
+    } else {
+      // Fallback: usar protocolo e host da requisição
+      const protocol = req.protocol;
+      const host = req.get('host');
+      catalogoUrl = `${protocol}://${host}/catalogo/${config.slug_catalogo}`;
+    }
 
     res.status(200).json({
       success: true,

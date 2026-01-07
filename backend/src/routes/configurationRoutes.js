@@ -27,6 +27,80 @@ router.get('/', authMiddleware, configurationController.getAllConfigurations);
 
 /**
  * @swagger
+ * /api/configurations/catalogo/link:
+ *   get:
+ *     summary: Obter link do catálogo público da loja
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Link do catálogo retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     slug:
+ *                       type: string
+ *                     url:
+ *                       type: string
+ *                     urlRelativa:
+ *                       type: string
+ *       404:
+ *         description: Slug do catálogo não encontrado
+ */
+router.get('/catalogo/link', authMiddleware, configurationController.getCatalogoLink);
+
+/**
+ * @swagger
+ * /api/configurations/logo/upload:
+ *   post:
+ *     summary: Upload do logo da loja
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Logo atualizado com sucesso
+ *       400:
+ *         description: Nenhum arquivo foi enviado
+ */
+router.post('/logo/upload', authMiddleware, upload.single('logo'), configurationController.uploadLogo);
+
+/**
+ * @swagger
+ * /api/configurations/logo/delete:
+ *   delete:
+ *     summary: Deletar logo da loja
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logo deletado com sucesso
+ *       404:
+ *         description: Logo não encontrado
+ */
+router.delete('/logo/delete', authMiddleware, configurationController.deleteLogo);
+
+/**
+ * @swagger
  * /api/configurations/{chave}:
  *   get:
  *     summary: Buscar configuração por chave
@@ -154,37 +228,5 @@ router.post('/logo/upload', authMiddleware, upload.single('logo'), configuration
  *         description: Logo não encontrado
  */
 router.delete('/logo/delete', authMiddleware, configurationController.deleteLogo);
-
-/**
- * @swagger
- * /api/configurations/catalogo/link:
- *   get:
- *     summary: Obter link do catálogo público da loja
- *     tags: [Configurações]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Link do catálogo retornado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     slug:
- *                       type: string
- *                     url:
- *                       type: string
- *                     urlRelativa:
- *                       type: string
- *       404:
- *         description: Slug do catálogo não encontrado
- */
-router.get('/catalogo/link', authMiddleware, configurationController.getCatalogoLink);
 
 module.exports = router;
