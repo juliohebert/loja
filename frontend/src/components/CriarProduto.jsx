@@ -19,7 +19,8 @@ const CriarProduto = () => {
     precoCusto: '',
     precoVenda: '',
     marca: '',
-    categoria: 'Camisetas'
+    categoria: 'Camisetas',
+    exibir_catalogo: false
   });
 
   // Estado para nova variação
@@ -87,6 +88,7 @@ const CriarProduto = () => {
 
       console.log('💵 Preço de custo formatado:', precoCustoFormatado);
       console.log('💵 Preço de venda formatado:', precoVendaFormatado);
+      console.log('✅ Exibir no catálogo:', produto.exibir_catalogo);
 
       setFormData({
         nome: produto.nome || '',
@@ -95,7 +97,8 @@ const CriarProduto = () => {
         precoCusto: precoCustoFormatado ? `R$ ${precoCustoFormatado}` : '',
         precoVenda: precoVendaFormatado ? `R$ ${precoVendaFormatado}` : '',
         marca: produto.marca || '',
-        categoria: produto.categoria || 'Camisetas'
+        categoria: produto.categoria || 'Camisetas',
+        exibir_catalogo: produto.exibir_catalogo === true || produto.exibir_catalogo === 'true'
       });
 
       // Preencher variações
@@ -349,6 +352,7 @@ const CriarProduto = () => {
         categoria: formData.categoria,
         precoCusto: parseFloat(formData.precoCusto.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
         precoVenda: parseFloat(formData.precoVenda.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+        exibir_catalogo: formData.exibir_catalogo,
         imagens: imagens,
         variacoes: variacoes.map(v => ({
           tamanho: v.tamanho,
@@ -418,6 +422,7 @@ const CriarProduto = () => {
         categoria: formData.categoria,
         precoCusto: parseFloat(formData.precoCusto.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
         precoVenda: parseFloat(formData.precoVenda.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+        exibir_catalogo: formData.exibir_catalogo,
         imagens: imagens,
         variacoes: variacoes.map(v => ({
           tamanho: v.tamanho,
@@ -451,7 +456,8 @@ const CriarProduto = () => {
         precoCusto: '',
         precoVenda: '',
         marca: '',
-        categoria: 'Camisetas'
+        categoria: 'Camisetas',
+        exibir_catalogo: false
       });
       setVariacoes([]);
       setImagens([]);
@@ -611,6 +617,20 @@ const CriarProduto = () => {
                     {erros.categoria && (
                       <p className="text-red-500 text-sm mt-1">{erros.categoria}</p>
                     )}
+                  </label>
+                </div>
+
+                {/* Checkbox Exibir no Catálogo */}
+                <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200 mb-6">
+                  <input
+                    type="checkbox"
+                    id="exibir_catalogo"
+                    checked={formData.exibir_catalogo}
+                    onChange={(e) => setFormData(prev => ({ ...prev, exibir_catalogo: e.target.checked }))}
+                    className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
+                  />
+                  <label htmlFor="exibir_catalogo" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                    Exibir este produto no catálogo público
                   </label>
                 </div>
 

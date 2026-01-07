@@ -67,7 +67,42 @@ const PDV = () => {
     verificarCaixaAberto();
     buscarVendedores();
     buscarClientes();
+    
+    // Verificar se há pedido do catálogo para carregar
+    carregarPedidoCatalogo();
   }, [navigate]);
+  
+  // Função para carregar pedido do catálogo no PDV
+  const carregarPedidoCatalogo = () => {
+    const itensCatalogo = sessionStorage.getItem('pedidoCatalogoItens');
+    const infoCatalogo = sessionStorage.getItem('pedidoCatalogoInfo');
+    
+    if (itensCatalogo && infoCatalogo) {
+      try {
+        const itens = JSON.parse(itensCatalogo);
+        const info = JSON.parse(infoCatalogo);
+        
+        // Preencher carrinho com os itens do catálogo
+        setCarrinho(itens);
+        
+        // Mostrar notificação
+        setModalInfo({
+          isOpen: true,
+          tipo: 'info',
+          titulo: '📱 Pedido do Catálogo Carregado',
+          mensagem: `Pedido #${info.numero_pedido} de ${info.cliente_nome}`,
+          subtitulo: `Telefone: ${info.cliente_telefone}${info.observacoes ? `\nObs: ${info.observacoes}` : ''}`
+        });
+        
+        // Limpar sessionStorage
+        sessionStorage.removeItem('pedidoCatalogoItens');
+        sessionStorage.removeItem('pedidoCatalogoInfo');
+      } catch (error) {
+        console.error('Erro ao carregar pedido do catálogo:', error);
+      }
+    }
+  };
+  
   // Atualizar status financeiro ao selecionar cliente
   useEffect(() => {
     if (clienteSelecionado) {

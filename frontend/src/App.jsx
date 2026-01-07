@@ -24,6 +24,8 @@ import AssinaturasAdmin from './components/AssinaturasAdmin';
 import DetalheAssinatura from './components/DetalheAssinatura';
 import PlanosAdmin from './components/PlanosAdmin';
 import FormPlano from './components/FormPlano';
+import CatalogoPublico from './components/CatalogoPublico';
+import PedidosCatalogo from './components/PedidosCatalogo';
 
 function App() {
   return (
@@ -59,6 +61,9 @@ function App() {
         <Route path="/admin/planos" element={<PlanosAdmin />} />
         <Route path="/admin/planos/novo" element={<FormPlano />} />
         <Route path="/admin/planos/:id" element={<FormPlano />} />
+        <Route path="/catalogo" element={<CatalogoPublico />} />
+        <Route path="/catalogo/:slug" element={<CatalogoPublico />} />
+        <Route path="/pedidos-catalogo" element={<PedidosCatalogo />} />
       </Routes>
     </Router>
   );

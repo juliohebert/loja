@@ -155,4 +155,36 @@ router.post('/logo/upload', authMiddleware, upload.single('logo'), configuration
  */
 router.delete('/logo/delete', authMiddleware, configurationController.deleteLogo);
 
+/**
+ * @swagger
+ * /api/configurations/catalogo/link:
+ *   get:
+ *     summary: Obter link do catálogo público da loja
+ *     tags: [Configurações]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Link do catálogo retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     slug:
+ *                       type: string
+ *                     url:
+ *                       type: string
+ *                     urlRelativa:
+ *                       type: string
+ *       404:
+ *         description: Slug do catálogo não encontrado
+ */
+router.get('/catalogo/link', authMiddleware, configurationController.getCatalogoLink);
+
 module.exports = router;

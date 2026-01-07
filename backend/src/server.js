@@ -25,6 +25,8 @@ const tenantRoutes = require('./routes/tenantRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes'); // Importar rotas de assinatura
 const planRoutes = require('./routes/planRoutes'); // Importar rotas de planos
 const adminRoutes = require('./routes/adminRoutes'); // Importar rotas de admin (TEMPORÁRIO)
+const catalogoRoutes = require('./routes/catalogoRoutes'); // Rotas públicas do catálogo
+const pedidosCatalogoRoutes = require('./routes/pedidosCatalogoRoutes'); // Rotas admin de pedidos
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
@@ -41,9 +43,11 @@ const corsOptions = {
     
     const allowedOrigins = [
       'http://localhost:3000',
+      'http://localhost:3002',
       'http://localhost:5173',
       'http://192.168.0.14:5173',
       'http://192.168.0.14:3000',
+      'http://192.168.0.14:3002',
       'https://loja-seven-theta.vercel.app',
       process.env.CORS_ORIGIN
     ].filter(Boolean);
@@ -57,7 +61,7 @@ const corsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
 };
 
@@ -101,6 +105,7 @@ app.use('/api/subscriptions', (req, res, next) => {
   if (req.path === '/metrics') return next();
   return tenantMiddleware(req, res, next);
 });
+// NOTA: pedidos-catalogo usa authMiddleware que já extrai tenantId do token
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -112,6 +117,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 app.use('/api/auth', authRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/admin', adminRoutes); // Rota de admin (TEMPORÁRIO - DELETE DEPOIS!)
+app.use('/api/catalogo', catalogoRoutes); // Rotas públicas do catálogo (sem auth)
+app.use('/api/pedidos-catalogo', pedidosCatalogoRoutes); // Rotas admin de pedidos (com auth)
 app.use('/api', productRoutes);
 app.use('/api', customerRoutes);
 app.use('/api/cash-registers', cashRegisterRoutes);

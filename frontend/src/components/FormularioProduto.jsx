@@ -27,7 +27,8 @@ export default function ProductForm() {
     category: '',
     description: '',
     price_cost: '', 
-    price_sale: '' 
+    price_sale: '',
+    exibir_catalogo: false // Controle de exibição no catálogo público
   });
 
   // State for list of variations
@@ -136,7 +137,15 @@ export default function ProductForm() {
         setMessage({ type: 'success', text: '✅ Produto criado com sucesso!' });
         
         // Reset form
-        setProduct({ name: '', brand: '', category: '', description: '', price_cost: '', price_sale: '' });
+        setProduct({ 
+          name: '', 
+          brand: '', 
+          category: '', 
+          description: '', 
+          price_cost: '', 
+          price_sale: '',
+          exibir_catalogo: false 
+        });
         setVariations([{ size: '', color: '', quantity: 0, min_limit: 5, barcode: '', location: '' }]);
         
         console.log('✅ Resposta da API:', data);
@@ -242,6 +251,20 @@ export default function ProductForm() {
                   placeholder="Descrição breve"
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary px-4 py-2 border"
                 />
+              </div>
+
+              {/* Exibir no Catálogo Público */}
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <input
+                  type="checkbox"
+                  id="exibir_catalogo"
+                  checked={product.exibir_catalogo}
+                  onChange={(e) => setProduct(prev => ({ ...prev, exibir_catalogo: e.target.checked }))}
+                  className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
+                />
+                <label htmlFor="exibir_catalogo" className="text-sm font-medium text-gray-700 cursor-pointer">
+                  Exibir este produto no catálogo público
+                </label>
               </div>
 
               {/* Preço de Custo */}

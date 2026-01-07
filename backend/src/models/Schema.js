@@ -6,6 +6,7 @@ const Supplier = require('./Supplier');
 const OrdemCompra = require('./PurchaseOrder');
 const ContaPagar = require('./AccountPayable');
 const ContaReceber = require('./AccountReceivable');
+const PedidoCatalogo = require('./PedidoCatalogo');
 
 /**
  * 🎯 OBJECTIVE: Define PostgreSQL Data Models for a Clothing Store System.
@@ -77,6 +78,12 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'ativo'
+  },
+  exibir_catalogo: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'exibir_catalogo',
+    comment: 'Define se o produto deve aparecer no catálogo público'
   },
   tenant_id: {
     type: DataTypes.STRING(255),
@@ -491,6 +498,12 @@ const Configuration = sequelize.define('Configuration', {
     allowNull: true,
     field: 'descricao'
   },
+  slug_catalogo: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    field: 'slug_catalogo',
+    comment: 'Slug único para identificar o catálogo da loja nas URLs públicas'
+  },
   tenant_id: {
     type: DataTypes.STRING,
     allowNull: true, // Temporariamente NULL para migração
@@ -563,5 +576,6 @@ module.exports = {
   OrdemCompra,
   ContaPagar,
   ContaReceber,
+  PedidoCatalogo,
   sequelize 
 };

@@ -13,7 +13,7 @@ exports.createProduct = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens } = req.body;
+    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens, exibir_catalogo } = req.body;
 
     // Validações básicas
     if (!nome || !marca || !precoCusto || !precoVenda) {
@@ -39,6 +39,7 @@ exports.createProduct = async (req, res) => {
       precoCusto: parseFloat(precoCusto),
       precoVenda: parseFloat(precoVenda),
       imagens: imagens || [],
+      exibir_catalogo: exibir_catalogo === true || exibir_catalogo === 'true',
       tenant_id: req.tenantId // Associar ao tenant
     }, { transaction: t });
 
@@ -293,7 +294,7 @@ exports.updateProduct = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens } = req.body;
+    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens, exibir_catalogo } = req.body;
 
     // Buscar produto existente com filtro de tenantId
     const product = await Product.findOne({
@@ -339,7 +340,8 @@ exports.updateProduct = async (req, res) => {
       categoria: categoria || 'Geral',
       precoCusto: parseFloat(precoCusto),
       precoVenda: parseFloat(precoVenda),
-      imagens: imagens || []
+      imagens: imagens || [],
+      exibir_catalogo: exibir_catalogo === true || exibir_catalogo === 'true'
     }, { transaction: t });
 
     // Deletar variações antigas

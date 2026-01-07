@@ -338,3 +338,47 @@ exports.deleteLogo = async (req, res) => {
     });
   }
 };
+
+/**
+ * Obter link do catálogo público da loja
+ */
+exports.getCatalogoLink = async (req, res) => {
+  try {
+    // Buscar slug_catalogo das configurações
+    const config = await Configuration.findOne({
+      where: { 
+        chave: 'slug_catalogo',
+        tenant_id: req.tenantId 
+      }
+    });
+
+    if (!config || !config.slug_catalogo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Slug do catálogo não encontrado. Execute a migration para gerar.'
+      });
+    }
+
+    // Gerar URL completa do catálogo
+    const protocol = req.protocol; // http ou https
+    const host = req.get('host'); // localhost:3000 ou dominio.com
+    const catalogoUrl = `${protocol}://${host}/catalogo/${config.slug_catalogo}`;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        slug: config.slug_catalogo,
+        url: catalogoUrl,
+        urlRelativa: `/catalogo/${config.slug_catalogo}`
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar link do catálogo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar link do catálogo',
+      error: error.message
+    });
+  }
+};
+

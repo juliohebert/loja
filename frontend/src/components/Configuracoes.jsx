@@ -18,6 +18,8 @@ export default function Configuracoes() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [nomeLoja, setNomeLoja] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [catalogoLink, setCatalogoLink] = useState(null);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     // Verificar autenticação
@@ -28,7 +30,34 @@ export default function Configuracoes() {
     }
 
     carregarConfiguracoes();
+    carregarLinkCatalogo();
   }, [navigate]);
+
+  const carregarLinkCatalogo = async () => {
+    try {
+      const response = await fetch(API_URL + '/api/configurations/catalogo/link', {
+        headers: getAuthHeaders()
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setCatalogoLink(data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar link do catálogo:', error);
+    }
+  };
+
+  const copiarLink = () => {
+    if (catalogoLink && catalogoLink.url) {
+      navigator.clipboard.writeText(catalogoLink.url);
+      setCopiado(true);
+      setToast({ isOpen: true, message: 'Link copiado para a área de transferência!', tipo: 'sucesso' });
+      setTimeout(() => setCopiado(false), 3000);
+    }
+  };
 
   const carregarConfiguracoes = async () => {
     try {
@@ -511,6 +540,66 @@ export default function Configuracoes() {
                     <p className="text-xs text-gray-500 mt-2 text-center">
                       Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
                     </p>
+                  </div>
+
+                  {/* Card do Link do Catálogo */}
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-md border-2 border-purple-200 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-3xl">🔗</div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Link do Catálogo Público</h3>
+                        <p className="text-sm text-gray-600">Compartilhe este link nas suas redes sociais</p>
+                      </div>
+                    </div>
+
+                    {catalogoLink ? (
+                      <div className="space-y-3">
+                        {/* URL do Catálogo */}
+                        <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
+                          <p className="text-xs text-gray-600 mb-2 font-semibold">Seu link exclusivo:</p>
+                          <p className="text-sm font-mono text-purple-700 break-all">
+                            {catalogoLink.url}
+                          </p>
+                        </div>
+
+                        {/* Botão de Copiar */}
+                        <button
+                          onClick={copiarLink}
+                          className={`w-full px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all shadow-md ${
+                            copiado
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                          }`}
+                        >
+                          {copiado ? (
+                            <>
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Link Copiado!
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Copiar Link
+                            </>
+                          )}
+                        </button>
+
+                        {/* Dica */}
+                        <div className="bg-purple-100 border border-purple-300 rounded-lg p-3">
+                          <p className="text-xs text-purple-800">
+                            <span className="font-semibold">💡 Dica:</span> Compartilhe este link no Instagram, Facebook, WhatsApp ou onde seus clientes estão!
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-500 py-4">
+                        <p className="text-sm">Carregando link do catálogo...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

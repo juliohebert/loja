@@ -326,11 +326,86 @@ const cancelSale = async (req, res) => {
   }
 };
 
+/**
+ * Criar venda a partir de pedido do catálogo
+ * Cria uma venda pendente/rascunho que pode ser editada no PDV
+ */
+const createSaleFromCatalog = async (req, res) => {
+  try {
+    console.log('🛒 [CREATE SALE FROM CATALOG] Criando venda do catálogo...');
+    
+    const {
+      cliente_nome,
+      cliente_telefone,
+      itens,
+      subtotal,
+      desconto,
+      total,
+      observacoes,
+      origem_pedido_catalogo,
+      numero_pedido_catalogo
+    } = req.body;
+
+    // Gerar número da venda
+    const ultimaVenda = await Sale.findOne({
+      where: { tenant_id: req.tenantId },
+      order: [['id', 'DESC']]
+    });
+
+    const numeroVenda = ultimaVenda 
+      ? parseInt(ultimaVenda.numeroVenda) + 1 
+      : 1;
+
+    // Criar venda sem cliente (será definido no PDV)
+    // Status "ativo" com forma_pagamento "pendente" indica que precisa ser finalizada no PDV
+    const venda = await Sale.create({
+      numeroVenda: numeroVenda.toString().padStart(6, '0'),
+      usuarioId: req.user.id,
+      vendedor: req.user?.nome || 'Sistema',
+      clienteId: null, // Sem cliente - será definido no PDV
+      itens: itens,
+      formaPagamento: 'pendente',
+      subtotal: parseFloat(subtotal),
+      desconto: parseFloat(desconto) || 0,
+      total: parseFloat(total),
+      troco: 0,
+      observacoes: `📱 Pedido Catálogo #${numero_pedido_catalogo} - Cliente: ${cliente_nome} (${cliente_telefone})${observacoes ? ' - ' + observacoes : ''}`,
+      data: new Date().toISOString().split('T')[0],
+      dataHora: new Date(),
+      status: 'ativo',
+      tenant_id: req.tenantId
+    });
+
+    console.log('✅ Venda rascunho criada do pedido catálogo:', {
+      vendaId: venda.id,
+      numeroVenda: venda.numeroVenda,
+      pedidoCatalogo: numero_pedido_catalogo,
+      total: venda.total,
+      status: 'ativo - forma_pagamento: pendente (aguardando finalização no PDV)'
+    });
+
+    res.json({
+      success: true,
+      data: venda,
+      message: 'Venda criada como rascunho. Finalize no PDV para concluir.'
+    });
+
+  } catch (error) {
+    console.error('❌ [CREATE SALE FROM CATALOG] Erro:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao criar venda do catálogo',
+      details: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllSales,
   getSaleById,
   createSale,
   getSalesByPeriod,
   getSalesByVendedor,
-  cancelSale
+  cancelSale,
+  createSaleFromCatalog
 };
