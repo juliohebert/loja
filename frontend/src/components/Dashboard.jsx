@@ -407,8 +407,8 @@ const Dashboard = () => {
     <div className="layout-with-sidebar">
       {renderTrialModal()}
       <Sidebar />
-      <main className="main-content content-with-hamburger">
-        <div className="container-mobile">
+      <main className="main-content content-with-hamburger overflow-y-auto">
+        <div className="container-mobile pb-6">
           {/* Cabeçalho */}
           <div className="flex flex-wrap justify-between items-center gap-3 mb-4 mobile-header-spacing">
             <div className="flex flex-col gap-1">

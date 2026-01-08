@@ -315,11 +315,11 @@ const PedidosCatalogo = () => {
           </div>
 
           {/* Status */}
-          <div>
+          <div className="relative">
             <select
               value={statusFiltro}
               onChange={(e) => setStatusFiltro(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-gray-900 appearance-none pr-10 h-[42px]"
             >
               {statusOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -327,14 +327,15 @@ const PedidosCatalogo = () => {
                 </option>
               ))}
             </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
           </div>
 
           {/* Origem */}
-          <div>
+          <div className="relative">
             <select
               value={origemFiltro}
               onChange={(e) => setOrigemFiltro(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-gray-900 appearance-none pr-10 h-[42px]"
             >
               {origemOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -342,6 +343,7 @@ const PedidosCatalogo = () => {
                 </option>
               ))}
             </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
           </div>
 
           {/* Data Início */}
@@ -907,17 +909,20 @@ const ModalDetalhesPedido = ({ pedido, onFechar, onAtualizarStatus, statusOption
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Status do Pedido
                   </label>
-                  <select
-                    value={novoStatus}
-                    onChange={(e) => setNovoStatus(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  >
+                  <div className="relative">
+                    <select
+                      value={novoStatus}
+                      onChange={(e) => setNovoStatus(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-gray-900 appearance-none pr-10 h-[42px]"
+                    >
                     {statusEditaveis.map(option => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
                     ))}
                   </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                  </div>
                 </div>
 
                 <div>

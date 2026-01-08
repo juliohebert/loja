@@ -135,7 +135,7 @@
   }
 
   .main-content {
-    @apply flex flex-col flex-1 overflow-hidden lg:ml-0;
+    @apply flex flex-col flex-1 overflow-y-auto lg:ml-0;
   }
 
   /* Ajuste de padding para quando há botão hamburguer */
@@ -229,4 +229,51 @@
 
 button, a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* === Scrollbar customizada === */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E0 #F7FAFC;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #F7FAFC;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #CBD5E0;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #A0AEC0;
+}
+
+/* Indicador visual de scroll horizontal */
+.scroll-indicator {
+  position: relative;
+}
+
+.scroll-indicator::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to left, rgba(255,255,255,0.9), transparent);
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .scroll-indicator::after {
+    display: none;
+  }
 }

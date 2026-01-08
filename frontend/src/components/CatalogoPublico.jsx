@@ -217,7 +217,7 @@ const CatalogoPublico = () => {
               <select
                 value={categoriaFiltro}
                 onChange={(e) => setCategoriaFiltro(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
               >
                 <option value="">Todas as categorias</option>
                 {categorias.map(cat => (
@@ -231,7 +231,7 @@ const CatalogoPublico = () => {
               <select
                 value={ordem}
                 onChange={(e) => setOrdem(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option value="recentes">Mais recentes</option>
                 <option value="menor_preco">Menor preço</option>

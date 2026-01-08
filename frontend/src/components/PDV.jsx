@@ -876,7 +876,7 @@ const PDV = () => {
       <Sidebar />
 
       {/* Conteúdo Principal */}
-      <div className="main-content content-with-hamburger flex flex-col overflow-hidden">
+      <div className="main-content content-with-hamburger flex flex-col">
         {/* Header do PDV */}
         <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-4 sm:px-6 h-16 bg-white mobile-header-spacing">
           <h2 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
@@ -896,10 +896,10 @@ const PDV = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 p-2 sm:p-4 md:p-6 overflow-hidden">
+        <main className="flex-1 grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-6 p-2 sm:p-4 md:p-6 pb-6">
         {/* Coluna Esquerda: Produtos */}
-        <section className="col-span-12 lg:col-span-5 flex flex-col gap-3 sm:gap-4 overflow-hidden">
-          <div className="bg-white rounded-xl shadow-sm p-2 sm:p-4 flex flex-col overflow-hidden max-h-full">
+        <section className="col-span-12 lg:col-span-5 flex flex-col gap-3 sm:gap-4">
+          <div className="bg-white rounded-xl shadow-sm p-2 sm:p-4 flex flex-col max-h-full">
             {/* Busca */}
             <div className="relative">
               {/* Substituindo o componente Search pelo ícone FaSearch */}

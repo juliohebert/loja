@@ -708,9 +708,12 @@ const Financeiro = () => {
             </div>
 
             {/* Tabela */}
-            <div className="overflow-x-auto">
+            <div>
               {abaAtiva === 'canceladas' ? (
                 /* Tabela de Vendas Canceladas */
+                <>
+                {/* Desktop View */}
+                <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-orange-50 border-y border-orange-200">
                     <tr>
@@ -765,8 +768,62 @@ const Financeiro = () => {
                     )}
                   </tbody>
                 </table>
+                </div>
+
+                {/* Mobile View - Cards */}
+                <div className="md:hidden space-y-4">
+                  {vendasCanceladas.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      Nenhuma venda cancelada encontrada
+                    </div>
+                  ) : (
+                    vendasCanceladas.map((venda) => (
+                      <div key={venda.id} className="bg-white border border-orange-200 rounded-lg p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="text-sm font-bold text-slate-900">Venda #{venda.numeroVenda}</div>
+                            <div className="text-xs text-slate-500 mt-1">
+                              {venda.itens && Array.isArray(venda.itens) 
+                                ? venda.itens.map(item => `${item.quantidade}x ${item.nome || item.produto}`).join(', ')
+                                : ''}
+                            </div>
+                          </div>
+                          <span className="text-sm font-bold text-orange-600">
+                            {formatarPreco(venda.total)}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-slate-500 text-xs">Cliente:</span>
+                            <div className="text-slate-900">{venda.cliente?.nome || 'Não informado'}</div>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 text-xs">Data Venda:</span>
+                            <div className="text-slate-900">{new Date(venda.data).toLocaleDateString('pt-BR')}</div>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-xs">Cancelado em:</span>
+                          <div className="text-slate-900 text-sm">
+                            {venda.canceladoEm ? new Date(venda.canceladoEm).toLocaleString('pt-BR') : '-'}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-xs">Motivo:</span>
+                          <div className="text-slate-600 text-sm">
+                            {venda.motivoCancelamento || 'Motivo não informado'}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                </>
               ) : (
                 /* Tabela Normal de Lançamentos */
+              <>
+              {/* Desktop View */}
+              <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50 border-y border-slate-200">
                   <tr>
@@ -932,6 +989,149 @@ const Financeiro = () => {
                   )}
                 </tbody>
               </table>
+              </div>
+
+              {/* Mobile View - Cards */}
+              <div className="md:hidden space-y-4">
+                {lancamentosFiltrados.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    Nenhum lançamento encontrado
+                  </div>
+                ) : (
+                  lancamentosFiltrados.map((lancamento, index) => (
+                    <div key={`${lancamento.categoria}-${lancamento.id}-${index}`} className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+                      {/* Header com descrição e valor */}
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1">
+                          <div className="font-medium text-slate-900">{lancamento.descricao}</div>
+                          <div className="text-xs text-slate-500 mt-1">
+                            {new Date(lancamento.data).toLocaleDateString('pt-BR')} às {(() => {
+                              const hora = lancamento.dataHora || lancamento.dataHoraCompleta || lancamento.data;
+                              if (hora) {
+                                const d = new Date(hora);
+                                if (!isNaN(d.getTime())) {
+                                  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                                }
+                              }
+                              return '-';
+                            })()}
+                          </div>
+                        </div>
+                        <div className={`text-base font-bold whitespace-nowrap ${
+                          lancamento.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {lancamento.tipo === 'receita' ? '+' : '-'} {formatarPreco(lancamento.valor)}
+                        </div>
+                      </div>
+
+                      {/* Tipo e Status */}
+                      <div className="flex gap-2">
+                        {lancamento.tipo === 'receita' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <TrendingUp className="w-3 h-3" />
+                            Receita
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <TrendingDown className="w-3 h-3" />
+                            Despesa
+                          </span>
+                        )}
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          lancamento.status === 'pago' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {lancamento.status === 'pago' ? 'Pago' : 'Pendente'}
+                        </span>
+                      </div>
+
+                      {/* Categoria e Pagamento */}
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-slate-500 text-xs">Categoria:</span>
+                          <div className="text-slate-900">{lancamento.categoria}</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-xs">Pagamento:</span>
+                          <div className="flex items-center gap-1 text-slate-900">
+                            {(() => {
+                              const formaPagamento = lancamento.observacoes?.match(/Forma de pagamento:\s*([^|]+)/i)?.[1]?.trim() || '';
+                              const Icon = formaPagamento.toLowerCase().includes('dinheiro') ? Banknote :
+                                         formaPagamento.toLowerCase().includes('débito') ? CreditCard :
+                                         formaPagamento.toLowerCase().includes('crédito') || formaPagamento.toLowerCase().includes('credito') ? CreditCard :
+                                         formaPagamento.toLowerCase().includes('pix') ? Smartphone :
+                                         DollarSign;
+                              const color = formaPagamento.toLowerCase().includes('dinheiro') ? 'text-green-600' :
+                                          formaPagamento.toLowerCase().includes('débito') ? 'text-blue-600' :
+                                          formaPagamento.toLowerCase().includes('crédito') || formaPagamento.toLowerCase().includes('credito') ? 'text-purple-600' :
+                                          formaPagamento.toLowerCase().includes('pix') ? 'text-cyan-600' :
+                                          'text-gray-400';
+                              return formaPagamento ? (
+                                <>
+                                  <Icon className={`w-4 h-4 ${color}`} />
+                                  <span className="text-xs">{formaPagamento}</span>
+                                </>
+                              ) : (
+                                <span className="text-xs text-gray-400">-</span>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Observações relevantes */}
+                      {(() => {
+                        if (!lancamento.observacoes) return null;
+                        const observacoes = lancamento.observacoes.trim();
+                        if (observacoes === '') return null;
+                        const linhasRelevantes = observacoes.split('|').map(l => l.trim()).filter(linha => 
+                          linha.toLowerCase().includes('desconto') || 
+                          linha.toLowerCase().includes('crédito') || 
+                          linha.toLowerCase().includes('débito')
+                        );
+                        if (linhasRelevantes.length === 0) return null;
+                        return (
+                          <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                            {linhasRelevantes.join(' | ')}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Ações */}
+                      <div className="flex gap-2 pt-2 border-t border-slate-100">
+                        {(lancamento.isVenda || lancamento.categoria === 'Venda' || lancamento.descricao?.startsWith('Venda #')) ? (
+                          <button
+                            onClick={() => handleCancelarVenda(lancamento.id, lancamento.descricao)}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors text-sm font-medium"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Cancelar Venda
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleEditar(lancamento.id)}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-primary bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-sm font-medium"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleRemover(lancamento.id)}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Remover
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              </>
               )}
             </div>
           </div>

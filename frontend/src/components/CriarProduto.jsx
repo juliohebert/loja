@@ -609,10 +609,19 @@ const CriarProduto = () => {
                     >
                       <option>Camisetas</option>
                       <option>Calças</option>
-                      <option>Acessórios</option>
+                      <option>Bermudas</option>
+                      <option>Shorts</option>
                       <option>Vestidos</option>
+                      <option>Saias</option>
+                      <option>Blusas</option>
                       <option>Jaquetas</option>
+                      <option>Casacos</option>
+                      <option>Moletons</option>
+                      <option>Conjuntos</option>
+                      <option>Macacões</option>
                       <option>Calçados</option>
+                      <option>Acessórios</option>
+                      <option>Underwear</option>
                     </select>
                     {erros.categoria && (
                       <p className="text-red-500 text-sm mt-1">{erros.categoria}</p>
@@ -729,7 +738,9 @@ const CriarProduto = () => {
 
                 {/* Tabela de Variações */}
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-6">Variações Adicionadas</h3>
-                <div className="overflow-x-auto border rounded-lg scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 max-w-full">
+                
+                {/* Desktop: Tabela */}
+                <div className="hidden md:block overflow-x-auto border rounded-lg scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 max-w-full">
                   <table className="min-w-[480px] w-full text-sm text-left text-slate-500">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50">
                       <tr>
@@ -774,6 +785,49 @@ const CriarProduto = () => {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile: Cards */}
+                <div className="md:hidden space-y-3">
+                  {variacoes.length === 0 ? (
+                    <div className="bg-white border rounded-lg p-6 text-center text-slate-500">
+                      Nenhuma variação adicionada
+                    </div>
+                  ) : (
+                    variacoes.map((variacao) => (
+                      <div key={variacao.id} className="bg-white border rounded-lg p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex gap-2">
+                              <span className="text-xs font-medium text-slate-500 uppercase">Tamanho:</span>
+                              <span className="text-sm font-semibold text-slate-900">{variacao.tamanho}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="text-xs font-medium text-slate-500 uppercase">Cor:</span>
+                              <span className="text-sm text-slate-700">{variacao.cor}</span>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                              <span className="text-xs font-medium text-slate-500 uppercase">Estoque:</span>
+                              <input 
+                                className="form-input w-20 h-8 rounded-md bg-slate-50 border-slate-300 text-center text-xs" 
+                                type="number" 
+                                value={variacao.estoque}
+                                onChange={(e) => atualizarEstoque(variacao.id, e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => removerVariacao(variacao.id)}
+                            className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

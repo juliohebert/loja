@@ -411,7 +411,8 @@ export default function Caixa() {
           <FaHistory /> Histórico de Caixas
         </h2>
 
-        <div className="overflow-x-auto">
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -457,6 +458,62 @@ export default function Caixa() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile View - Cards */}
+        <div className="md:hidden space-y-4">
+          {historico.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">Nenhum registro encontrado</div>
+          ) : (
+            historico.map(caixa => (
+              <div key={caixa.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                {/* Header com status e operador */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium text-gray-900">{caixa.usuario?.nome || 'N/A'}</div>
+                    <div className="text-xs text-gray-500">Operador</div>
+                  </div>
+                  <span className={`px-2 py-1 text-xs rounded-full ${caixa.status === 'aberto' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {caixa.status === 'aberto' ? 'Aberto' : 'Fechado'}
+                  </span>
+                </div>
+
+                {/* Datas */}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-500 text-xs">Abertura:</span>
+                    <div className="text-gray-900">{formatarData(caixa.dataAbertura)}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 text-xs">Fechamento:</span>
+                    <div className="text-gray-900">{caixa.dataFechamento ? formatarData(caixa.dataFechamento) : '-'}</div>
+                  </div>
+                </div>
+
+                {/* Saldos */}
+                <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t border-gray-100">
+                  <div>
+                    <span className="text-gray-500 text-xs">Saldo Inicial:</span>
+                    <div className="font-semibold text-gray-900">{formatarValor(caixa.saldoInicial)}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 text-xs">Saldo Final:</span>
+                    <div className="font-semibold text-gray-900">{caixa.saldoFinal ? formatarValor(caixa.saldoFinal) : '-'}</div>
+                  </div>
+                </div>
+
+                {/* Botão de ação */}
+                {caixa.status === 'fechado' && (
+                  <button
+                    onClick={() => abrirDetalhesCaixaFechado(caixa)}
+                    className="w-full mt-2 px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-sm font-medium"
+                  >
+                    Ver detalhes
+                  </button>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 

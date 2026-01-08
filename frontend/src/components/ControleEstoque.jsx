@@ -410,8 +410,8 @@ const ControleEstoque = () => {
             </div>
           </div>
 
-          {/* Tabela de Estoque */}
-          <div className="overflow-x-auto">
+          {/* Tabela de Estoque - Desktop */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm text-left text-slate-500">
               <thead className="text-xs text-slate-700 uppercase bg-slate-50 border-b border-t border-slate-200">
                 <tr>
@@ -501,6 +501,85 @@ const ControleEstoque = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Cards Mobile */}
+          <div className="md:hidden space-y-4">
+            {carregando ? (
+              <div className="flex flex-col items-center gap-2 py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="text-slate-500">Carregando produtos...</p>
+              </div>
+            ) : erro ? (
+              <div className="flex flex-col items-center gap-2 py-8">
+                <p className="text-red-500">{erro}</p>
+                <button 
+                  onClick={buscarProdutos}
+                  className="text-primary hover:underline text-sm"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            ) : produtosPaginados.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 py-8 text-slate-500">
+                <Package className="w-12 h-12 text-slate-300" />
+                <p>Nenhum produto encontrado</p>
+              </div>
+            ) : (
+              produtosPaginados.map((produto) => (
+                <div key={produto.id} className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+                  {/* Header com imagem e nome */}
+                  <div className="flex items-start gap-3">
+                    <ImagemProduto 
+                      src={produto.imagem}
+                      alt={produto.nome}
+                      nome={produto.nome}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-slate-900">{produto.nome}</h3>
+                      <p className="text-xs text-slate-500 mt-1">SKU: {produto.sku}</p>
+                    </div>
+                    {getStatusBadge(produto.status)}
+                  </div>
+
+                  {/* Detalhes */}
+                  <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t border-slate-100">
+                    <div>
+                      <span className="text-slate-500 text-xs">Cor:</span>
+                      <div className="text-slate-900">{produto.cor}</div>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 text-xs">Tamanho:</span>
+                      <div className="text-slate-900">{produto.tamanho}</div>
+                    </div>
+                  </div>
+
+                  {/* Quantidade */}
+                  <div className="pt-2 border-t border-slate-100">
+                    <span className="text-slate-500 text-xs">Quantidade em Estoque:</span>
+                    <div className="text-lg font-semibold text-slate-900">{produto.quantidade} un.</div>
+                  </div>
+
+                  {/* Ações */}
+                  <div className="flex gap-2 pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => handleEditarProduto(produto.produtoId)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-primary bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleRemoverProduto(produto.produtoId, produto.nome)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Remover
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Paginação */}
