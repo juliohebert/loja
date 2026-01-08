@@ -52,16 +52,42 @@ const PERMISSIONS = {
  */
 exports.getAllUsers = async (req, res) => {
   try {
+    console.log('🔍 Buscando usuários para tenant:', req.tenantId);
+    console.log('🔍 req.user:', req.user);
+    
+    // DEBUG: Buscar TODOS os usuários para ver o que tem no banco
+    const todosUsuarios = await User.findAll({
+      attributes: ['id', 'nome', 'email', 'tenant_id']
+    });
+    console.log('📊 TODOS os usuários no banco:', todosUsuarios.length);
+    todosUsuarios.forEach(u => {
+      console.log(`   - ${u.nome} (${u.email}) - tenant_id: ${u.tenant_id}`);
+    });
+    
     const users = await User.findAll({
       where: { tenant_id: req.tenantId }, // Filtrar pelo tenantId
-      attributes: ['id', 'nome', 'email', 'funcao', 'telefone', 'ativo', 'ultimoLogin', 'criado_em'],
+      attributes: ['id', 'nome', 'email', 'funcao', 'telefone', 'ativo', 'ultimoLogin', 'criado_em', 'tenant_id'],
       order: [['criado_em', 'DESC']]
+    });
+
+    console.log('✅ Usuários encontrados para este tenant:', users.length);
+    users.forEach(u => {
+      console.log(`   ✓ ${u.nome} (${u.email}) - tenant_id: ${u.tenant_id}`);
     });
 
     res.status(200).json({
       success: true,
       count: users.length,
-      data: users
+      data: users.map(u => ({
+        id: u.id,
+        nome: u.nome,
+        email: u.email,
+        funcao: u.funcao,
+        telefone: u.telefone,
+        ativo: u.ativo,
+        ultimoLogin: u.ultimoLogin,
+        criado_em: u.criado_em
+      }))
     });
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
@@ -135,7 +161,23 @@ exports.createUser = async (req, res) => {
     // Definir permissões padrão baseadas na função
     const permissoesDefault = PERMISSIONS[funcao || 'vendedor'] || PERMISSIONS.vendedor;
 
-    // Criar usuário
+    // Obter tenant_id do usuário logado
+    console.log('🔍 DEBUG req.user:', req.user);
+    console.log('🔍 DEBUG req.tenantId:', req.tenantId);
+    
+    const tenantId = req.user?.tenantId || req.tenantId;
+    
+    if (!tenantId) {
+      console.error('❌ ERRO: tenant_id não encontrado!');
+      return res.status(400).json({ 
+        success: false,
+        error: 'Erro ao identificar a loja. Faça login novamente.' 
+      });
+    }
+    
+    console.log('🔐 Criando usuário com tenant_id:', tenantId);
+
+    // Criar usuário com tenant_id
     const user = await User.create({
       nome,
       email,
@@ -143,8 +185,11 @@ exports.createUser = async (req, res) => {
       funcao: funcao || 'vendedor',
       telefone,
       ativo: ativo !== undefined ? ativo : true,
-      permissoes: permissoesDefault
+      permissoes: permissoesDefault,
+      tenant_id: tenantId
     });
+
+    console.log('✅ Usuário criado:', { id: user.id, nome: user.nome, tenant_id: user.tenant_id });
 
     // Retornar sem a senha
     const userResponse = await User.findByPk(user.id);
