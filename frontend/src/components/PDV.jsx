@@ -182,8 +182,8 @@ const PDV = () => {
         // A API retorna { success, count, data }
         const usuarios = result.data || result;
         
-        // Filtrar apenas vendedores ativos
-        const vendedoresAtivos = usuarios.filter(u => u.ativo && (u.funcao === 'vendedor' || u.funcao === 'gerente' || u.funcao === 'admin'));
+        // Filtrar apenas vendedores ativos (somente função 'vendedor')
+        const vendedoresAtivos = usuarios.filter(u => u.ativo && u.funcao === 'vendedor');
         console.log('✅ Vendedores ativos:', vendedoresAtivos);
         
         setVendedores(vendedoresAtivos);
