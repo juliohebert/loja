@@ -49,6 +49,13 @@ const PDV = () => {
   const [pagarDebito, setPagarDebito] = useState(false);
   // Adicionando estado para armazenar clientes
   const [clientes, setClientes] = useState([]);
+  // Estado para modal de produto avulso
+  const [modalProdutoAvulso, setModalProdutoAvulso] = useState(false);
+  const [produtoAvulso, setProdutoAvulso] = useState({
+    nome: '',
+    preco: '',
+    quantidade: 1
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -369,6 +376,39 @@ const PDV = () => {
     setCarrinho(carrinho.filter(item => item.id !== itemId));
   };
 
+  const adicionarProdutoAvulso = () => {
+    if (!produtoAvulso.nome || !produtoAvulso.preco || produtoAvulso.preco <= 0) {
+      setModalInfo({
+        isOpen: true,
+        tipo: 'aviso',
+        titulo: 'Dados Incompletos',
+        mensagem: 'Preencha o nome e o preço do produto.',
+        subtitulo: ''
+      });
+      return;
+    }
+
+    const novoItem = {
+      id: Date.now(),
+      produtoId: null, // Produto avulso não tem ID
+      variacaoId: null,
+      stockId: null,
+      nome: produtoAvulso.nome,
+      tamanho: 'Avulso',
+      cor: '-',
+      preco: parseFloat(produtoAvulso.preco),
+      quantidade: parseInt(produtoAvulso.quantidade) || 1,
+      imagem: null,
+      estoqueMax: 9999,
+      estoqueDisponivel: 9999,
+      isAvulso: true // Marcador para identificar produto avulso
+    };
+
+    setCarrinho([...carrinho, novoItem]);
+    setModalProdutoAvulso(false);
+    setProdutoAvulso({ nome: '', preco: '', quantidade: 1 });
+  };
+
   const calcularSubtotal = () => {
     return carrinho.reduce((total, item) => total + (item.preco * item.quantidade), 0);
   };
@@ -458,6 +498,12 @@ const PDV = () => {
     try {
       
       for (const item of carrinho) {
+        // Pular produtos avulsos (não têm estoque)
+        if (item.isAvulso) {
+          console.log('⚠️ Produto avulso, não dar baixa no estoque:', item.nome);
+          continue;
+        }
+        
         if (!item.variacaoId) {
           console.error('Item sem variacaoId:', item);
           continue;
@@ -866,6 +912,15 @@ const PDV = () => {
                 placeholder="Buscar por código ou nome do produto"
               />
             </div>
+
+            {/* Botão Produto Avulso */}
+            <button
+              onClick={() => setModalProdutoAvulso(true)}
+              className="w-full mt-2 flex items-center justify-center gap-2 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              <FaPlus className="w-4 h-4" />
+              Adicionar Produto Avulso
+            </button>
 
             {/* Filtro de Categorias */}
             <div className="flex gap-2 sm:gap-3 py-2 sm:py-4 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
@@ -1519,6 +1574,100 @@ const PDV = () => {
                   className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition-colors print:hidden"
                 >
                   Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Produto Avulso */}
+      {modalProdutoAvulso && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg">
+                  <FaPlus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Produto Avulso</h3>
+                  <p className="text-white/90 text-sm mt-1">Adicionar produto não cadastrado</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Conteúdo */}
+            <div className="p-6 space-y-4">
+              {/* Nome do Produto */}
+              <label className="flex flex-col">
+                <span className="text-sm font-medium mb-2 text-slate-700">Nome do Produto *</span>
+                <input
+                  type="text"
+                  value={produtoAvulso.nome}
+                  onChange={(e) => setProdutoAvulso({ ...produtoAvulso, nome: e.target.value })}
+                  className="form-input rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-blue-500 h-12 placeholder:text-slate-500 px-4 text-base bg-background-light border border-slate-300"
+                  placeholder="Ex: Produto Promocional"
+                  autoFocus
+                />
+              </label>
+
+              {/* Preço */}
+              <label className="flex flex-col">
+                <span className="text-sm font-medium mb-2 text-slate-700">Preço Unitário (R$) *</span>
+                <input
+                  type="number"
+                  value={produtoAvulso.preco}
+                  onChange={(e) => setProdutoAvulso({ ...produtoAvulso, preco: e.target.value })}
+                  className="form-input rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-blue-500 h-12 placeholder:text-slate-500 px-4 text-base bg-background-light border border-slate-300"
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                />
+              </label>
+
+              {/* Quantidade */}
+              <label className="flex flex-col">
+                <span className="text-sm font-medium mb-2 text-slate-700">Quantidade</span>
+                <input
+                  type="number"
+                  value={produtoAvulso.quantidade}
+                  onChange={(e) => setProdutoAvulso({ ...produtoAvulso, quantidade: e.target.value })}
+                  className="form-input rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-blue-500 h-12 placeholder:text-slate-500 px-4 text-base bg-background-light border border-slate-300"
+                  placeholder="1"
+                  min="1"
+                />
+              </label>
+
+              {/* Preview do Valor Total */}
+              {produtoAvulso.preco && produtoAvulso.quantidade && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600">Valor Total:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {formatarPreco(parseFloat(produtoAvulso.preco) * parseInt(produtoAvulso.quantidade))}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                <button
+                  onClick={adicionarProdutoAvulso}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+                >
+                  Adicionar ao Carrinho
+                </button>
+                <button
+                  onClick={() => {
+                    setModalProdutoAvulso(false);
+                    setProdutoAvulso({ nome: '', preco: '', quantidade: 1 });
+                  }}
+                  className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancelar
                 </button>
               </div>
             </div>
