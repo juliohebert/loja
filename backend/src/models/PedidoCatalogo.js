@@ -33,10 +33,10 @@ const PedidoCatalogo = sequelize.define('PedidoCatalogo', {
     comment: 'Endereço completo do cliente'
   },
   tipo_entrega: {
-    type: DataTypes.ENUM('retirada', 'entrega'),
+    type: DataTypes.STRING(10),
     allowNull: true,
     defaultValue: 'retirada',
-    comment: 'Tipo de entrega escolhido pelo cliente'
+    comment: 'Tipo de entrega escolhido pelo cliente (retirada ou entrega)'
   },
   forma_pagamento: {
     type: DataTypes.STRING(20),

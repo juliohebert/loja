@@ -210,6 +210,9 @@ exports.criarPedidoCatalogo = async (req, res) => {
     console.log('📦 Criando pedido do catálogo:', {
       tenantId,
       cliente_nome,
+      tipo_entrega,
+      forma_pagamento,
+      cliente_endereco,
       items: items?.map(i => ({ produto_id: i.produto_id, nome: i.nome }))
     });
 

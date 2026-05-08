@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Eye, Edit2, X, Package, TrendingUp, Calendar, ShoppingBag, ChevronDown, ChevronRight, MessageCircle } from 'lucide-react';
+import { Search, Filter, Eye, Edit2, X, Package, TrendingUp, Calendar, ShoppingBag, ChevronDown, ChevronRight, MessageCircle, MapPin } from 'lucide-react';
 import { getAuthHeaders, getApiUrl } from '../config/api';
 import Sidebar from './Sidebar';
 
@@ -21,6 +21,7 @@ const PedidosCatalogo = () => {
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [pedidosExpandidos, setPedidosExpandidos] = useState([]);
+  const [enderecoLoja, setEnderecoLoja] = useState('');
 
   const statusOptions = [
     { value: '', label: 'Todos os status' },
@@ -48,6 +49,21 @@ const PedidosCatalogo = () => {
   useEffect(() => {
     carregarEstatisticas();
   }, [dataInicio, dataFim]);
+
+  // Carregar endereço da loja
+  useEffect(() => {
+    const carregarEnderecoLoja = async () => {
+      try {
+        const response = await fetch(getApiUrl('configurations'), { headers: getAuthHeaders() });
+        if (response.ok) {
+          const data = await response.json();
+          const cfg = data.data?.find(c => c.chave === 'endereco_loja');
+          if (cfg?.valor) setEnderecoLoja(cfg.valor);
+        }
+      } catch {}
+    };
+    carregarEnderecoLoja();
+  }, []);
 
   const carregarPedidos = async () => {
     console.log('🔍 Carregando pedidos...');
@@ -418,7 +434,7 @@ const PedidosCatalogo = () => {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Origem
+                      Entrega / Pagamento
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Valor
@@ -466,10 +482,46 @@ const PedidosCatalogo = () => {
                           {getStatusLabel(pedido.status)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {pedido.origem === 'catalogo' && 'Catálogo Online'}
-                        {pedido.origem === 'whatsapp' && 'WhatsApp'}
-                        {pedido.origem === 'loja_fisica' && 'Loja Física'}
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex flex-col gap-1">
+                          {pedido.tipo_entrega === 'entrega' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 w-fit">
+                              🚚 Entrega
+                            </span>
+                          ) : pedido.tipo_entrega === 'retirada' ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 w-fit">
+                                🏪 Retirada
+                              </span>
+                              {enderecoLoja && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-gray-500 max-w-[160px] truncate" title={enderecoLoja}>{enderecoLoja}</span>
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLoja)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 flex-shrink-0"
+                                    title="Abrir no mapa"
+                                  >
+                                    <MapPin size={12} />
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-xs">—</span>
+                          )}
+                          {pedido.tipo_entrega === 'entrega' && pedido.cliente_endereco && (
+                            <span className="text-xs text-gray-500 max-w-[180px] truncate" title={pedido.cliente_endereco}>
+                              📍 {pedido.cliente_endereco}
+                            </span>
+                          )}
+                          {pedido.forma_pagamento && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 w-fit">
+                              {getFormaPagamentoLabel(pedido.forma_pagamento)}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
                         R$ {parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -533,11 +585,43 @@ const PedidosCatalogo = () => {
                                   <span className="font-medium">{getFormaPagamentoLabel(pedido.forma_pagamento)}</span>
                                 </span>
                               )}
-                              {pedido.cliente_endereco && (
-                                <span className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-3 py-1">
-                                  <span className="text-gray-500">Endereço:</span>
-                                  <span className="font-medium">{pedido.cliente_endereco}</span>
-                                </span>
+                              {pedido.tipo_entrega === 'entrega' && pedido.cliente_endereco && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                                  <span className="text-blue-600 mt-0.5">📍</span>
+                                  <div>
+                                    <p className="text-xs font-semibold text-blue-700">Endereço de entrega</p>
+                                    <p className="text-sm text-blue-900">{pedido.cliente_endereco}</p>
+                                  </div>
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pedido.cliente_endereco)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="ml-auto flex-shrink-0 flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 bg-white hover:bg-blue-50 border border-blue-300 rounded px-2 py-1 transition-colors"
+                                    title="Abrir no Google Maps"
+                                  >
+                                    <MapPin size={12} />
+                                    Ver no mapa
+                                  </a>
+                                </div>
+                              )}
+                              {pedido.tipo_entrega === 'retirada' && enderecoLoja && (
+                                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                                  <span className="text-green-600">🏪</span>
+                                  <div className="flex-1">
+                                    <p className="text-xs font-semibold text-green-700">Retirada na loja</p>
+                                    <p className="text-sm text-green-900">{enderecoLoja}</p>
+                                  </div>
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLoja)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-green-700 hover:text-green-900 bg-white hover:bg-green-50 border border-green-300 rounded px-2 py-1 transition-colors"
+                                    title="Abrir no Google Maps"
+                                  >
+                                    <MapPin size={12} />
+                                    Ver no mapa
+                                  </a>
+                                </div>
                               )}
                             </div>
                             <div className="grid gap-3">
@@ -583,7 +667,6 @@ const PedidosCatalogo = () => {
                                 Total: R$ {parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
-                          </div>
                         </td>
                       </tr>
                     )}
@@ -633,9 +716,38 @@ const PedidosCatalogo = () => {
                         </p>
                       </div>
                       {pedido.tipo_entrega && (
-                        <div>
-                          <span className="text-gray-500">Entrega:</span>
-                          <p className="font-medium text-gray-900">{getTipoEntregaLabel(pedido.tipo_entrega)}</p>
+                        <div className="col-span-2">
+                          {pedido.tipo_entrega === 'entrega' ? (
+                            <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
+                              <p className="text-xs font-semibold text-blue-700 mb-1">🚚 Entrega a domicílio</p>
+                              {pedido.cliente_endereco ? (
+                                <p className="text-sm text-blue-900">📍 {pedido.cliente_endereco}</p>
+                              ) : (
+                                <p className="text-xs text-blue-500 italic">Endereço não informado</p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                              <p className="text-xs font-semibold text-green-700">🏪 Retirada na loja</p>
+                              {enderecoLoja ? (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-sm text-green-900">{enderecoLoja}</p>
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLoja)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded px-2 py-0.5 transition-colors"
+                                    title="Abrir no Google Maps"
+                                  >
+                                    <MapPin size={12} />
+                                    Ver no mapa
+                                  </a>
+                                </div>
+                              ) : (
+                                <p className="text-xs text-green-600 italic mt-0.5">Configure o endereço da loja em Configurações</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                       {pedido.forma_pagamento && (
