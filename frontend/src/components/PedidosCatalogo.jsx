@@ -160,7 +160,7 @@ const PedidosCatalogo = () => {
       // Preparar itens no formato do PDV
       const itensPDV = pedido.items.map(item => ({
         id: item.produto_id,
-        variacaoId: item.variacao_id,
+        variacaoId: item.variacao_id || null,
         nome: item.nome,
         cor: item.cor,
         tamanho: item.tamanho,

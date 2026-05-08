@@ -492,14 +492,35 @@ const PDV = () => {
           console.log('⚠️ Produto avulso, não dar baixa no estoque:', item.nome);
           continue;
         }
-        
-        if (!item.variacaoId) {
-          console.error('Item sem variacaoId:', item);
+
+        let variacaoId = item.variacaoId;
+
+        // Se não tem variacaoId mas tem produto_id + tamanho + cor (pedido do catálogo antigo),
+        // buscar a variação pela API
+        if (!variacaoId && item.id && item.tamanho && item.cor) {
+          try {
+            const resProduto = await fetch(`${API_URL}/api/products/${item.id}`, { headers: getAuthHeaders() });
+            if (resProduto.ok) {
+              const dadosProduto = await resProduto.json();
+              const variacoes = dadosProduto.data?.variacoes || dadosProduto.variacoes || [];
+              const v = variacoes.find(v =>
+                v.tamanho?.toLowerCase() === item.tamanho?.toLowerCase() &&
+                v.cor?.toLowerCase() === item.cor?.toLowerCase()
+              );
+              if (v) variacaoId = v.id;
+            }
+          } catch (e) {
+            console.error('Erro ao buscar variação para', item.nome, e);
+          }
+        }
+
+        if (!variacaoId) {
+          console.error('Item sem variacaoId e não foi possível resolver:', item);
           continue;
         }
         
         // Atualizar estoque usando a rota correta
-        const responseEstoque = await fetch(`${API_URL}/api/products/stock/${item.variacaoId}`, {
+        const responseEstoque = await fetch(`${API_URL}/api/products/stock/${variacaoId}`, {
           method: 'PATCH',
           headers: getAuthHeaders(),
           body: JSON.stringify({

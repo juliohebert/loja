@@ -263,8 +263,22 @@ exports.criarPedidoCatalogo = async (req, res) => {
       const itemTotal = parseFloat(item.preco_unitario) * parseInt(item.quantidade);
       subtotal += itemTotal;
 
+      // Buscar variação para salvar o variacao_id (necessário para dar baixa no estoque)
+      let variacaoId = null;
+      if (item.tamanho && item.cor) {
+        const variacao = await Variation.findOne({
+          where: {
+            produto_id: produto.id,
+            tamanho: item.tamanho,
+            cor: item.cor
+          }
+        });
+        if (variacao) variacaoId = variacao.id;
+      }
+
       itemsValidados.push({
         produto_id: produto.id,
+        variacao_id: variacaoId,
         nome: item.nome || produto.nome,
         tamanho: item.tamanho,
         cor: item.cor,
