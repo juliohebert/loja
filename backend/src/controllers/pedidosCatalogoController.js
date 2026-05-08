@@ -276,7 +276,7 @@ exports.obterEstatisticasPedidos = async (req, res) => {
     // Contar pedidos por status
     const todosPedidos = await PedidoCatalogo.findAll({
       where,
-      attributes: ['status', 'valor_total', 'origem']
+      attributes: ['status', 'valor_total', 'origem', 'tipo_entrega', 'forma_pagamento']
     });
 
     const estatisticas = {

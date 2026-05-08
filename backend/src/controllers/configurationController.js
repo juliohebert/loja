@@ -229,6 +229,12 @@ exports.initializeDefaultConfigurations = async (req) => {
         valor: '',
         tipo: 'texto',
         descricao: 'Usuário do Instagram da loja (exibido no catálogo público)'
+      },
+      {
+        chave: 'mensagem_entrega',
+        valor: '',
+        tipo: 'texto',
+        descricao: 'Aviso exibido ao cliente quando escolhe entrega no catálogo (ex: Consulte o frete pelo WhatsApp)'
       }
     ];
 

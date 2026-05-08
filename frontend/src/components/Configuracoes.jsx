@@ -327,6 +327,8 @@ export default function Configuracoes() {
         return '💬';
       case 'instagram_usuario':
         return '📸';
+      case 'mensagem_entrega':
+        return '🚚';
       default:
         return '⚙️';
     }
@@ -341,6 +343,7 @@ export default function Configuracoes() {
       'nome_loja': 'Nome da Loja',
       'telefone_whatsapp': 'WhatsApp da Loja',
       'instagram_usuario': 'Instagram (usuário)',
+      'mensagem_entrega': 'Aviso de Entrega (catálogo)',
       'endereco_loja': 'Endereço da Loja',
       'email_loja': 'E-mail da Loja'
     };

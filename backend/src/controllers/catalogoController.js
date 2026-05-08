@@ -198,6 +198,8 @@ exports.criarPedidoCatalogo = async (req, res) => {
       cliente_telefone,
       cliente_email,
       cliente_endereco,
+      tipo_entrega = 'retirada',
+      forma_pagamento,
       items,
       observacoes,
       origem = 'catalogo'
@@ -280,6 +282,8 @@ exports.criarPedidoCatalogo = async (req, res) => {
       cliente_telefone,
       cliente_email,
       cliente_endereco,
+      tipo_entrega,
+      forma_pagamento,
       items: itemsValidados,
       subtotal,
       desconto: 0,
@@ -315,7 +319,7 @@ exports.obterConfiguracoesCatalogo = async (req, res) => {
       where: {
         tenant_id: tenantId,
         chave: {
-          [Op.in]: ['nome_loja', 'logo_url', 'telefone_whatsapp', 'endereco_loja', 'email_loja', 'instagram_usuario', 'tema_selecionado']
+          [Op.in]: ['nome_loja', 'logo_url', 'telefone_whatsapp', 'endereco_loja', 'email_loja', 'instagram_usuario', 'tema_selecionado', 'mensagem_entrega']
         }
       }
     });

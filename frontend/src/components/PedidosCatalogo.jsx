@@ -198,14 +198,31 @@ const PedidosCatalogo = () => {
     setPagina(1);
   };
 
-  const getStatusColor = (status) => {
-    const option = statusOptions.find(s => s.value === status);
-    return option?.color || 'gray';
+  const getStatusBadgeClass = (status) => {
+    const map = {
+      novo: 'bg-blue-100 text-blue-800',
+      processando: 'bg-yellow-100 text-yellow-800',
+      separacao: 'bg-purple-100 text-purple-800',
+      enviado: 'bg-indigo-100 text-indigo-800',
+      entregue: 'bg-green-100 text-green-800',
+      cancelado: 'bg-red-100 text-red-800',
+    };
+    return map[status] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusLabel = (status) => {
     const option = statusOptions.find(s => s.value === status);
     return option?.label || status;
+  };
+
+  const getFormaPagamentoLabel = (forma) => {
+    const map = { pix: '⚡ Pix', dinheiro: '💵 Dinheiro', credito: '💳 Crédito', debito: '🏧 Débito' };
+    return map[forma] || forma || '—';
+  };
+
+  const getTipoEntregaLabel = (tipo) => {
+    if (tipo === 'entrega') return '🚚 Entrega';
+    return '🏪 Retirada na loja';
   };
 
   const abrirWhatsApp = (telefone, nomePedido, numeroPedido) => {
@@ -266,7 +283,7 @@ const PedidosCatalogo = () => {
                 <div>
                   <p className="text-sm text-gray-600">Valor Total</p>
                   <p className="text-2xl font-bold text-green-600">
-                    R$ {(estatisticas.valor_total || 0).toFixed(2)}
+                    R$ {(estatisticas.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <TrendingUp className="text-green-600" size={32} />
@@ -278,7 +295,7 @@ const PedidosCatalogo = () => {
                 <div>
                   <p className="text-sm text-gray-600">Ticket Médio</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    R$ {(estatisticas.ticket_medio || 0).toFixed(2)}
+                    R$ {(estatisticas.ticket_medio || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <Package className="text-blue-600" size={32} />
@@ -445,7 +462,7 @@ const PedidosCatalogo = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full bg-${getStatusColor(pedido.status)}-100 text-${getStatusColor(pedido.status)}-800`}>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(pedido.status)}`}>
                           {getStatusLabel(pedido.status)}
                         </span>
                       </td>
@@ -455,7 +472,7 @@ const PedidosCatalogo = () => {
                         {pedido.origem === 'loja_fisica' && 'Loja Física'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
-                        R$ {parseFloat(pedido.valor_total).toFixed(2)}
+                        R$ {parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {new Date(pedido.criado_em).toLocaleDateString('pt-BR')}
@@ -503,8 +520,26 @@ const PedidosCatalogo = () => {
                     {isExpanded && (
                       <tr className="bg-gray-50">
                         <td colSpan="8" className="px-6 py-4">
-                          <div className="space-y-3">
-                            <h4 className="font-semibold text-sm text-gray-700 mb-3">Itens do Pedido:</h4>
+                            <div className="flex flex-wrap gap-4 text-sm mb-3">
+                              {pedido.tipo_entrega && (
+                                <span className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-3 py-1">
+                                  <span className="text-gray-500">Entrega:</span>
+                                  <span className="font-medium">{getTipoEntregaLabel(pedido.tipo_entrega)}</span>
+                                </span>
+                              )}
+                              {pedido.forma_pagamento && (
+                                <span className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-3 py-1">
+                                  <span className="text-gray-500">Pagamento:</span>
+                                  <span className="font-medium">{getFormaPagamentoLabel(pedido.forma_pagamento)}</span>
+                                </span>
+                              )}
+                              {pedido.cliente_endereco && (
+                                <span className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-3 py-1">
+                                  <span className="text-gray-500">Endereço:</span>
+                                  <span className="font-medium">{pedido.cliente_endereco}</span>
+                                </span>
+                              )}
+                            </div>
                             <div className="grid gap-3">
                               {pedido.items.map((item, idx) => (
                                 <div key={idx} className="bg-white rounded-lg p-3 flex items-center gap-3 shadow-sm">
@@ -531,10 +566,10 @@ const PedidosCatalogo = () => {
                                   </div>
                                   <div className="text-right">
                                     <p className="text-sm text-gray-600">
-                                      R$ {parseFloat(item.preco_unitario).toFixed(2)} un.
+                                      R$ {parseFloat(item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} un.
                                     </p>
                                     <p className="font-semibold text-primary">
-                                      R$ {(item.quantidade * parseFloat(item.preco_unitario)).toFixed(2)}
+                                      R$ {(item.quantidade * parseFloat(item.preco_unitario)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </p>
                                   </div>
                                 </div>
@@ -545,7 +580,7 @@ const PedidosCatalogo = () => {
                                 Total de itens: <span className="font-semibold">{pedido.items.length}</span>
                               </span>
                               <span className="text-lg font-bold text-primary">
-                                Total: R$ {parseFloat(pedido.valor_total).toFixed(2)}
+                                Total: R$ {parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
                           </div>
@@ -572,7 +607,7 @@ const PedidosCatalogo = () => {
                           <span className="font-semibold text-primary">
                             {pedido.numero_pedido}
                           </span>
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full bg-${getStatusColor(pedido.status)}-100 text-${getStatusColor(pedido.status)}-800`}>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeClass(pedido.status)}`}>
                             {getStatusLabel(pedido.status)}
                           </span>
                         </div>
@@ -597,10 +632,22 @@ const PedidosCatalogo = () => {
                           {new Date(pedido.criado_em).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
+                      {pedido.tipo_entrega && (
+                        <div>
+                          <span className="text-gray-500">Entrega:</span>
+                          <p className="font-medium text-gray-900">{getTipoEntregaLabel(pedido.tipo_entrega)}</p>
+                        </div>
+                      )}
+                      {pedido.forma_pagamento && (
+                        <div>
+                          <span className="text-gray-500">Pagamento:</span>
+                          <p className="font-medium text-gray-900">{getFormaPagamentoLabel(pedido.forma_pagamento)}</p>
+                        </div>
+                      )}
                       <div className="col-span-2">
                         <span className="text-gray-500">Valor Total:</span>
                         <p className="text-lg font-bold text-primary">
-                          R$ {parseFloat(pedido.valor_total).toFixed(2)}
+                          R$ {parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </p>
                       </div>
                     </div>
@@ -641,7 +688,7 @@ const PedidosCatalogo = () => {
                                 {item.cor} · {item.tamanho} · Qtd: {item.quantidade}
                               </p>
                               <p className="text-sm font-semibold text-primary">
-                                R$ {(item.quantidade * parseFloat(item.preco_unitario)).toFixed(2)}
+                                R$ {(item.quantidade * parseFloat(item.preco_unitario)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </p>
                             </div>
                           </div>
@@ -769,14 +816,20 @@ const ModalDetalhesPedido = ({ pedido, onFechar, onAtualizarStatus, statusOption
           {/* Dados do Cliente */}
           <div>
             <h3 className="font-semibold text-lg mb-3">Dados do Cliente</h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
               <p><span className="font-medium">Nome:</span> {pedido.cliente_nome}</p>
               <p><span className="font-medium">Telefone:</span> {pedido.cliente_telefone}</p>
-              {pedido.cliente_email && (
-                <p><span className="font-medium">E-mail:</span> {pedido.cliente_email}</p>
-              )}
-              {pedido.cliente_endereco && (
-                <p><span className="font-medium">Endereço:</span> {pedido.cliente_endereco}</p>
+              {pedido.cliente_email && <p><span className="font-medium">E-mail:</span> {pedido.cliente_email}</p>}
+              <div className="flex flex-wrap gap-4 pt-1">
+                {pedido.tipo_entrega && (
+                  <p><span className="font-medium">Entrega:</span> {pedido.tipo_entrega === 'retirada' ? '🏪 Retirada na loja' : '🚚 Entrega'}</p>
+                )}
+                {pedido.forma_pagamento && (
+                  <p><span className="font-medium">Pagamento:</span> {{ pix: '⚡ Pix', dinheiro: '💵 Dinheiro', credito: '💳 Crédito', debito: '🏧 Débito' }[pedido.forma_pagamento] || pedido.forma_pagamento}</p>
+                )}
+              </div>
+              {pedido.tipo_entrega === 'entrega' && pedido.cliente_endereco && (
+                <p><span className="font-medium">Endereço de entrega:</span> {pedido.cliente_endereco}</p>
               )}
             </div>
           </div>
@@ -800,12 +853,12 @@ const ModalDetalhesPedido = ({ pedido, onFechar, onAtualizarStatus, statusOption
                       {item.cor} - {item.tamanho}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {item.quantidade} x R$ {parseFloat(item.preco_unitario).toFixed(2)}
+                      {item.quantidade} x R$ {parseFloat(item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-primary">
-                      R$ {(item.quantidade * parseFloat(item.preco_unitario)).toFixed(2)}
+                      R$ {(item.quantidade * parseFloat(item.preco_unitario)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
@@ -817,17 +870,17 @@ const ModalDetalhesPedido = ({ pedido, onFechar, onAtualizarStatus, statusOption
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>R$ {parseFloat(pedido.subtotal).toFixed(2)}</span>
+              <span>R$ {parseFloat(pedido.subtotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
             </div>
             {pedido.desconto > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Desconto:</span>
-                <span>- R$ {parseFloat(pedido.desconto).toFixed(2)}</span>
+                <span>- R$ {parseFloat(pedido.desconto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold border-t pt-2">
               <span>Total:</span>
-              <span className="text-primary">R$ {parseFloat(pedido.valor_total).toFixed(2)}</span>
+              <span className="text-primary">R$ {parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
@@ -950,11 +1003,11 @@ const ModalDetalhesPedido = ({ pedido, onFechar, onAtualizarStatus, statusOption
           )}
 
           {/* Informações Adicionais */}
-          <div className="text-sm text-gray-600 space-y-1">
-            <p><span className="font-medium">Origem:</span> {pedido.origem}</p>
+          <div className="text-sm text-gray-600 space-y-1 border-t pt-4">
+            <p><span className="font-medium">Origem:</span> {pedido.origem === 'catalogo' ? 'Catálogo Online' : pedido.origem}</p>
             <p><span className="font-medium">Data:</span> {new Date(pedido.criado_em).toLocaleString('pt-BR')}</p>
             {pedido.observacoes && (
-              <p><span className="font-medium">Observações:</span> {pedido.observacoes}</p>
+              <p><span className="font-medium">Observações do cliente:</span> {pedido.observacoes}</p>
             )}
           </div>
         </div>
