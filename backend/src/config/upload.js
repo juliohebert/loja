@@ -1,26 +1,8 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-// Criar diretório de uploads se não existir
-const uploadDir = path.join(__dirname, '../../uploads/logos');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Configuração do storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Usar tenant_id no nome do arquivo para organização
-    const tenantId = req.tenantId || 'default';
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, `logo-${tenantId}-${uniqueSuffix}${ext}`);
-  }
-});
+// Configuração do storage - usar memoryStorage para Cloudinary
+// As imagens ficam em memória temporariamente antes de serem enviadas ao Cloudinary
+const storage = multer.memoryStorage();
 
 // Filtro para aceitar apenas imagens
 const fileFilter = (req, file, cb) => {

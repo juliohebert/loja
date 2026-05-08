@@ -96,7 +96,7 @@ exports.createProduct = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens, exibir_catalogo } = req.body;
+    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens, imagens_backup, exibir_catalogo } = req.body;
 
     console.log('🔵 [CREATE PRODUCT] Dados recebidos:', {
       nome,
@@ -133,6 +133,7 @@ exports.createProduct = async (req, res) => {
       precoCusto: parseFloat(precoCusto) || 0,
       precoVenda: parseFloat(precoVenda),
       imagens: imagens || [],
+      imagens_backup: imagens_backup || [], // Backup de segurança
       exibir_catalogo: exibirCatalogoValue,
       tenant_id: req.tenantId // Associar ao tenant
     }, { transaction: t });
@@ -390,7 +391,7 @@ exports.updateProduct = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens, exibir_catalogo } = req.body;
+    const { nome, descricao, marca, categoria, precoCusto, precoVenda, variacoes, imagens, imagens_backup, exibir_catalogo } = req.body;
 
     // Buscar produto existente com filtro de tenantId
     const product = await Product.findOne({
@@ -446,6 +447,7 @@ exports.updateProduct = async (req, res) => {
       precoCusto: parseFloat(precoCusto) || 0,
       precoVenda: parseFloat(precoVenda),
       imagens: imagens || [],
+      imagens_backup: imagens_backup || [], // Backup de segurança
       exibir_catalogo: exibirCatalogoValue
     }, { transaction: t });
 

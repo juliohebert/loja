@@ -1,0 +1,436 @@
+﻿/*
+ * tema.css — Overrides de tema visual
+  * REGRA: TODAS as regras escopadas sob html.tema-ativo
+ * Sem essa classe no <html>, este arquivo não tem efeito algum.
+ *
+ * FILOSOFIA: Menos é mais — só sobrescrever o necessário.
+ * NÃO tocar em: bg-green-*, bg-red-*, bg-amber-* (status/badges precisam ser visíveis)
+ */
+
+/* ══════════════════════════════════════════════════
+   1. FUNDO DA PÁGINA
+══════════════════════════════════════════════════ */
+html.tema-ativo body {
+  background-color: var(--color-background) !important;
+  color: var(--color-texto) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   2. SIDEBAR — prioridade alta (sobrescreve bg-white)
+══════════════════════════════════════════════════ */
+html.tema-ativo div[class*="w-64"][class*="h-screen"] {
+  background-color: var(--color-sidebar) !important;
+  border-right-color: rgba(0,0,0,0.2) !important;
+}
+
+html.tema-ativo div[class*="w-64"][class*="h-screen"] span:not([class*="bg-"]),
+html.tema-ativo div[class*="w-64"][class*="h-screen"] h1,
+html.tema-ativo div[class*="w-64"][class*="h-screen"] h2,
+html.tema-ativo div[class*="w-64"][class*="h-screen"] p,
+html.tema-ativo div[class*="w-64"][class*="h-screen"] a,
+html.tema-ativo div[class*="w-64"][class*="h-screen"] button,
+html.tema-ativo div[class*="w-64"][class*="h-screen"] svg {
+  color: var(--color-sidebar-texto) !important;
+}
+
+html.tema-ativo div[class*="w-64"][class*="h-screen"] [class*="bg-blue-"],
+html.tema-ativo div[class*="w-64"][class*="h-screen"] [class*="bg-primary"] {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   3. CARDS E PAINÉIS
+══════════════════════════════════════════════════ */
+html.tema-ativo .bg-white {
+  background-color: var(--color-background-secundario) !important;
+}
+
+/* Modais: painel interno deve ter fundo sólido e texto legível.
+   Cobre três padrões de estrutura encontrados nos componentes:
+   1) fixed inset-0 > div.bg-white          (Financeiro, Caixa, Contas, etc.)
+   2) fixed inset-0 > div > div.bg-white    (alguns com wrapper extra)
+   3) div.shadow-2xl.bg-white               (Modal.jsx, PDV, NovoCliente)
+   4) div.shadow-xl.bg-white                (GerenciarDebitos, etc.)
+*/
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"],
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div > div[class~="bg-white"],
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class*="rounded"][class~="bg-white"],
+html.tema-ativo div[class*="shadow-2xl"][class~="bg-white"],
+html.tema-ativo div[class*="shadow-xl"][class~="bg-white"] {
+  background-color: #fdf6f6 !important;
+}
+
+/* Textos dentro de painéis de modal */
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"] h1,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"] h2,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"] h3,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div > div[class~="bg-white"] h1,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div > div[class~="bg-white"] h2,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div > div[class~="bg-white"] h3,
+html.tema-ativo div[class*="shadow-2xl"][class~="bg-white"] h1,
+html.tema-ativo div[class*="shadow-2xl"][class~="bg-white"] h2,
+html.tema-ativo div[class*="shadow-2xl"][class~="bg-white"] h3,
+html.tema-ativo div[class*="shadow-xl"][class~="bg-white"] h2,
+html.tema-ativo div[class*="shadow-xl"][class~="bg-white"] h3 {
+  color: #2D1F1F !important;
+}
+
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"] p,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"] label,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div[class~="bg-white"] span:not([class*="bg-"]):not([class*="text-red"]):not([class*="text-green"]):not([class*="text-yellow"]):not([class*="text-orange"]),
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div > div[class~="bg-white"] p,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] > div > div[class~="bg-white"] label,
+html.tema-ativo div[class*="shadow-2xl"][class~="bg-white"] p,
+html.tema-ativo div[class*="shadow-xl"][class~="bg-white"] p {
+  color: #5C4A4A !important;
+}
+
+/* Botão neutro (Cancelar/Voltar) dentro de modais */
+html.tema-ativo div[class~="fixed"][class~="inset-0"] button[class*="bg-slate-2"],
+html.tema-ativo div[class~="fixed"][class~="inset-0"] button[class*="border-gray-3"],
+html.tema-ativo div[class*="shadow-2xl"] button[class*="bg-slate-2"],
+html.tema-ativo div[class*="shadow-xl"] button[class*="bg-slate-2"] {
+  background-color: #ece4e4 !important;
+  border-color: #c9aaaa !important;
+  color: #2D1F1F !important;
+}
+html.tema-ativo div[class~="fixed"][class~="inset-0"] button[class*="bg-slate-2"]:hover,
+html.tema-ativo div[class~="fixed"][class~="inset-0"] button[class*="border-gray-3"]:hover,
+html.tema-ativo div[class*="shadow-2xl"] button[class*="bg-slate-2"]:hover {
+  background-color: #ddd0d0 !important;
+}
+
+html.tema-ativo .bg-gray-50,
+html.tema-ativo .bg-slate-50 {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   4. BOTÕES DE AÇÃO (azul → marrom temático)
+   Apenas variantes escuras. NÃO toca green/red/amber.
+══════════════════════════════════════════════════ */
+html.tema-ativo button[class*="bg-blue-5"]:not([class*="bg-blue-50"]),
+html.tema-ativo button[class*="bg-blue-6"],
+html.tema-ativo button[class*="bg-blue-7"],
+html.tema-ativo button[class*="bg-blue-8"],
+html.tema-ativo a[class*="bg-blue-5"]:not([class*="bg-blue-50"]),
+html.tema-ativo a[class*="bg-blue-6"],
+html.tema-ativo a[class*="bg-blue-7"] {
+  background-color: var(--color-primaria) !important;
+  border-color: var(--color-primaria) !important;
+  color: #fff !important;
+}
+
+html.tema-ativo button[class*="bg-blue-5"]:not([class*="bg-blue-50"]):hover,
+html.tema-ativo button[class*="bg-blue-6"]:hover,
+html.tema-ativo button[class*="bg-blue-7"]:hover {
+  background-color: var(--color-primaria-hover) !important;
+}
+
+html.tema-ativo button[class*="from-blue-6"],
+html.tema-ativo button[class*="from-blue-7"] {
+  background: var(--color-primaria) !important;
+  color: #fff !important;
+}
+
+html.tema-ativo button[class*="from-blue-6"]:hover,
+html.tema-ativo button[class*="from-blue-7"]:hover {
+  background: var(--color-primaria-hover) !important;
+}
+
+html.tema-ativo button[class*="bg-indigo-5"],
+html.tema-ativo button[class*="bg-indigo-6"],
+html.tema-ativo button[class*="bg-indigo-7"] {
+  background-color: var(--color-secundaria) !important;
+  color: #fff !important;
+}
+
+html.tema-ativo span[class~="bg-blue-500"],
+html.tema-ativo span[class~="bg-blue-600"] {
+  background-color: var(--color-primaria) !important;
+  color: #fff !important;
+}
+
+/* ══════════════════════════════════════════════════
+   5. HEADER COM GRADIENTE
+══════════════════════════════════════════════════ */
+html.tema-ativo header[class*="from-blue-6"],
+html.tema-ativo header[class*="from-blue-7"],
+html.tema-ativo header[class*="bg-gradient"][class*="blue"] {
+  background: linear-gradient(to right, var(--color-primaria), var(--color-primaria-hover)) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   6. CONTAINERS CLAROS
+══════════════════════════════════════════════════ */
+/* Containers claros bg-blue-50 — usar [class~=] para NÃO pegar bg-blue-500 */
+html.tema-ativo div[class*="from-blue-50"],
+html.tema-ativo div[class~="bg-blue-50"] {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-color: var(--color-borda) !important;
+}
+
+/* Caixinhas de ícone com fundo azul sólido (bg-blue-500, bg-blue-600) — manter svg branco */
+html.tema-ativo div[class~="bg-blue-500"],
+html.tema-ativo div[class~="bg-blue-600"] {
+  background-color: var(--color-primaria) !important;
+  color: #fff !important;
+}
+html.tema-ativo div[class~="bg-blue-500"] svg,
+html.tema-ativo div[class~="bg-blue-600"] svg {
+  color: #fff !important;
+}
+
+/* ══════════════════════════════════════════════════
+   7. TEXTOS
+══════════════════════════════════════════════════ */
+
+/* Cabeçalhos com gradiente azul → fundo escuro: preservar texto branco */
+html.tema-ativo header[class*="from-blue-"] h1,
+html.tema-ativo header[class*="from-blue-"] h2,
+html.tema-ativo header[class*="from-blue-"] h3,
+html.tema-ativo header[class*="from-blue-"] p,
+html.tema-ativo header[class*="from-blue-"] span:not([class*="bg-"]),
+html.tema-ativo header[class*="from-blue-"] button,
+html.tema-ativo header[class*="from-blue-"] svg {
+  color: #fff !important;
+}
+html.tema-ativo header[class*="from-blue-"] [class*="text-blue-"],
+html.tema-ativo header[class*="from-blue-"] [class*="text-white"] {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+/* Aba ativa (bg-white text-blue-600) dentro do header: mantém legível */
+html.tema-ativo header[class*="from-blue-"] button[class*="bg-white"] {
+  color: var(--color-primaria) !important;
+}
+
+html.tema-ativo h1, html.tema-ativo h2, html.tema-ativo h3,
+html.tema-ativo h4, html.tema-ativo h5, html.tema-ativo h6 {
+  color: var(--color-texto) !important;
+}
+
+html.tema-ativo [class*="text-gray-9"],
+html.tema-ativo [class*="text-gray-8"],
+html.tema-ativo [class*="text-slate-9"] {
+  color: var(--color-texto) !important;
+}
+
+html.tema-ativo [class*="text-gray-4"],
+html.tema-ativo [class*="text-gray-5"],
+html.tema-ativo [class*="text-gray-6"],
+html.tema-ativo [class*="text-gray-7"],
+html.tema-ativo [class*="text-slate-5"],
+html.tema-ativo [class*="text-slate-6"] {
+  color: var(--color-texto-secundario) !important;
+}
+
+html.tema-ativo [class*="text-blue-"] {
+  color: var(--color-primaria) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   7b. bg-primary, text-indigo e peer-checked
+══════════════════════════════════════════════════ */
+
+/* Botões com bg-primary (Tailwind hardcoded) */
+html.tema-ativo [class~="bg-primary"] {
+  background-color: var(--color-primaria) !important;
+  color: #fff !important;
+}
+html.tema-ativo [class~="bg-primary"]:hover,
+html.tema-ativo [class*="hover:bg-primary"]:hover {
+  background-color: var(--color-primariaHover, var(--color-primaria)) !important;
+  filter: brightness(0.88);
+}
+
+/* Links/textos indigo (ex: "Adicionar Variações") */
+html.tema-ativo [class*="text-indigo-"] {
+  color: var(--color-primaria) !important;
+}
+
+/* Ícones text-primary (ex: Acesso Rápido do Dashboard) */
+html.tema-ativo [class~="text-primary"] {
+  color: #413434 !important;
+}
+
+/* Toggle switch — peer-checked:bg-blue-600 */
+html.tema-ativo [class*="peer-checked:bg-blue-"] {
+  background-color: #d1c0c0 !important; /* unchecked: rosê neutro */
+}
+html.tema-ativo input[type="checkbox"]:checked ~ [class*="peer-checked:bg-blue-"] {
+  background-color: var(--color-primaria) !important;
+}
+
+/* Focus ring do toggle: peer-focus:ring-blue-* */
+html.tema-ativo [class*="peer-focus:ring-blue-"] {
+  --tw-ring-color: var(--color-primaria) !important;
+  --tw-ring-opacity: 0.3 !important;
+}
+
+/* ══════════════════════════════════════════════════
+   8. BORDAS
+══════════════════════════════════════════════════ */
+html.tema-ativo [class*="border-gray-"],
+html.tema-ativo [class*="border-slate-"] {
+  border-color: var(--color-borda) !important;
+}
+
+html.tema-ativo [class*="border-blue-5"],
+html.tema-ativo [class*="border-blue-6"] {
+  border-color: var(--color-primaria) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   9. INPUTS
+══════════════════════════════════════════════════ */
+html.tema-ativo input,
+html.tema-ativo textarea,
+html.tema-ativo select {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--color-texto) !important;
+  border-color: var(--color-borda) !important;
+}
+
+html.tema-ativo input:focus,
+html.tema-ativo textarea:focus,
+html.tema-ativo select:focus {
+  border-color: var(--color-primaria) !important;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.tema-ativo input::placeholder,
+html.tema-ativo textarea::placeholder {
+  color: var(--color-texto-secundario) !important;
+  opacity: 0.8 !important;
+}
+
+/* ══════════════════════════════════════════════════
+   10. TABELAS
+══════════════════════════════════════════════════ */
+html.tema-ativo thead th {
+  background-color: rgba(74, 59, 59, 0.12) !important;
+  color: var(--color-texto) !important;
+}
+
+html.tema-ativo tbody tr:hover {
+  background-color: rgba(74, 59, 59, 0.07) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   11. TAB ATIVA
+══════════════════════════════════════════════════ */
+html.tema-ativo [class*="border-b-2"][class*="border-blue-"] {
+  border-color: var(--color-primaria) !important;
+  color: var(--color-primaria) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   11b. BOTÕES DE SELEÇÃO COM border-primary / bg-primary/10
+   (ex: formas de pagamento no PDV)
+══════════════════════════════════════════════════ */
+
+/* Estado selecionado: border-primary + bg-primary/10 */
+html.tema-ativo button[class~="border-primary"] {
+  border-color: var(--color-primaria) !important;
+  background-color: var(--color-primaria) !important;
+  color: #fff !important;
+}
+html.tema-ativo button[class~="border-primary"] svg {
+  color: #fff !important;
+}
+/* Estado não-selecionado hover: hover:border-primary hover:bg-primary/5 */
+html.tema-ativo button[class*="hover:border-primary"]:hover {
+  border-color: var(--color-primaria) !important;
+  background-color: rgba(74, 59, 59, 0.08) !important;
+  color: var(--color-primaria) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   12. TRANSIÇÕES SUAVES
+══════════════════════════════════════════════════ */
+html.tema-ativo [class*="to-indigo-"],
+html.tema-ativo [class*="to-blue-"] {
+  --tw-gradient-to: var(--color-secundaria) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   13. ESTADOS DE HOVER, ACTIVE E FOCUS — harmonização
+══════════════════════════════════════════════════ */
+
+/* — Sidebar: hover/active em itens inativos do menu — */
+html.tema-ativo div[class*="w-64"][class*="h-screen"] [class*="hover:bg-gray-"]:hover {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+}
+html.tema-ativo div[class*="w-64"][class*="h-screen"] [class*="hover:bg-gray-"]:active {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* — Botões de ação clara (Editar, tipo bg-blue-50) — */
+html.tema-ativo button[class~="bg-blue-50"],
+html.tema-ativo a[class~="bg-blue-50"] {
+  background-color: rgba(74, 59, 59, 0.12) !important;
+  color: var(--color-primaria) !important;
+}
+html.tema-ativo button[class~="bg-blue-50"]:hover,
+html.tema-ativo a[class~="bg-blue-50"]:hover {
+  background-color: rgba(74, 59, 59, 0.22) !important;
+  color: var(--color-primaria) !important;
+}
+html.tema-ativo button[class~="bg-blue-50"]:active,
+html.tema-ativo a[class~="bg-blue-50"]:active {
+  background-color: rgba(74, 59, 59, 0.32) !important;
+}
+
+/* — Botões primários escuros: feedback de clique — */
+html.tema-ativo button[class*="bg-blue-5"]:not([class*="bg-blue-50"]):active,
+html.tema-ativo button[class*="bg-blue-6"]:active,
+html.tema-ativo button[class*="bg-blue-7"]:active {
+  background-color: var(--color-texto) !important;
+}
+
+/* — Botões secundários (bg-slate-200, Registrar Perda, etc.) — */
+html.tema-ativo button[class*="bg-slate-2"],
+html.tema-ativo button[class*="bg-slate-1"] {
+  background-color: rgba(255, 255, 255, 0.38) !important;
+  color: var(--color-texto) !important;
+}
+html.tema-ativo button[class*="bg-slate-2"]:hover,
+html.tema-ativo button[class*="bg-slate-1"]:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--color-texto) !important;
+}
+html.tema-ativo button[class*="bg-slate-2"]:active,
+html.tema-ativo button[class*="bg-slate-1"]:active {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* — Hover de botões ícone/ghost (paginação, ações de tabela) — */
+html.tema-ativo [class*="hover:bg-slate-1"]:hover {
+  background-color: rgba(74, 59, 59, 0.1) !important;
+}
+html.tema-ativo [class*="hover:bg-slate-2"]:hover,
+html.tema-ativo [class*="hover:bg-slate-3"]:hover {
+  background-color: rgba(74, 59, 59, 0.15) !important;
+}
+
+/* — Abas (tabs): hover em aba inativa — */
+html.tema-ativo [class*="border-b-transparent"]:hover {
+  color: var(--color-secundaria) !important;
+  background-color: rgba(74, 59, 59, 0.05) !important;
+}
+
+/* — Focus ring harmonizado — */
+html.tema-ativo button:focus-visible,
+html.tema-ativo a:focus-visible {
+  outline-color: var(--color-primaria) !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Transições suaves ao trocar tema ── */
+html.tema-ativo *,
+html.tema-ativo *::before,
+html.tema-ativo *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}

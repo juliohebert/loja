@@ -10,7 +10,7 @@ import {
   Upload
 } from 'lucide-react';
 import Sidebar from './Sidebar';
-import { getAuthHeaders } from '../utils/auth';
+import { getAuthHeaders, getTenantId } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import API_URL from '../config/apiUrl';
@@ -71,6 +71,8 @@ export default function CriarProdutoNovo() {
 
   // Imagens
   const [imagens, setImagens] = useState([]);
+  const [imagensBackup, setImagensBackup] = useState([]); // Backup thumbnails
+  const [uploadandoImagem, setUploadandoImagem] = useState(false);
 
   // Estados de UI
   const [mostrarVariacoes, setMostrarVariacoes] = useState(false);
@@ -269,8 +271,8 @@ export default function CriarProdutoNovo() {
     return (venda - custo).toFixed(2).replace('.', ',');
   };
 
-  // Upload de imagem
-  const handleImageUpload = (e) => {
+  // Upload de imagem para Cloudinary
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -292,17 +294,54 @@ export default function CriarProdutoNovo() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagens(prev => [...prev, reader.result]);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+    setUploadandoImagem(true);
+
+    try {
+      // Criar FormData para enviar o arquivo
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Obter headers de autenticação (SEM Content-Type para FormData)
+      const token = localStorage.getItem('token');
+      const tenantId = getTenantId();
+      
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (tenantId) headers['x-tenant-id'] = tenantId;
+
+      // Fazer upload para o backend que irá enviar para Cloudinary
+      const response = await fetch(`${API_URL}/api/upload/image`, {
+        method: 'POST',
+        headers, // SEM Content-Type - navegador define automaticamente
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao fazer upload da imagem');
+      }
+
+      const data = await response.json();
+      
+      // Adicionar URL do Cloudinary e backup thumbnail
+      setImagens(prev => [...prev, data.url]);
+      setImagensBackup(prev => [...prev, data.backup]); // Salvar backup para enviar ao backend
+
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      setModalErro({
+        isOpen: true,
+        mensagem: 'Erro ao fazer upload da imagem. Tente novamente.'
+      });
+    } finally {
+      setUploadandoImagem(false);
+      e.target.value = '';
+    }
   };
 
   // Remover imagem
   const removerImagem = (index) => {
     setImagens(prev => prev.filter((_, i) => i !== index));
+    setImagensBackup(prev => prev.filter((_, i) => i !== index));
   };
 
   // Adicionar variação
@@ -392,6 +431,7 @@ export default function CriarProdutoNovo() {
         quantidade: controleEstoque.quantidade,
         estoqueMinimo: controleEstoque.estoqueMinimo,
         imagens: imagens,
+        imagens_backup: imagensBackup, // Backup de segurança no Neon
         variacoes: variacoesParaEnviar
       };
 
@@ -498,7 +538,7 @@ export default function CriarProdutoNovo() {
         {/* Conteúdo Principal */}
         <div className="main-content">
         {/* Header fixo */}
-        <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-700 pl-16 pr-6 lg:px-6 h-16 bg-white dark:bg-gray-800 shadow-sm">
+        <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-700 pl-16 pr-6 lg:px-6 h-12 sm:h-14 bg-white dark:bg-gray-800 shadow-sm">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard')}
@@ -1117,15 +1157,27 @@ export default function CriarProdutoNovo() {
                       {imagens.length < 4 && (
                         <label className="flex items-center justify-center w-full h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                           <div className="flex items-center gap-2">
-                            <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              Adicionar mais imagens
-                            </span>
+                            {uploadandoImagem ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Enviando...
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Adicionar mais imagens
+                                </span>
+                              </>
+                            )}
                           </div>
                           <input
                             type="file"
                             accept="image/*"
                             onChange={handleImageUpload}
+                            disabled={uploadandoImagem}
                             className="hidden"
                           />
                         </label>

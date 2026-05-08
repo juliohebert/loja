@@ -28,6 +28,7 @@ const PDV = () => {
   const [formaPagamento, setFormaPagamento] = useState('Dinheiro');
   const [emitirNota, setEmitirNota] = useState(false);
   const [carregando, setCarregando] = useState(true);
+  const [finalizando, setFinalizando] = useState(false);
   const [usuario, setUsuario] = useState(null);
   const [troco, setTroco] = useState('');
   const [modalVariacao, setModalVariacao] = useState({ isOpen: false, produto: null });
@@ -168,23 +169,18 @@ const PDV = () => {
 
   const buscarVendedores = async () => {
     try {
-      console.log('🔍 Buscando vendedores...');
       const response = await fetch(API_URL + '/api/users', {
         headers: getAuthHeaders()
       });
 
-      console.log('📡 Response status:', response.status);
-
       if (response.ok) {
         const result = await response.json();
-        console.log('👥 Todos os usuários:', result);
         
         // A API retorna { success, count, data }
         const usuarios = result.data || result;
         
         // Filtrar apenas vendedores ativos (somente função 'vendedor')
         const vendedoresAtivos = usuarios.filter(u => u.ativo && u.funcao === 'vendedor');
-        console.log('✅ Vendedores ativos:', vendedoresAtivos);
         
         setVendedores(vendedoresAtivos);
         
@@ -192,11 +188,9 @@ const PDV = () => {
         const dadosUsuario = localStorage.getItem('usuario');
         if (dadosUsuario) {
           const user = JSON.parse(dadosUsuario);
-          console.log('👤 Definindo vendedor padrão:', user.nome);
           setVendedorSelecionado(user.nome);
         }
       } else {
-        console.error('❌ Erro na resposta:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('❌ Erro ao buscar vendedores:', error);
@@ -213,7 +207,6 @@ const PDV = () => {
       if (!response.ok) throw new Error('Falha ao buscar produtos');
 
       const data = await response.json();
-      console.log('🔍 Dados da API:', data.data[0]); // Debug
       
       // Agrupar produtos (não mostrar variações separadas no grid)
       const produtosAgrupados = data.data.map(produto => ({
@@ -237,8 +230,6 @@ const PDV = () => {
         })) : []
       }));
       
-      console.log('✅ Produtos processados:', produtosAgrupados[0]); // Debug
-
       setProdutos(produtosAgrupados);
       setProdutosFiltrados(produtosAgrupados);
     } catch (error) {
@@ -304,10 +295,8 @@ const PDV = () => {
       
       // Se produto tem múltiplas variações ou usuário quer escolher, abrir modal
       if (variacoesComEstoque.length > 1) {
-        console.log('🔄 Abrindo modal de seleção...');
         setModalVariacao({ isOpen: true, produto });
       } else if (variacoesComEstoque.length === 1) {
-        console.log('➕ Adicionando variação única ao carrinho...');
         const variacao = variacoesComEstoque[0];
         adicionarVariacaoAoCarrinho(produto, variacao);
       }
@@ -319,8 +308,6 @@ const PDV = () => {
 
   const adicionarVariacaoAoCarrinho = (produto, variacao) => {
     try {
-      console.log('➕ Adicionando variação ao carrinho:', { produto, variacao });
-      
       const itemExistente = carrinho.find(item => item.variacaoId === variacao.id);
       const quantidadeEstoque = variacao.estoque?.quantidade || 0;
       
@@ -345,7 +332,6 @@ const PDV = () => {
           estoqueMax: quantidadeEstoque,
           estoqueDisponivel: quantidadeEstoque
         };
-        console.log('🆕 Novo item no carrinho:', novoItem);
         setCarrinho([...carrinho, novoItem]);
       }
       
@@ -448,6 +434,9 @@ const PDV = () => {
   };
 
   const finalizarVenda = async () => {
+    if (finalizando) return;
+    setFinalizando(true);
+    try {
     if (carrinho.length === 0) {
       setModalInfo({
         isOpen: true,
@@ -566,6 +555,9 @@ const PDV = () => {
     limparVenda();
     buscarProdutos();
     localStorage.setItem('dashboard_atualizar', Date.now().toString());
+    } finally {
+      setFinalizando(false);
+    }
   };
 
   const registrarVendaNoFinanceiro = async (venda) => {
@@ -661,7 +653,6 @@ const PDV = () => {
 
       if (responseSale.ok) {
         const saleData = await responseSale.json();
-        console.log('✅ Venda salva no banco de dados:', saleData);
       } else {
         console.error('❌ Erro ao salvar venda no banco de dados');
       }
@@ -689,8 +680,6 @@ const PDV = () => {
               data: dataHoje
             };
 
-            console.log('📤 Enviando transação:', transacaoCliente);
-
             const responseTransacaoCliente = await fetch(`${API_URL}/api/customers/${clienteSelecionado}/transactions`, {
               method: 'POST',
               headers: getAuthHeaders(),
@@ -698,8 +687,6 @@ const PDV = () => {
             });
 
             if (responseTransacaoCliente.ok) {
-              console.log('✅ Transação de uso de crédito registrada no histórico do cliente');
-              
               // Atualizar dados do cliente na interface após uso do crédito
               await verificarStatusFinanceiroCliente(clienteSelecionado);
             } else {
@@ -722,8 +709,6 @@ const PDV = () => {
           data: dataHoje
         };
 
-        console.log('📤 Enviando transação de pagamento:', transacaoPagamento);
-
         const responseTransacaoPagamento = await fetch(`${API_URL}/api/customers/${clienteSelecionado}/transactions`, {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -731,8 +716,6 @@ const PDV = () => {
         });
 
         if (responseTransacaoPagamento.ok) {
-          console.log('✅ Pagamento de débito registrado no histórico do cliente');
-          
           // Atualizar dados do cliente na interface após pagamento
           await verificarStatusFinanceiroCliente(clienteSelecionado);
         } else {
@@ -788,11 +771,9 @@ const PDV = () => {
       const response = await fetch('/api/customers', { headers });
       if (response.ok) {
         const data = await response.json();
-        console.log('📋 Resposta da API de clientes:', data);
         // Verificar se data é um array ou um objeto com propriedade data
         const clientesArray = Array.isArray(data) ? data : (data.data || []);
         setClientes(clientesArray);
-        console.log('✅ Clientes carregados:', clientesArray.length);
       } else {
         console.error('Erro ao buscar clientes:', response.statusText);
         setClientes([]);
@@ -822,7 +803,6 @@ const PDV = () => {
       });
 
       if (!response.ok) {
-        console.log('❌ Erro ao buscar cliente');
         setStatusFinanceiroCliente(null);
         setCreditoDisponivel(0);
         setUsarCredito(false);
@@ -834,24 +814,16 @@ const PDV = () => {
 
       const { data: clienteEncontrado } = await response.json();
       
-      console.log('👤 Cliente selecionado:', clienteEncontrado);
-      console.log('💰 Débito do cliente:', clienteEncontrado.debito);
-      console.log('💳 Limite de crédito:', clienteEncontrado.limiteCredito);
-      
       const valorDebito = parseFloat(clienteEncontrado.debito) || 0;
       const limiteCredito = parseFloat(clienteEncontrado.limiteCredito) || 0;
       const creditoDisp = limiteCredito - valorDebito;
-      
-      console.log('✨ Crédito disponível:', creditoDisp);
       
       setCreditoDisponivel(creditoDisp > 0 ? creditoDisp : 0);
       setDebitoPendente(valorDebito);
       
       if (valorDebito > 0) {
-        console.log('🔴 Cliente possui débito de R$', valorDebito);
         setStatusFinanceiroCliente('debito');
       } else {
-        console.log('✅ Cliente sem débito');
         setStatusFinanceiroCliente('credito');
       }
 
@@ -878,8 +850,8 @@ const PDV = () => {
       {/* Conteúdo Principal */}
       <div className="main-content content-with-hamburger flex flex-col">
         {/* Header do PDV */}
-        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-4 sm:px-6 h-16 bg-white mobile-header-spacing">
-          <h2 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
+        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-4 sm:px-6 h-12 sm:h-14 bg-white mobile-header-spacing">
+          <h2 className="text-slate-900 text-lg sm:text-xl lg:text-2xl font-bold leading-tight">
             Ponto de Venda (PDV)
           </h2>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -1352,9 +1324,12 @@ const PDV = () => {
               
               <button
                 onClick={finalizarVenda}
-                className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-4 bg-primary hover:bg-blue-700 text-white text-lg font-bold tracking-[0.015em]"
+                disabled={finalizando}
+                className="w-full flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-4 bg-primary hover:bg-blue-700 text-white text-lg font-bold tracking-[0.015em] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Finalizar Venda
+                {finalizando ? (
+                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>Finalizando...</>
+                ) : 'Finalizar Venda'}
               </button>
               
               <div className="grid grid-cols-2 gap-2 sm:gap-3">

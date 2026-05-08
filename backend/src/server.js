@@ -27,6 +27,7 @@ const planRoutes = require('./routes/planRoutes'); // Importar rotas de planos
 const adminRoutes = require('./routes/adminRoutes'); // Importar rotas de admin (TEMPORÁRIO)
 const catalogoRoutes = require('./routes/catalogoRoutes'); // Rotas públicas do catálogo
 const pedidosCatalogoRoutes = require('./routes/pedidosCatalogoRoutes'); // Rotas admin de pedidos
+const uploadRoutes = require('./routes/uploadRoutes'); // Rotas de upload de imagens
 const { initializeDefaultConfigurations } = require('./controllers/configurationController');
 const { Client } = require('pg'); // Adicionar cliente do PostgreSQL para manipulação direta do banco
 const tenantMiddleware = require('./middleware/tenantMiddleware');
@@ -78,12 +79,17 @@ const corsOptions = {
 
 // Middlewares
 app.use(cors(corsOptions));
-// Aumentar limite para suportar upload de imagens em base64 (padrão é ~100kb)
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// IMPORTANTE: Rotas de upload ANTES do express.json() 
+// (multipart/form-data não deve passar pelo JSON parser)
+app.use('/api/upload', uploadRoutes);
+
+// Aumentar limite para suportar upload de imagens em base64 (padrão é ~100kb)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Middleware para capturar o tenantId, exceto para /api/subscriptions/metrics
 
@@ -117,11 +123,13 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 }));
 
 // Rotas
-app.use('/api/auth', authRoutes);
+// app.use('/api/upload', uploadRoutes); // MOVIDO PARA ANTES DO express.json(
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/admin', adminRoutes); // Rota de admin (TEMPORÁRIO - DELETE DEPOIS!)
 app.use('/api/catalogo', catalogoRoutes); // Rotas públicas do catálogo (sem auth)
 app.use('/api/pedidos-catalogo', pedidosCatalogoRoutes); // Rotas admin de pedidos (com auth)
+app.use('/api/upload', uploadRoutes); // Rotas de upload de imagens (com auth)
+app.use('/api/auth', authRoutes); // Rotas de autenticação
 app.use('/api', productRoutes);
 app.use('/api', customerRoutes);
 app.use('/api/cash-registers', cashRegisterRoutes);

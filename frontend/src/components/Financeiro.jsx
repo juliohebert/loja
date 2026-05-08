@@ -72,8 +72,6 @@ const Financeiro = () => {
   };
 
   const carregarLancamentos = async () => {
-    console.log('💰 [FINANCEIRO] Carregando lançamentos...');
-    
     try {
       // Buscar vendas da API
       const responseVendas = await fetch(API_URL + '/api/sales', {
@@ -84,7 +82,6 @@ const Financeiro = () => {
       if (responseVendas.ok) {
         const dataVendas = await responseVendas.json();
         const vendas = dataVendas.data || [];
-        console.log('✅ [FINANCEIRO] Vendas carregadas da API:', vendas.length);
         
         // Converter vendas em lançamentos (filtrar vendas canceladas)
         lancamentosVendas = vendas
@@ -122,7 +119,6 @@ const Financeiro = () => {
         if (responseReceber.ok) {
           const dataReceber = await responseReceber.json();
           const contasReceber = dataReceber.data || [];
-          console.log('✅ [FINANCEIRO] Contas a receber carregadas:', contasReceber.length);
           
           lancamentosReceber = contasReceber
             .filter(conta => conta.ativo !== false) // Filtrar apenas contas ativas
@@ -152,7 +148,6 @@ const Financeiro = () => {
         if (responsePagar.ok) {
           const dataPagar = await responsePagar.json();
           const contasPagar = dataPagar.data || [];
-          console.log('✅ [FINANCEIRO] Contas a pagar carregadas:', contasPagar.length);
           
           lancamentosPagar = contasPagar
             .filter(conta => conta.ativo !== false) // Filtrar apenas contas ativas
@@ -182,8 +177,6 @@ const Financeiro = () => {
       lancamentosManuais = lancamentosManuais.filter(lanc => 
         !lanc.descricao?.startsWith('Venda #') || lanc.tipo === 'despesa'
       );
-
-      console.log('📝 [FINANCEIRO] Lançamentos manuais (localStorage):', lancamentosManuais.length);
       
       // Combinar todos os lançamentos
       const todosLancamentos = [...lancamentosVendas, ...lancamentosReceber, ...lancamentosPagar, ...lancamentosManuais];
@@ -195,7 +188,6 @@ const Financeiro = () => {
         return dataB - dataA;
       });
 
-      console.log('📊 [FINANCEIRO] Total de lançamentos:', todosLancamentos.length);
       setLancamentos(todosLancamentos);
     } catch (error) {
       console.error('❌ [FINANCEIRO] Erro ao carregar lançamentos:', error);
@@ -209,8 +201,6 @@ const Financeiro = () => {
   };
 
   const carregarVendasCanceladas = async () => {
-    console.log('🔴 [FINANCEIRO] Carregando vendas canceladas...');
-    
     try {
       const response = await fetch(API_URL + '/api/sales', {
         headers: getAuthHeaders()
@@ -238,7 +228,6 @@ const Financeiro = () => {
             formaPagamento: venda.formaPagamento
           }));
         
-        console.log('✅ [FINANCEIRO] Vendas canceladas:', canceladas.length);
         setVendasCanceladas(canceladas);
       } else {
         console.warn('⚠️ [FINANCEIRO] Falha ao buscar vendas canceladas');
@@ -271,15 +260,6 @@ const Financeiro = () => {
 
   const handleRemover = async (id) => {
     const lancamento = lancamentos.find(l => l.id === id);
-    
-    console.log('🗑️ [REMOVER] Lançamento encontrado:', {
-      id,
-      categoria: lancamento?.categoria,
-      isVenda: lancamento?.isVenda,
-      descricao: lancamento?.descricao,
-      tipo: lancamento?.tipo,
-      bloqueado: lancamento?.isVenda || lancamento?.categoria === 'Venda' || lancamento?.descricao?.startsWith('Venda #')
-    });
     
     // Não permitir remover vendas vindas da API, com categoria Venda ou descrição começando com "Venda #"
     if (lancamento?.isVenda || lancamento?.categoria === 'Venda' || lancamento?.descricao?.startsWith('Venda #')) {
@@ -432,7 +412,6 @@ const Financeiro = () => {
   };
 
   const handleCancelarVenda = (id, numeroVenda) => {
-    console.log('🔴 [CANCELAR VENDA] Abrindo modal para venda:', { id, numeroVenda });
     setModalCancelar({ isOpen: true, vendaId: id, numeroVenda });
     setMotivoCancelamento('');
   };
@@ -444,11 +423,6 @@ const Financeiro = () => {
     }
 
     try {
-      console.log('🔴 [CANCELAR VENDA] Enviando cancelamento:', {
-        vendaId: modalCancelar.vendaId,
-        motivo: motivoCancelamento
-      });
-
       const response = await fetch(`${API_URL}/api/sales/${modalCancelar.vendaId}/cancel`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -479,8 +453,8 @@ const Financeiro = () => {
       <Sidebar />
 
       <div className="main-content content-with-hamburger">
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
-          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Financeiro</h1>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-12 sm:h-14 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-lg sm:text-xl lg:text-2xl font-bold leading-tight">Financeiro</h1>
           <button 
             onClick={() => navigate('/financeiro/novo')}
             className="flex items-center justify-center gap-2 cursor-pointer rounded-lg px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700 btn-touch"

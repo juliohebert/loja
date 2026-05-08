@@ -14,7 +14,7 @@ const TesteModais = () => {
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 h-16 bg-white">
+        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 h-12 sm:h-14 bg-white">
           <h1 className="text-slate-900 text-3xl font-bold leading-tight">Teste de Modais</h1>
         </header>
 

@@ -79,8 +79,6 @@ const Dashboard = () => {
   const carregarDashboard = async () => {
     setCarregando(true);
     try {
-      console.log('📊 [DASHBOARD] Carregando dados do dashboard...');
-      
       // Buscar vendas da API
       let vendas = [];
       try {
@@ -91,13 +89,10 @@ const Dashboard = () => {
         if (responseVendas.ok) {
           const dataVendas = await responseVendas.json();
           vendas = dataVendas.data || [];
-          console.log('✅ [DASHBOARD] Vendas carregadas da API:', vendas.length);
         } else {
-          console.warn('⚠️ [DASHBOARD] Falha ao buscar vendas da API, usando localStorage como fallback');
           vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
         }
       } catch (error) {
-        console.error('❌ [DASHBOARD] Erro ao buscar vendas da API:', error);
         vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
       }
 
@@ -111,13 +106,10 @@ const Dashboard = () => {
         if (responseClientes.ok) {
           const dataClientes = await responseClientes.json();
           clientes = dataClientes.data || [];
-          console.log('✅ [DASHBOARD] Clientes carregados da API:', clientes.length);
         } else {
-          console.warn('⚠️ [DASHBOARD] Falha ao buscar clientes da API, usando localStorage como fallback');
           clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
         }
       } catch (error) {
-        console.error('❌ [DASHBOARD] Erro ao buscar clientes da API:', error);
         clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
       }
 
@@ -247,8 +239,6 @@ const Dashboard = () => {
         }
       });
 
-      console.log(`📊 [DASHBOARD] Total de vendas: ${vendas.length}, Filtradas (${filtro}): ${vendasFiltradas.length}`);
-
       // Calcular total das vendas filtradas
       const totalVendasFiltradas = vendasFiltradas.reduce((acc, venda) => acc + (parseFloat(venda.total) || 0), 0);
 
@@ -307,17 +297,6 @@ const Dashboard = () => {
         status: (prod.quantity || 0) === 0 ? 'esgotado' : 'baixo'
       }));
       
-      console.log('DEBUG ALERTAS ESTOQUE:', {
-        totalProdutos: produtos.length,
-        produtosComAlerta: alertasEstoque.length,
-        alertas: alertasEstoque,
-        produtosCompletos: produtos.map(p => ({
-          name: p.name,
-          quantity: p.quantity,
-          minLimit: p.minLimit
-        }))
-      });
-      
       setProdutosBaixoEstoque(alertasEstoque);
 
       // Produtos mais vendidos (usar TODAS as vendas, não apenas filtradas)
@@ -356,13 +335,6 @@ const Dashboard = () => {
         .slice(0, 3);
       
       setProdutosMaisVendidos(topProdutos);
-
-      console.log('📊 [DASHBOARD] Estatísticas:', {
-        vendasDia: totalVendasFiltradas,
-        pedidosRealizados: vendasFiltradas.length,
-        ticketMedio: vendasFiltradas.length > 0 ? totalVendasFiltradas / vendasFiltradas.length : 0,
-        vendas7Dias: totalVendas7Dias
-      });
 
       setEstatisticas({
         vendasDia: totalVendasFiltradas, // Usar vendas da API

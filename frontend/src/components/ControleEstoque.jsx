@@ -8,11 +8,7 @@ import Toast from './Toast';
 import ModalErro from './ModalErro';
 import API_URL from '../config/apiUrl';
 
-console.log('🌟🌟🌟 ARQUIVO ControleEstoque.jsx FOI CARREGADO! 🌟🌟🌟');
-console.log('🌟 Timestamp do carregamento:', new Date().toISOString());
-
 const ControleEstoque = () => {
-  console.log('⚡ COMPONENTE ControleEstoque FOI INSTANCIADO!');
   const navigate = useNavigate();
   
   // Componente para imagem com fallback
@@ -51,20 +47,15 @@ const ControleEstoque = () => {
   const [modalErro, setModalErro] = useState({ isOpen: false, mensagem: '' });
 
   useEffect(() => {
-    console.log('🔥 useEffect DO CONTROLE DE ESTOQUE EXECUTADO!');
     const token = localStorage.getItem('token');
     if (!token) {
-      console.log('🔥 Sem token, redirecionando...');
       navigate('/login');
       return;
     }
-    console.log('🔥 Token encontrado, chamando buscarProdutos...');
     buscarProdutos();
   }, [navigate]);
 
   const buscarProdutos = async () => {
-    console.log('🚨🚨🚨 BUSCAR PRODUTOS FOI CHAMADA! 🚨🚨🚨');
-    console.log('🚨 Timestamp:', new Date().toISOString());
     try {
       setCarregando(true);
       setErro(null);
@@ -79,25 +70,11 @@ const ControleEstoque = () => {
 
       const data = await response.json();
       
-      console.log('📦 ===== CONTROLE DE ESTOQUE =====');
-      console.log('📦 Produtos recebidos da API:', data.data?.length || 0);
-      if (data.data && data.data.length > 0) {
-        console.log('📦 Primeiro produto (completo):', JSON.stringify(data.data[0], null, 2));
-      }
-      
       // Transformar dados do backend para formato da tabela (uma linha por variação)
       const produtosFormatados = [];
-      console.log('📦 Iniciando formatação de produtos...');
       
       data.data.forEach((produto, idx) => {
         const variacoes = produto.variacoes || produto.variations;
-        
-        console.log(`📦 Produto ${idx + 1}: ${produto.nome}`);
-        console.log('   📦 Produto completo:', JSON.stringify(produto, null, 2));
-        console.log(`   📦 Tem variacoes?`, !!variacoes, 'quantidade:', variacoes?.length);
-        if (variacoes && variacoes.length > 0) {
-          console.log('   📦 Primeira variação:', JSON.stringify(variacoes[0], null, 2));
-        }
         
         // Se o produto não tem variações, criar uma entrada única
         if (!variacoes || !Array.isArray(variacoes) || variacoes.length === 0) {
@@ -106,8 +83,6 @@ const ControleEstoque = () => {
           const quantidade = 0;
           const limiteMinimo = 10;
           
-          console.log(`  ${produto.nome} (sem variações): qtd=${quantidade}, min=${limiteMinimo}`);
-          
           // Determinar status
           let status = 'em-estoque';
           if (quantidade === 0) {
@@ -115,8 +90,6 @@ const ControleEstoque = () => {
           } else if (quantidade <= limiteMinimo) {
             status = 'estoque-baixo';
           }
-          
-          console.log(`  ✅ CALCULADO: qtd=${quantidade}, min=${limiteMinimo}, status=${status}`);
           
           produtosFormatados.push({
             id: produto.id,
@@ -137,17 +110,10 @@ const ControleEstoque = () => {
         } else {
           // Processar cada variação do produto
           variacoes.forEach(variacao => {
-            // LOG DETALHADO DA VARIAÇÃO
-            console.log(`  📦 Variação RAW:`, variacao);
-            console.log(`    - variacao.estoque?.quantidade:`, variacao.estoque?.quantidade);
-            console.log(`    - variacao.estoque?.limiteMinimo:`, variacao.estoque?.limiteMinimo);
-            
             // Determinar status baseado na quantidade em estoque
             let status = 'em-estoque';
             const quantidade = variacao.estoque?.quantidade || 0;
             const limiteMinimo = variacao.estoque?.limiteMinimo || 10;
-            
-            console.log(`  ✅ CALCULADO: qtd=${quantidade}, min=${limiteMinimo}, status=${quantidade === 0 ? 'esgotado' : quantidade <= limiteMinimo ? 'estoque-baixo' : 'em-estoque'}`);
             
             if (quantidade === 0) {
               status = 'esgotado';
@@ -175,16 +141,7 @@ const ControleEstoque = () => {
         }
       });
 
-      console.log('📦 Total de produtos formatados:', produtosFormatados.length);
-      console.log('📦 Produtos por status:', {
-        esgotado: produtosFormatados.filter(p => p.status === 'esgotado').length,
-        'estoque-baixo': produtosFormatados.filter(p => p.status === 'estoque-baixo').length,
-        'em-estoque': produtosFormatados.filter(p => p.status === 'em-estoque').length
-      });
-      console.log('📦 Primeiros 3 produtos formatados:', produtosFormatados.slice(0, 3));
-
       setProdutos(produtosFormatados);
-      console.log('📦 State atualizado com produtos!');
     } catch (error) {
       console.error('❌ ERRO ao buscar produtos:', error);
       console.error('❌ Stack trace:', error.stack);
@@ -195,7 +152,6 @@ const ControleEstoque = () => {
   };
 
   const handleEditarProduto = (produtoId) => {
-    console.log('Editar produto:', produtoId);
     navigate(`/products/editar/${produtoId}`);
   };
 
@@ -234,27 +190,12 @@ const ControleEstoque = () => {
   };
 
   // Filtrar produtos
-  console.log('🔍 ===== INÍCIO DO FILTRO =====');
-  console.log('🔍 Aba ativa:', abaAtiva);
-  console.log('🔍 Busca:', busca);
-  console.log('🔍 Total de produtos no state:', produtos.length);
-  console.log('🔍 Primeiros 3 produtos no state:', produtos.slice(0, 3));
-  
-  // MOSTRAR O PRIMEIRO PRODUTO COMPLETO EM JSON
-  if (produtos.length > 0) {
-    console.log('🔍 📦 PRIMEIRO PRODUTO COMPLETO (JSON):', JSON.stringify(produtos[0], null, 2));
-  }
-  
   const produtosFiltrados = produtos.filter(produto => {
-    console.log(`  🔍 Testando produto: ${produto.nome}, status=${produto.status}, sku=${produto.sku}`);
     
     const matchBusca = produto.nome.toLowerCase().includes(busca.toLowerCase()) ||
                        (produto.sku || '').toLowerCase().includes(busca.toLowerCase());
     
-    console.log(`    - Match busca: ${matchBusca}`);
-    
     if (!matchBusca) {
-      console.log(`    - REJEITADO por busca`);
       return false;
     }
 
@@ -273,12 +214,8 @@ const ControleEstoque = () => {
         result = true;
     }
     
-    console.log(`    - Match aba (${abaAtiva}): ${result}`);
     return result;
   });
-
-  console.log('🔍 RESULTADO - Produtos após filtro:', produtosFiltrados.length);
-  console.log('🔍 RESULTADO - Produtos filtrados:', produtosFiltrados);
 
   // Paginação
   const totalPaginas = Math.ceil(produtosFiltrados.length / itensPorPagina);
@@ -325,8 +262,8 @@ const ControleEstoque = () => {
       <Sidebar />
 
       <div className="main-content content-with-hamburger">
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
-          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-12 sm:h-14 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-lg sm:text-xl lg:text-2xl font-bold leading-tight">
             Controle de Estoque
           </h1>
           <div className="flex items-center gap-2">

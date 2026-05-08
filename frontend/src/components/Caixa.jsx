@@ -40,11 +40,7 @@ export default function Caixa() {
   }, [navigate]);
 
   const calcularVendasDoCaixa = async () => {
-    console.log('🔄 Calculando vendas do caixa...');
-    console.log('📦 Caixa aberto:', caixaAberto);
-    
     if (!caixaAberto) {
-      console.log('❌ Caixa não está aberto');
       setVendasDoCaixa({ total: 0, quantidade: 0 });
       return;
     }
@@ -61,24 +57,17 @@ export default function Caixa() {
 
       const data = await response.json();
       const vendas = data.data || [];
-      console.log('💰 Total de vendas da API:', vendas.length);
       
       // Usar data e HORA completa da abertura do caixa para filtrar corretamente
       const dataHoraAbertura = new Date(caixaAberto.dataAbertura);
-      console.log('📅 Data/Hora abertura caixa:', dataHoraAbertura.toISOString());
       
       const vendasDoCaixaAtual = vendas.filter(venda => {
-        // Filtrar vendas que foram criadas após abertura do caixa
-        // Tentar múltiplos campos de data para garantir compatibilidade
+        // Filtrar vendas que foram criadas após abertura do caixa e não foram canceladas
         const dataVenda = new Date(venda.criadoEm || venda.criado_em || venda.dataHora || venda.data);
-        const resultado = dataVenda >= dataHoraAbertura;
-        console.log(`  Venda #${venda.numeroVenda}: ${dataVenda.toISOString()} >= ${dataHoraAbertura.toISOString()}? ${resultado}`);
-        return resultado;
+        return dataVenda >= dataHoraAbertura && venda.status !== 'cancelado';
       });
 
-      console.log('✅ Vendas do caixa atual:', vendasDoCaixaAtual.length);
       const totalVendas = vendasDoCaixaAtual.reduce((acc, venda) => acc + parseFloat(venda.total || 0), 0);
-      console.log('💵 Total vendas:', totalVendas);
       
       setVendasDoCaixa({
         total: totalVendas,
@@ -120,7 +109,7 @@ export default function Caixa() {
       const vendasDoCaixaAtual = vendas.filter(venda => {
         // Tentar múltiplos campos de data para garantir compatibilidade
         const dataVenda = new Date(venda.criadoEm || venda.criado_em || venda.dataHora || venda.data);
-        return dataVenda >= dataHoraAbertura;
+        return dataVenda >= dataHoraAbertura && venda.status !== 'cancelado';
       });
 
       setModalVendas({ isOpen: true, vendas: vendasDoCaixaAtual });
@@ -139,27 +128,15 @@ export default function Caixa() {
 
       const data = await response.json();
       const vendas = data.data || [];
-      
-      console.log('📦 Caixa selecionado:', caixa);
-      console.log('💰 Total de vendas:', vendas.length);
-      
+
       const dataAbertura = new Date(caixa.dataAbertura);
       const dataFechamento = caixa.dataFechamento ? new Date(caixa.dataFechamento) : new Date();
       
-      console.log('📅 Período do caixa:');
-      console.log('  Abertura:', dataAbertura.toISOString());
-      console.log('  Fechamento:', dataFechamento.toISOString());
-      
-      // Filtrar vendas do período do caixa
+      // Filtrar vendas do período do caixa (excluindo canceladas)
       const vendasDoCaixa = vendas.filter(venda => {
-        // Tentar múltiplos campos de data para garantir compatibilidade
         const dataVenda = new Date(venda.criadoEm || venda.criado_em || venda.dataHora || venda.data);
-        const resultado = dataVenda >= dataAbertura && dataVenda <= dataFechamento;
-        console.log(`  Venda #${venda.numeroVenda} ${dataVenda.toISOString()}: ${resultado ? '✅' : '❌'}`);
-        return resultado;
+        return dataVenda >= dataAbertura && dataVenda <= dataFechamento && venda.status !== 'cancelado';
       });
-
-      console.log('✅ Vendas encontradas:', vendasDoCaixa.length);
 
       // Calcular resumo por forma de pagamento
       const resumo = {};
@@ -186,7 +163,7 @@ export default function Caixa() {
       // Atualizar vendas periodicamente
       const interval = setInterval(() => {
         calcularVendasDoCaixa();
-      }, 5000); // Atualiza a cada 5 segundos
+      }, 30000); // Atualiza a cada 30 segundos
 
       return () => clearInterval(interval);
     }
@@ -225,13 +202,18 @@ export default function Caixa() {
   };
 
   const abrirCaixa = async () => {
+    const saldoInicialNum = parseFloat(modalAbrir.saldoInicial);
+    if (isNaN(saldoInicialNum) || saldoInicialNum < 0) {
+      setToast({ isOpen: true, message: 'Informe um saldo inicial válido (≥ 0)', tipo: 'erro' });
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(API_URL + '/api/cash-registers/open', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          saldoInicial: parseFloat(modalAbrir.saldoInicial)
+          saldoInicial: saldoInicialNum
         })
       });
 
@@ -290,6 +272,20 @@ export default function Caixa() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
   };
 
+  const calcularDuracao = (dataAbertura) => {
+    const inicio = new Date(dataAbertura);
+    const agora = new Date();
+    const diff = Math.floor((agora - inicio) / 1000);
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    if (h > 0) return `${h}h ${m}min`;
+    return `${m} min`;
+  };
+
+  const saldoEsperado = caixaAberto
+    ? parseFloat(caixaAberto.saldoInicial) + parseFloat(vendasDoCaixa.total)
+    : 0;
+
   return (
     <div className="layout-with-sidebar">
       <Sidebar />
@@ -305,147 +301,182 @@ export default function Caixa() {
           />
         )}
 
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
-          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Controle de Caixa</h1>
+        <header className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg mobile-header-spacing">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <FaCashRegister className="text-2xl" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold">Controle de Caixa</h1>
+                  <p className="text-blue-100 text-sm mt-0.5">
+                    {caixaAberto ? `Aberto em ${formatarData(caixaAberto.dataAbertura)}` : 'Nenhum caixa aberto no momento'}
+                  </p>
+                </div>
+              </div>
+              {caixaAberto ? (
+                <span className="px-3 py-1.5 bg-green-400 text-white text-sm font-semibold rounded-full flex items-center gap-1.5 shrink-0">
+                  <FaUnlock className="text-xs" /> Aberto
+                </span>
+              ) : (
+                <span className="px-3 py-1.5 bg-white/20 text-white text-sm font-semibold rounded-full flex items-center gap-1.5 shrink-0">
+                  <FaLock className="text-xs" /> Fechado
+                </span>
+              )}
+            </div>
+          </div>
         </header>
 
         <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
 
-      {/* Status do Caixa */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Card Status Atual */}
-        <div className={`p-6 rounded-lg shadow-md ${caixaAberto ? 'bg-green-50 border-2 border-green-500' : 'bg-gray-50 border-2 border-gray-300'}`}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              {caixaAberto ? <FaUnlock className="text-green-600" /> : <FaLock className="text-gray-600" />}
-              Status do Caixa
-            </h2>
-            {caixaAberto && (
-              <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-full">Aberto</span>
-            )}
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Saldo Inicial</p>
+              <p className="text-xl font-bold text-gray-900">
+                {caixaAberto ? formatarValor(parseFloat(caixaAberto.saldoInicial)) : '—'}
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total em Vendas</p>
+              <p className="text-xl font-bold text-green-600">
+                {caixaAberto ? formatarValor(vendasDoCaixa.total) : '—'}
+              </p>
+              {caixaAberto && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {vendasDoCaixa.quantidade} venda{vendasDoCaixa.quantidade !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Saldo Esperado</p>
+              <p className="text-xl font-bold text-blue-600">
+                {caixaAberto ? formatarValor(saldoEsperado) : '—'}
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Ticket Médio</p>
+              <p className="text-xl font-bold text-gray-900">
+                {caixaAberto && vendasDoCaixa.quantidade > 0
+                  ? formatarValor(vendasDoCaixa.total / vendasDoCaixa.quantidade)
+                  : '—'}
+              </p>
+            </div>
           </div>
 
-          {caixaAberto ? (
-            <>
-              <div className="space-y-3 mb-4">
-                <div>
-                  <p className="text-sm text-gray-600">Aberto em:</p>
-                  <p className="font-semibold">{formatarData(caixaAberto.dataAbertura)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Saldo Inicial:</p>
-                  <p className="text-2xl font-bold text-green-600">{formatarValor(caixaAberto.saldoInicial)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Vendas do Caixa:</p>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="text-xl font-bold text-blue-600">
-                        {formatarValor(vendasDoCaixa.total)}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {vendasDoCaixa.quantidade} venda{vendasDoCaixa.quantidade !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                    <button
-                      onClick={abrirModalVendas}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm font-medium"
-                    >
-                      <FaListAlt /> Ver Detalhes
-                    </button>
-                  </div>
-                  
-                  {/* Resumo por forma de pagamento */}
-                  {Object.keys(resumoPagamentos).length > 0 && (
-                    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                      <p className="text-xs font-semibold text-blue-900 mb-2 flex items-center gap-1">
-                        💳 Recebimentos
-                      </p>
-                      <div className="space-y-2">
-                        {Object.entries(resumoPagamentos).map(([forma, dados]) => (
-                          <div key={forma} className="bg-white p-2 rounded border border-blue-100">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-600">{forma}</span>
-                              <span className="text-xs text-gray-500">
-                                {dados.quantidade} venda{dados.quantidade !== 1 ? 's' : ''}
-                              </span>
-                            </div>
-                            <p className="text-sm font-bold text-gray-900 mt-1">
-                              {formatarValor(dados.total)}
-                            </p>
-                          </div>
-                        ))}
+          {/* Status + Recebimentos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
+
+            {/* Card Status / Ações */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  {caixaAberto ? <FaUnlock className="text-green-500" /> : <FaLock className="text-gray-400" />}
+                  Status do Caixa
+                </h2>
+              </div>
+              <div className="p-5 flex-1 flex flex-col">
+                {caixaAberto ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-5">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Abertura</p>
+                        <p className="text-sm font-semibold text-gray-800">{formatarData(caixaAberto.dataAbertura)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Duração</p>
+                        <p className="text-sm font-semibold text-gray-800">{calcularDuracao(caixaAberto.dataAbertura)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Operador</p>
+                        <p className="text-sm font-semibold text-gray-800">{caixaAberto.usuario?.nome || 'N/A'}</p>
                       </div>
                     </div>
-                  )}
-                </div>
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-gray-600">Saldo Atual:</p>
-                  <p className="text-2xl font-bold text-green-700">
-                    {formatarValor(parseFloat(caixaAberto.saldoInicial) + parseFloat(vendasDoCaixa.total))}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Operador:</p>
-                  <p className="font-semibold">{caixaAberto.usuario?.nome || 'N/A'}</p>
-                </div>
+                    <div className="flex gap-2 mt-auto mb-3">
+                      <button
+                        onClick={abrirModalVendas}
+                        className="flex-1 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                      >
+                        <FaListAlt /> Ver Vendas
+                      </button>
+                      <button
+                        onClick={calcularVendasDoCaixa}
+                        className="px-3 py-2 border border-gray-200 text-gray-400 rounded-lg hover:bg-gray-50 hover:text-gray-600 text-sm transition-colors"
+                        title="Atualizar totais"
+                      >
+                        ↻
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setModalFechar({ ...modalFechar, saldoFinal: saldoEsperado.toFixed(2), observacoes: '' });
+                        setModalConfirmar({ isOpen: true, message: 'Deseja realmente fechar o caixa?', action: 'fechar' });
+                      }}
+                      className="w-full px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                    >
+                      <FaLock /> Fechar Caixa
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                    <div className="p-4 bg-gray-100 rounded-full mb-3">
+                      <FaLock className="text-3xl text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 mb-5 text-sm">Nenhum caixa aberto no momento.</p>
+                    <button
+                      onClick={() => setModalAbrir({ isOpen: true, saldoInicial: '0' })}
+                      className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm font-semibold transition-colors"
+                    >
+                      <FaUnlock /> Abrir Caixa
+                    </button>
+                  </div>
+                )}
               </div>
-
-              <button
-                onClick={() => {
-                  const saldoTotal = parseFloat(caixaAberto.saldoInicial) + parseFloat(vendasDoCaixa.total);
-                  setModalFechar({ ...modalFechar, saldoFinal: saldoTotal.toFixed(2), observacoes: '' });
-                  setModalConfirmar({
-                    isOpen: true,
-                    message: 'Deseja realmente fechar o caixa?',
-                    action: 'fechar'
-                  });
-                }}
-                className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
-              >
-                <FaLock /> Fechar Caixa
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-gray-600 mb-4">Nenhum caixa aberto no momento.</p>
-              <button
-                onClick={() => setModalAbrir({ isOpen: true, saldoInicial: '0' })}
-                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-              >
-                <FaUnlock /> Abrir Caixa
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Card Resumo */}
-        <div className="p-6 bg-white rounded-lg shadow-md border">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <FaCashRegister /> Resumo
-          </h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total de Caixas:</span>
-              <span className="font-semibold">{historico.length}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Caixas Abertos:</span>
-              <span className="font-semibold">{historico.filter(c => c.status === 'aberto').length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Caixas Fechados:</span>
-              <span className="font-semibold">{historico.filter(c => c.status === 'fechado').length}</span>
+
+            {/* Card Recebimentos */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <FaCashRegister className="text-blue-500" /> Recebimentos por Forma
+                </h2>
+              </div>
+              <div className="p-5 flex-1">
+                {caixaAberto && Object.keys(resumoPagamentos).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries(resumoPagamentos).map(([forma, dados]) => (
+                      <div key={forma} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{forma}</p>
+                          <p className="text-xs text-gray-500">{dados.quantidade} transação(ões)</p>
+                        </div>
+                        <p className="text-base font-bold text-green-600">{formatarValor(dados.total)}</p>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200 mt-1">
+                      <p className="text-sm font-bold text-gray-800">Total Geral</p>
+                      <p className="text-base font-bold text-blue-700">{formatarValor(vendasDoCaixa.total)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full py-8 text-center text-gray-400">
+                    <FaCashRegister className="text-3xl mb-2 opacity-20" />
+                    <p className="text-sm">
+                      {caixaAberto ? 'Nenhuma venda registrada ainda' : 'Abra o caixa para ver os recebimentos'}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Histórico */}
-      <div className="bg-white p-6 rounded-lg shadow-md border">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <FaHistory /> Histórico de Caixas
-        </h2>
+          {/* Histórico */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+              <FaHistory className="text-gray-400" />
+              <h2 className="text-base font-semibold text-gray-800">Histórico de Caixas</h2>
+            </div>
 
         {/* Desktop View */}
         <div className="hidden md:block overflow-x-auto">
@@ -478,7 +509,7 @@ export default function Caixa() {
                     {caixa.status === 'fechado' && (
                       <button
                         onClick={() => abrirDetalhesCaixaFechado(caixa)}
-                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
                         title="Ver detalhes"
                       >
                         Ver detalhes
@@ -551,7 +582,7 @@ export default function Caixa() {
             ))
           )}
         </div>
-      </div>
+          </div>
 
       {/* Modal Abrir Caixa */}
       {modalAbrir.isOpen && (
@@ -565,6 +596,7 @@ export default function Caixa() {
               <input
                 type="number"
                 step="0.01"
+                min="0"
                 value={modalAbrir.saldoInicial}
                 onChange={(e) => setModalAbrir({ ...modalAbrir, saldoInicial: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
@@ -646,16 +678,33 @@ export default function Caixa() {
               <div className="space-y-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Saldo Final
+                  Saldo Final (contagem física)
                 </label>
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={modalFechar.saldoFinal}
                   onChange={(e) => setModalFechar({ ...modalFechar, saldoFinal: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
                   placeholder="0.00"
                 />
+                {/* Indicador de divergência */}
+                {modalFechar.saldoFinal !== '' && (() => {
+                  const declarado = parseFloat(modalFechar.saldoFinal) || 0;
+                  const divergencia = declarado - saldoEsperado;
+                  const semDivergencia = Math.abs(divergencia) < 0.01;
+                  return (
+                    <div className={`mt-2 p-3 rounded-lg flex items-center justify-between text-sm ${semDivergencia ? 'bg-green-50 border border-green-200' : divergencia > 0 ? 'bg-blue-50 border border-blue-200' : 'bg-red-50 border border-red-200'}`}>
+                      <div>
+                        <p className="font-medium text-gray-700">Saldo esperado: <span className="font-bold">{formatarValor(saldoEsperado)}</span></p>
+                        <p className={`font-semibold ${semDivergencia ? 'text-green-700' : divergencia > 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                          {semDivergencia ? '✔ Sem divergência' : divergencia > 0 ? `▲ Sobra: ${formatarValor(divergencia)}` : `▼ Falta: ${formatarValor(Math.abs(divergencia))}`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { getAuthHeaders } from '../utils/auth';
+import { getAuthHeaders, getTenantId } from '../utils/auth';
 import ModalSucesso from './ModalSucesso';
 import ModalErro from './ModalErro';
 import API_URL from '../config/apiUrl';
@@ -35,6 +35,8 @@ const CriarProduto = () => {
 
   // Imagens
   const [imagens, setImagens] = useState([]);
+  const [imagensBackup, setImagensBackup] = useState([]); // Backup thumbnails
+  const [uploadandoImagem, setUploadandoImagem] = useState(false);
 
   const [proximoId, setProximoId] = useState(1);
 
@@ -370,6 +372,7 @@ const CriarProduto = () => {
         precoVenda: parseFloat(formData.precoVenda.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
         exibir_catalogo: formData.exibir_catalogo,
         imagens: imagens,
+        imagens_backup: imagensBackup, // Backup de segurança no Neon
         variacoes: variacoesParaEnviar
       };
 
@@ -434,6 +437,7 @@ const CriarProduto = () => {
         precoVenda: parseFloat(formData.precoVenda.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
         exibir_catalogo: formData.exibir_catalogo,
         imagens: imagens,
+        imagens_backup: imagensBackup, // Backup de segurança no Neon
         variacoes: variacoes.map(v => ({
           tamanho: v.tamanho,
           cor: v.cor,
@@ -485,41 +489,77 @@ const CriarProduto = () => {
     navigate('/dashboard');
   };
 
-  // Handler para upload de imagem
-  const handleImageUpload = (e) => {
+  // Handler para upload de imagem para Cloudinary
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        setModalErro({ 
-          isOpen: true, 
-          mensagem: 'Por favor, selecione apenas arquivos de imagem (JPG, PNG, etc.)' 
-        });
-        return;
-      }
+    if (!file) return;
 
-      // Validar tamanho (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setModalErro({ 
-          isOpen: true, 
-          mensagem: 'A imagem deve ter no máximo 5MB. Por favor, selecione uma imagem menor.' 
-        });
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagens([...imagens, reader.result]);
-      };
-      reader.readAsDataURL(file);
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      setModalErro({ 
+        isOpen: true, 
+        mensagem: 'Por favor, selecione apenas arquivos de imagem (JPG, PNG, etc.)' 
+      });
+      return;
     }
-    // Limpar input para permitir upload da mesma imagem novamente
-    e.target.value = '';
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setModalErro({ 
+        isOpen: true, 
+        mensagem: 'A imagem deve ter no máximo 5MB. Por favor, selecione uma imagem menor.' 
+      });
+      return;
+    }
+
+    setUploadandoImagem(true);
+
+    try {
+      // Criar FormData para enviar o arquivo
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Obter headers de autenticação (SEM Content-Type para FormData)
+      const token = localStorage.getItem('token');
+      const tenantId = getTenantId();
+      
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (tenantId) headers['x-tenant-id'] = tenantId;
+
+      // Fazer upload para o backend que irá enviar para Cloudinary
+      const response = await fetch(`${API_URL}/api/upload/image`, {
+        method: 'POST',
+        headers, // SEM Content-Type - navegador define automaticamente
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao fazer upload da imagem');
+      }
+
+      const data = await response.json();
+      
+      // Adicionar URL do Cloudinary e backup thumbnail
+      setImagens([...imagens, data.url]);
+      setImagensBackup([...imagensBackup, data.backup]); // Salvar backup
+
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      setModalErro({
+        isOpen: true,
+        mensagem: 'Erro ao fazer upload da imagem. Tente novamente.'
+      });
+    } finally {
+      setUploadandoImagem(false);
+      e.target.value = '';
+    }
   };
 
   // Remover imagem
   const removerImagem = (index) => {
     setImagens(imagens.filter((_, i) => i !== index));
+    setImagensBackup(imagensBackup.filter((_, i) => i !== index));
   };
 
   return (
@@ -530,7 +570,7 @@ const CriarProduto = () => {
       {/* Conteúdo Principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 h-16 bg-white">
+        <header className="flex shrink-0 items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 h-12 sm:h-14 bg-white">
           <h1 className="text-slate-900 text-3xl font-bold leading-tight">
             {modoEdicao ? 'Editar Produto' : 'Cadastro de Produto'}
           </h1>

@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import Toast from './Toast';
 import { getAuthHeaders, decodeToken } from '../utils/auth';
 import PlanosDisponiveis from './PlanosDisponiveis';
+import SeletorTema from './SeletorTema';
 import API_URL from '../config/apiUrl';
 
 export default function Configuracoes() {
@@ -363,7 +364,7 @@ export default function Configuracoes() {
                     <FaCog className="text-2xl sm:text-3xl" />
                   </div>
                   <div>
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Configurações do Sistema</h1>
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold">Configurações do Sistema</h1>
                     <p className="text-blue-100 mt-1 text-sm sm:text-base">Personalize e ajuste o comportamento da aplicação</p>
                   </div>
                 </div>
@@ -410,6 +411,19 @@ export default function Configuracoes() {
                 <span className="flex items-center gap-2">
                   <span className="material-icons-outlined text-lg">settings</span>
                   Configurações
+                </span>
+              </button>
+              <button
+                onClick={() => setAbaAtiva('tema')}
+                className={`px-6 py-3 font-semibold rounded-t-lg transition-all ${
+                  abaAtiva === 'tema'
+                    ? 'bg-white text-blue-600'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="material-icons-outlined text-lg">palette</span>
+                  Tema
                 </span>
               </button>
               <button
@@ -474,35 +488,35 @@ export default function Configuracoes() {
               </div>
 
               {/* Seção de Identidade Visual */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <FaStore className="text-blue-600" />
                   Identidade Visual da Loja
                 </h2>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Card do Nome da Loja */}
-                  <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="text-3xl">🏬</div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-2xl">🏬</div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900">Nome da Loja</h3>
-                        <p className="text-sm text-gray-600">Nome exibido no menu lateral</p>
+                        <h3 className="text-sm font-bold text-gray-900">Nome da Loja</h3>
+                        <p className="text-xs text-gray-600">Nome exibido no menu lateral</p>
                       </div>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <input
                         type="text"
                         value={nomeLoja}
                         onChange={(e) => setNomeLoja(e.target.value)}
                         placeholder="Digite o nome da loja"
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
+                        className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
                         maxLength={50}
                       />
                       <button
                         onClick={handleSaveNomeLoja}
                         disabled={loading || !nomeLoja.trim()}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-md"
+                        className="w-full px-3 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-sm"
                       >
                         <FaSave /> {loading ? 'Salvando...' : 'Salvar Nome'}
                       </button>
@@ -510,38 +524,38 @@ export default function Configuracoes() {
                   </div>
 
                   {/* Card do Logo */}
-                  <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="text-3xl">🖼️</div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-2xl">🖼️</div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900">Logo da Loja</h3>
-                        <p className="text-sm text-gray-600">Imagem exibida no menu lateral</p>
+                        <h3 className="text-sm font-bold text-gray-900">Logo da Loja</h3>
+                        <p className="text-xs text-gray-600">Imagem exibida no menu lateral</p>
                       </div>
                     </div>
 
                     {/* Preview do Logo */}
-                    <div className="mb-4">
+                    <div className="mb-3">
                       {(logoPreview || logoUrl) ? (
                         <div className="relative">
                           <img
-                            src={logoPreview || (API_URL + logoUrl)}
+                            src={logoPreview || (logoUrl.startsWith('http') ? logoUrl : API_URL + logoUrl)}
                             alt="Logo da loja"
-                            className="w-full h-48 object-contain bg-gray-50 rounded-lg border-2 border-gray-200"
+                            className="w-full h-28 object-contain bg-gray-50 rounded-lg border border-gray-200"
                           />
                           <button
                             onClick={handleDeleteLogo}
                             disabled={uploadingLogo}
-                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-md"
+                            className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm"
                             title="Remover logo"
                           >
-                            <FaTrash />
+                            <FaTrash className="text-xs" />
                           </button>
                         </div>
                       ) : (
-                        <div className="w-full h-48 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                        <div className="w-full h-28 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                           <div className="text-center text-gray-400">
-                            <FaUpload className="mx-auto text-4xl mb-2" />
-                            <p className="text-sm">Nenhum logo cadastrado</p>
+                            <FaUpload className="mx-auto text-2xl mb-1" />
+                            <p className="text-xs">Nenhum logo cadastrado</p>
                           </div>
                         </div>
                       )}
@@ -556,12 +570,12 @@ export default function Configuracoes() {
                         disabled={uploadingLogo}
                         className="hidden"
                       />
-                      <div className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-md cursor-pointer">
+                      <div className="w-full px-3 py-2 text-sm bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 flex items-center justify-center gap-2 font-semibold transition-all shadow-sm cursor-pointer">
                         <FaUpload /> {uploadingLogo ? 'Fazendo upload...' : 'Fazer Upload do Logo'}
                       </div>
                     </label>
-                    <p className="text-xs text-gray-500 mt-2 text-center">
-                      Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
+                    <p className="text-xs text-gray-500 mt-1 text-center">
+                      JPG, PNG, GIF, WebP (máx. 5MB)
                     </p>
                   </div>
 
@@ -635,7 +649,11 @@ export default function Configuracoes() {
 
               {/* Configurações em Cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {configs.filter(config => config.chave !== 'nome_loja' && config.chave !== 'logo_url').map(config => (
+            {configs.filter(config => ![
+              'nome_loja', 'logo_url',
+              'product_brands', 'product_subcategories',
+              'tema_cores', 'tema_selecionado', 'slug_catalogo'
+            ].includes(config.chave)).map(config => (
               <div
                 key={config.chave}
                 className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden ${
@@ -818,6 +836,12 @@ export default function Configuracoes() {
             )}
           </div>
             </>
+          )}
+
+          {abaAtiva === 'tema' && (
+            <SeletorTema
+              onMessage={(msg, tipo) => setToast({ isOpen: true, message: msg, tipo })}
+            />
           )}
 
           {abaAtiva === 'planos' && (

@@ -234,9 +234,11 @@ exports.initializeDefaultConfigurations = async (req) => {
 };
 
 /**
- * Upload de logo da loja
+ * Upload de logo da loja para Cloudinary
  */
 exports.uploadLogo = async (req, res) => {
+  const cloudinary = require('../config/cloudinary');
+  
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -244,23 +246,43 @@ exports.uploadLogo = async (req, res) => {
       });
     }
 
-    // Construir URL do arquivo
-    const logoUrl = `/uploads/logos/${req.file.filename}`;
+    // Upload para Cloudinary usando buffer
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'loja-logos',
+          resource_type: 'image',
+          transformation: [
+            { width: 300, height: 300, crop: 'limit' },
+            { quality: 'auto:good' }
+          ]
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
 
-    // Buscar configuração antiga de logo para deletar arquivo antigo
+    const logoUrl = result.secure_url;
+
+    // Buscar configuração antiga de logo para deletar do Cloudinary
     const oldConfig = await Configuration.findOne({
       where: { chave: 'logo_url', tenant_id: req.tenantId }
     });
 
-    // Deletar arquivo antigo se existir
-    if (oldConfig && oldConfig.valor) {
-      const oldFilePath = path.join(__dirname, '../../', oldConfig.valor);
-      if (fs.existsSync(oldFilePath)) {
-        try {
-          fs.unlinkSync(oldFilePath);
-        } catch (err) {
-          console.warn('Aviso: Não foi possível deletar logo antigo:', err.message);
+    // Deletar imagem antiga do Cloudinary se existir e for URL do Cloudinary
+    if (oldConfig && oldConfig.valor && oldConfig.valor.includes('cloudinary.com')) {
+      try {
+        // Extrair public_id da URL antiga
+        const publicIdMatch = oldConfig.valor.match(/\/([^\/]+)\.[^.]+$/);
+        if (publicIdMatch) {
+          const oldPublicId = 'loja-logos/' + publicIdMatch[1];
+          await cloudinary.uploader.destroy(oldPublicId);
         }
+      } catch (err) {
+        console.warn('Aviso: Não foi possível deletar logo antiga do Cloudinary:', err.message);
       }
     }
 
@@ -284,20 +306,11 @@ exports.uploadLogo = async (req, res) => {
       message: 'Logo atualizado com sucesso',
       data: {
         logoUrl,
-        filename: req.file.filename
+        publicId: result.public_id
       }
     });
   } catch (error) {
     console.error('Erro ao fazer upload do logo:', error);
-    
-    // Deletar arquivo enviado em caso de erro
-    if (req.file && req.file.path) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (err) {
-        console.error('Erro ao deletar arquivo após falha:', err);
-      }
-    }
     
     res.status(500).json({
       message: 'Erro ao fazer upload do logo',

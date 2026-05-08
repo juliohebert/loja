@@ -141,8 +141,8 @@ const Clientes = () => {
       <Sidebar />
 
       <div className="main-content content-with-hamburger">
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing">
-          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Clientes</h1>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-12 sm:h-14 bg-white mobile-header-spacing">
+          <h1 className="text-slate-900 text-lg sm:text-xl lg:text-2xl font-bold leading-tight">Clientes</h1>
           <button 
             onClick={() => navigate('/clientes/novo')}
             className="flex items-center justify-center gap-2 cursor-pointer rounded-lg px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-700 btn-touch"

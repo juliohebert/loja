@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useTemaSistema } from './hooks/useTemaSistema';
 import Entrar from './components/Entrar';
 import Registrar from './components/Registrar';
 import EsqueciSenha from './components/EsqueciSenha';
@@ -29,6 +30,7 @@ import CatalogoPublico from './components/CatalogoPublico';
 import PedidosCatalogo from './components/PedidosCatalogo';
 
 function App() {
+  useTemaSistema();
   return (
     <Router>
       <Routes>

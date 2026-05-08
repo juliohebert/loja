@@ -119,7 +119,6 @@ export default function ProductForm() {
       }))
     };
 
-    console.log('📦 Payload para API:', payload);
 
     try {
       // Enviar para API
@@ -147,8 +146,6 @@ export default function ProductForm() {
           exibir_catalogo: false 
         });
         setVariations([{ size: '', color: '', quantity: 0, min_limit: 5, barcode: '', location: '' }]);
-        
-        console.log('✅ Resposta da API:', data);
       } else {
         setMessage({ type: 'error', text: `❌ Erro: ${data.error}` });
       }
@@ -169,8 +166,8 @@ export default function ProductForm() {
       <Sidebar />
 
       <div className="main-content content-with-hamburger">
-        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-16 sm:h-20 bg-white mobile-header-spacing mobile-header-no-button">
-          <h1 className="text-slate-900 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Cadastro de Produto</h1>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 sm:px-6 h-12 sm:h-14 bg-white mobile-header-spacing mobile-header-no-button">
+          <h1 className="text-slate-900 text-lg sm:text-xl lg:text-2xl font-bold leading-tight">Cadastro de Produto</h1>
         </header>
 
         <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">

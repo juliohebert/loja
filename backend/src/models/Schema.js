@@ -72,7 +72,14 @@ const Product = sequelize.define('Product', {
     allowNull: true,
     defaultValue: [],
     field: 'imagens',
-    comment: 'Array de URLs ou base64 das imagens do produto'
+    comment: 'Array de URLs do Cloudinary ou base64 das imagens do produto'
+  },
+  imagens_backup: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
+    field: 'imagens_backup',
+    comment: 'Backup em thumbnail base64 das imagens (segurança caso Cloudinary falhe)'
   },
   ativo: {
     type: DataTypes.BOOLEAN,
