@@ -109,13 +109,21 @@ const CarrinhoCompras = ({
               </div>
             </div>
 
-            {/* Botão Finalizar */}
-            <button
-              onClick={handleFinalizarCompra}
-              className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold"
-            >
-              Finalizar Pedido
-            </button>
+            {/* Botões de ação */}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleFinalizarCompra}
+                className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold"
+              >
+                Finalizar Pedido
+              </button>
+              <button
+                onClick={onFechar}
+                className="w-full bg-white text-primary border border-primary py-2.5 rounded-lg hover:bg-primary/5 transition-colors font-medium text-sm"
+              >
+                Continuar Comprando
+              </button>
+            </div>
           </div>
         )}
       </div>
