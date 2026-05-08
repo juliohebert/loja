@@ -217,6 +217,18 @@ exports.initializeDefaultConfigurations = async (req) => {
         valor: 'ModaStore',
         tipo: 'texto',
         descricao: 'Nome da loja exibido no menu sidebar'
+      },
+      {
+        chave: 'telefone_whatsapp',
+        valor: '',
+        tipo: 'texto',
+        descricao: 'Número do WhatsApp para contato (exibido no catálogo público)'
+      },
+      {
+        chave: 'instagram_usuario',
+        valor: '',
+        tipo: 'texto',
+        descricao: 'Usuário do Instagram da loja (exibido no catálogo público)'
       }
     ];
 

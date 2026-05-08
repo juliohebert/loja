@@ -309,7 +309,7 @@ exports.obterConfiguracoesCatalogo = async (req, res) => {
       where: {
         tenant_id: tenantId,
         chave: {
-          [Op.in]: ['nome_loja', 'logo_url', 'telefone_whatsapp', 'endereco_loja', 'email_loja']
+          [Op.in]: ['nome_loja', 'logo_url', 'telefone_whatsapp', 'endereco_loja', 'email_loja', 'instagram_usuario']
         }
       }
     });

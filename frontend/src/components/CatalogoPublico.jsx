@@ -23,7 +23,8 @@ const CatalogoPublico = () => {
   const [config, setConfig] = useState({
     nome_loja: 'Loja',
     logo_url: '',
-    telefone_whatsapp: ''
+    telefone_whatsapp: '',
+    instagram_usuario: ''
   });
 
   const tenantId = localStorage.getItem('currentTenantId') || 'default';
@@ -319,6 +320,65 @@ const CatalogoPublico = () => {
         )}
       </div>
 
+      {/* Botão WhatsApp flutuante */}
+      {config.telefone_whatsapp && (
+        <a
+          href={`https://wa.me/55${config.telefone_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Olá! Vim pelo catálogo e tenho uma dúvida.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-3 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95"
+          aria-label="Falar no WhatsApp"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 shrink-0">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.532 5.848L.057 23.75a.5.5 0 0 0 .612.612l5.902-1.475A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.691-.5-5.241-1.376l-.375-.214-3.882.97.989-3.881-.228-.386A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+          </svg>
+          <span className="text-sm">Dúvidas?</span>
+        </a>
+      )}
+
+      {/* Instagram Section */}
+      {config.instagram_usuario && (
+        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 py-10 px-4">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-white">
+              <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+                </svg>
+              </div>
+              <div>
+                <p className="text-white/80 text-sm font-medium">Nos siga no Instagram</p>
+                <p className="text-white text-xl font-bold">@{config.instagram_usuario.replace(/^@/, '')}</p>
+                <p className="text-white/70 text-xs mt-0.5">Acompanhe novidades, lançamentos e stories</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <a
+                href={`https://www.instagram.com/stories/${config.instagram_usuario.replace(/^@/, '')}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-white text-pink-600 font-semibold px-5 py-2.5 rounded-full hover:bg-pink-50 transition-colors shadow-md text-sm"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                  <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
+                  <polygon points="10,8 16,12 10,16" fill="currentColor"/>
+                </svg>
+                Ver Stories
+              </a>
+              <a
+                href={`https://www.instagram.com/${config.instagram_usuario.replace(/^@/, '')}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/40 text-white font-semibold px-5 py-2.5 rounded-full hover:bg-white/30 transition-colors text-sm"
+              >
+                Seguir
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Carrinho Sidebar */}
       <CarrinhoCompras
         aberto={carrinhoAberto}
@@ -378,7 +438,7 @@ const ProdutoCard = ({ produto, onAdicionarAoCarrinho }) => {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
         {/* Imagem com Carrossel */}
         <div className="relative h-64 bg-gray-100 overflow-hidden">
           {imagens.length > 0 ? (
@@ -452,32 +512,44 @@ const ProdutoCard = ({ produto, onAdicionarAoCarrinho }) => {
         </div>
 
         {/* Informações */}
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
-            {produto.nome}
-          </h3>
-          <p className="text-sm text-gray-600 mb-2">{produto.marca}</p>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-primary">
-              R$ {parseFloat(produto.preco_venda).toFixed(2)}
-            </span>
-            
-            <button
-              onClick={handleAdicionar}
-              disabled={!produto.estoque_disponivel}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-            >
-              <ShoppingCart size={18} />
-              Adicionar
-            </button>
+        <div className="p-4 flex flex-col gap-3 flex-1">
+          {/* Nome e marca */}
+          <div>
+            <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 mb-1 capitalize">
+              {produto.nome}
+            </h3>
+            {produto.marca && produto.marca.toLowerCase() !== 'sem marca' && (
+              <span className="inline-block text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full capitalize">
+                {produto.marca}
+              </span>
+            )}
           </div>
-          
+
+          {/* Preço */}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xs text-gray-400 font-medium">R$</span>
+            <span className="text-2xl font-bold text-primary leading-none">
+              {parseFloat(produto.preco_venda).toFixed(2).replace('.', ',')}
+            </span>
+          </div>
+
+          {/* Estoque baixo */}
           {produto.total_estoque > 0 && produto.total_estoque <= 5 && (
-            <p className="text-xs text-orange-600 mt-2">
-              Apenas {produto.total_estoque} em estoque!
+            <p className={`text-xs font-medium flex items-center gap-1 ${produto.total_estoque <= 2 ? 'text-red-500' : 'text-orange-500'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full inline-block ${produto.total_estoque <= 2 ? 'bg-red-400' : 'bg-orange-400'}`}></span>
+              Apenas {produto.total_estoque} em estoque
             </p>
           )}
+
+          {/* Botão */}
+          <button
+            onClick={handleAdicionar}
+            disabled={!produto.estoque_disponivel}
+            className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm font-medium mt-auto"
+          >
+            <ShoppingCart size={16} />
+            {produto.estoque_disponivel ? 'Adicionar ao Carrinho' : 'Esgotado'}
+          </button>
         </div>
       </div>
 

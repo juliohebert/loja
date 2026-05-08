@@ -323,6 +323,10 @@ export default function Configuracoes() {
         return '🖼️';
       case 'nome_loja':
         return '🏬';
+      case 'telefone_whatsapp':
+        return '💬';
+      case 'instagram_usuario':
+        return '📸';
       default:
         return '⚙️';
     }
@@ -334,7 +338,11 @@ export default function Configuracoes() {
       'permitir_venda_estoque_zero': 'Venda com Estoque Zero',
       'limite_desconto_pdv': 'Limite de Desconto PDV',
       'logo_url': 'URL da Logo',
-      'nome_loja': 'Nome da Loja'
+      'nome_loja': 'Nome da Loja',
+      'telefone_whatsapp': 'WhatsApp da Loja',
+      'instagram_usuario': 'Instagram (usuário)',
+      'endereco_loja': 'Endereço da Loja',
+      'email_loja': 'E-mail da Loja'
     };
     return nomes[chave] || chave;
   };
