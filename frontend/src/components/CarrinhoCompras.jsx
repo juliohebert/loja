@@ -93,19 +93,19 @@ const CarrinhoCompras = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>R$ {subtotal.toFixed(2)}</span>
+                <span>R$ {subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               
               {desconto > 0 && (
                 <div className="flex items-center justify-between text-green-600">
                   <span>Desconto</span>
-                  <span>- R$ {desconto.toFixed(2)}</span>
+                  <span>- R$ {desconto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               )}
               
               <div className="flex items-center justify-between text-xl font-bold border-t pt-2">
                 <span>Total</span>
-                <span className="text-primary">R$ {total.toFixed(2)}</span>
+                <span className="text-primary">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
 
@@ -159,12 +159,12 @@ const ItemCarrinho = ({ item, onRemover, onAtualizarQuantidade }) => {
 
       {/* Informações */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-gray-900 truncate">{item.nome}</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="font-medium text-gray-900 truncate capitalize">{item.nome}</h3>
+        <p className="text-sm text-gray-600 capitalize">
           {item.cor} - {item.tamanho}
         </p>
-        {item.marca && (
-          <p className="text-xs text-gray-500">{item.marca}</p>
+        {item.marca && item.marca.toLowerCase() !== 'sem marca' && (
+          <p className="text-xs text-gray-500 capitalize">{item.marca}</p>
         )}
         
         <div className="flex items-center justify-between mt-2">
@@ -190,11 +190,11 @@ const ItemCarrinho = ({ item, onRemover, onAtualizarQuantidade }) => {
           {/* Preço */}
           <div className="text-right">
             <p className="font-semibold text-primary">
-              R$ {totalItem.toFixed(2)}
+              R$ {totalItem.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
             {item.quantidade > 1 && (
               <p className="text-xs text-gray-500">
-                R$ {parseFloat(item.preco_unitario).toFixed(2)} cada
+                R$ {parseFloat(item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} cada
               </p>
             )}
           </div>

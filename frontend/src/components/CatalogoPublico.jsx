@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ShoppingCart, Search, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUp } from 'lucide-react';
 import CarrinhoCompras from './CarrinhoCompras';
 import { getApiUrl } from '../config/api';
+import { aplicarTemaNoDOM } from '../hooks/useTemaSistema';
 
 const CatalogoPublico = () => {
   const { slug } = useParams(); // Capturar slug da URL
@@ -11,6 +12,9 @@ const CatalogoPublico = () => {
   const [categorias, setCategorias] = useState([]);
   const [carrinho, setCarrinho] = useState([]);
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
+  const [badgeAnimado, setBadgeAnimado] = useState(false);
+  const [mostrarTopo, setMostrarTopo] = useState(false);
+  const [totalProdutos, setTotalProdutos] = useState(0);
   
   // Filtros
   const [busca, setBusca] = useState('');
@@ -37,6 +41,13 @@ const CatalogoPublico = () => {
     return getApiUrl(`catalogo/${endpoint}`);
   };
 
+  // Aplicar tema salvo imediatamente (evita flash de tema padrão)
+  useEffect(() => {
+    const chave = `catalogo_tema_${slug || tenantId}`;
+    const temaSalvo = localStorage.getItem(chave);
+    if (temaSalvo) aplicarTemaNoDOM(temaSalvo);
+  }, []);
+
   // Carregar configurações da loja
   useEffect(() => {
     const carregarConfiguracoes = async () => {
@@ -51,6 +62,11 @@ const CatalogoPublico = () => {
         const data = await response.json();
         if (data.success) {
           setConfig(data.data);
+          const temaId = data.data.tema_selecionado || 'padrao';
+          // Salvar tema no localStorage para próximo carregamento
+          const chave = `catalogo_tema_${slug || tenantId}`;
+          localStorage.setItem(chave, temaId);
+          aplicarTemaNoDOM(temaId);
         }
       } catch (error) {
         console.error('Erro ao carregar configurações:', error);
@@ -85,6 +101,7 @@ const CatalogoPublico = () => {
         if (data.success) {
           setProdutos(data.data);
           setTotalPaginas(data.pagination.total_paginas);
+          setTotalProdutos(data.pagination.total ?? data.data.length);
           
           // Extrair categorias únicas
           const cats = [...new Set(data.data.map(p => p.categoria).filter(Boolean))];
@@ -129,6 +146,8 @@ const CatalogoPublico = () => {
       }]);
     }
     setCarrinhoAberto(true);
+    setBadgeAnimado(true);
+    setTimeout(() => setBadgeAnimado(false), 600);
   };
 
   // Remover do carrinho
@@ -154,6 +173,18 @@ const CatalogoPublico = () => {
     setOrdem('recentes');
     setPagina(1);
   };
+
+  // Detectar scroll para botão "Voltar ao topo"
+  useEffect(() => {
+    const onScroll = () => setMostrarTopo(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Limpar tema ao desmontar o catálogo
+  useEffect(() => {
+    return () => aplicarTemaNoDOM('padrao');
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -187,7 +218,7 @@ const CatalogoPublico = () => {
             >
               <ShoppingCart size={24} />
               {carrinho.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transition-transform duration-150 ${badgeAnimado ? 'scale-150' : 'scale-100'}`}>
                   {carrinho.reduce((acc, item) => acc + item.quantidade, 0)}
                 </span>
               )}
@@ -198,41 +229,24 @@ const CatalogoPublico = () => {
 
       {/* Filtros */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Busca */}
-            <div className="md:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6 space-y-3">
+          {/* Linha 1: Busca + Ordenação */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder="Buscar produtos..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               />
             </div>
-
-            {/* Categoria */}
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <select
-                value={categoriaFiltro}
-                onChange={(e) => setCategoriaFiltro(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
-              >
-                <option value="">Todas as categorias</option>
-                {categorias.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Ordenação */}
-            <div>
+            <div className="sm:w-44">
               <select
                 value={ordem}
                 onChange={(e) => setOrdem(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               >
                 <option value="recentes">Mais recentes</option>
                 <option value="menor_preco">Menor preço</option>
@@ -242,14 +256,40 @@ const CatalogoPublico = () => {
             </div>
           </div>
 
-          {/* Botão limpar filtros */}
-          {(busca || categoriaFiltro || ordem !== 'recentes') && (
+          {/* Linha 2: Chips de categoria */}
+          {categorias.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              <button
+                onClick={() => { setCategoriaFiltro(''); setPagina(1); }}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                  !categoriaFiltro ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-300 hover:border-primary hover:text-primary'
+                }`}
+              >
+                Todas
+              </button>
+              {categorias.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => { setCategoriaFiltro(cat === categoriaFiltro ? '' : cat); setPagina(1); }}
+                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border capitalize ${
+                    categoriaFiltro === cat ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-300 hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  {cat}
+                  {categoriaFiltro === cat && <X size={11} />}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Limpar filtros — só aparece para busca ou ordenação diferente da padrão */}
+          {(busca || ordem !== 'recentes') && (
             <button
               onClick={limparFiltros}
-              className="mt-4 text-sm text-gray-600 hover:text-primary flex items-center gap-2"
+              className="text-sm text-gray-500 hover:text-primary flex items-center gap-1.5"
             >
-              <X size={16} />
-              Limpar filtros
+              <X size={14} />
+              Limpar tudo
             </button>
           )}
         </div>
@@ -258,30 +298,43 @@ const CatalogoPublico = () => {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
+              <div key={i} className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse flex flex-col">
                 <div className="h-64 bg-gray-200"></div>
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                <div className="p-4 space-y-3 flex-1">
+                  <div className="h-4 bg-gray-200 rounded-full w-3/4"></div>
+                  <div className="h-5 bg-gray-200 rounded-full w-1/3"></div>
+                  <div className="h-6 bg-gray-200 rounded-full w-1/2"></div>
+                  <div className="h-9 bg-gray-200 rounded-lg mt-2"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : produtos.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Nenhum produto encontrado</p>
+          <div className="text-center py-16">
+            <div className="text-gray-200 mb-4">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <p className="text-gray-500 text-lg font-medium">Nenhum produto encontrado</p>
+            <p className="text-gray-400 text-sm mt-1">Tente outros filtros ou termos de busca</p>
             {(busca || categoriaFiltro) && (
-              <button
-                onClick={limparFiltros}
-                className="mt-4 text-primary hover:underline"
-              >
+              <button onClick={limparFiltros} className="mt-4 text-primary hover:underline text-sm font-medium">
                 Limpar filtros
               </button>
             )}
           </div>
         ) : (
           <>
+            {/* Contador de resultados */}
+            <p className="text-sm text-gray-500 mb-4">
+              {totalProdutos > 0
+                ? `${totalProdutos} produto${totalProdutos !== 1 ? 's' : ''} encontrado${totalProdutos !== 1 ? 's' : ''}`
+                : `${produtos.length} produto${produtos.length !== 1 ? 's' : ''}`}
+              {(busca || categoriaFiltro) && <span className="text-primary font-medium"> (filtrado)</span>}
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {produtos.map(produto => (
                 <ProdutoCard
@@ -319,6 +372,17 @@ const CatalogoPublico = () => {
           </>
         )}
       </div>
+
+      {/* Botão Voltar ao topo */}
+      {mostrarTopo && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-24 right-6 z-50 bg-white text-gray-700 border border-gray-200 p-3 rounded-full shadow-md hover:shadow-lg hover:bg-gray-50 transition-all"
+          aria-label="Voltar ao topo"
+        >
+          <ArrowUp size={18} />
+        </button>
+      )}
 
       {/* Botão WhatsApp flutuante */}
       {config.telefone_whatsapp && (
@@ -529,7 +593,7 @@ const ProdutoCard = ({ produto, onAdicionarAoCarrinho }) => {
           <div className="flex items-baseline gap-1.5">
             <span className="text-xs text-gray-400 font-medium">R$</span>
             <span className="text-2xl font-bold text-primary leading-none">
-              {parseFloat(produto.preco_venda).toFixed(2).replace('.', ',')}
+              {parseFloat(produto.preco_venda).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
@@ -576,7 +640,7 @@ const ProdutoCard = ({ produto, onAdicionarAoCarrinho }) => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-medium">{variacao.cor}</span>
+                      <span className="font-medium capitalize">{variacao.cor}</span>
                       {' - '}
                       <span className="text-gray-600">{variacao.tamanho}</span>
                     </div>

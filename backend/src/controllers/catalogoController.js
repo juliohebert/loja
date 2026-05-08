@@ -84,21 +84,27 @@ exports.listarProdutosCatalogo = async (req, res) => {
       }]
     });
 
-    // Calcular estoque total disponível
-    const produtosComEstoque = produtos.map(produto => {
-      const produtoJson = produto.toJSON();
-      const estoqueTotal = produtoJson.variacoes?.reduce((total, variacao) => {
-        return total + (variacao.estoque?.quantidade || 0);
-      }, 0) || 0;
+    // Calcular estoque total e filtrar apenas produtos disponíveis (com estoque > 0)
+    const produtosComEstoque = produtos
+      .map(produto => {
+        const produtoJson = produto.toJSON();
+        const estoqueTotal = produtoJson.variacoes?.reduce((total, variacao) => {
+          return total + (variacao.estoque?.quantidade || 0);
+        }, 0) || 0;
 
-      return {
-        ...produtoJson,
-        estoque_disponivel: estoqueTotal > 0,
-        total_estoque: estoqueTotal
-      };
-    });
+        return {
+          ...produtoJson,
+          estoque_disponivel: estoqueTotal > 0,
+          total_estoque: estoqueTotal
+        };
+      })
+      .filter(p => p.estoque_disponivel);
 
-    console.log('✅ [LISTAR CATALOGO] Produtos encontrados:', count);
+    // Ajustar o total considerando apenas disponíveis (count original pode incluir esgotados)
+    const esgotadosNaPagina = produtos.length - produtosComEstoque.length;
+    const totalDisponiveis = count - esgotadosNaPagina;
+
+    console.log('✅ [LISTAR CATALOGO] Produtos encontrados:', count, '| Disponíveis:', totalDisponiveis);
     console.log('🔍 [LISTAR CATALOGO] Primeiros produtos:', produtos.slice(0, 2).map(p => ({
       id: p.id,
       nome: p.nome,
@@ -110,10 +116,10 @@ exports.listarProdutosCatalogo = async (req, res) => {
       success: true,
       data: produtosComEstoque,
       pagination: {
-        total: count,
+        total: totalDisponiveis,
         pagina: parseInt(pagina),
         limite: parseInt(limite),
-        total_paginas: Math.ceil(count / parseInt(limite))
+        total_paginas: Math.ceil(totalDisponiveis / parseInt(limite))
       }
     });
 
@@ -309,7 +315,7 @@ exports.obterConfiguracoesCatalogo = async (req, res) => {
       where: {
         tenant_id: tenantId,
         chave: {
-          [Op.in]: ['nome_loja', 'logo_url', 'telefone_whatsapp', 'endereco_loja', 'email_loja', 'instagram_usuario']
+          [Op.in]: ['nome_loja', 'logo_url', 'telefone_whatsapp', 'endereco_loja', 'email_loja', 'instagram_usuario', 'tema_selecionado']
         }
       }
     });
