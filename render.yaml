@@ -4,6 +4,7 @@ services:
     name: loja-api
     env: node
     plan: free
+    rootDir: backend
     buildCommand: npm install
     startCommand: node src/server.js
     envVars:
