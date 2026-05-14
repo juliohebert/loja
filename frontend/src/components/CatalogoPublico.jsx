@@ -656,6 +656,7 @@ const CatalogoPublico = () => {
         onAtualizarQuantidade={atualizarQuantidade}
         configuracoes={config}
         slug={slug}
+        onLimparCarrinho={() => setCarrinho([])}
       />
     </div>
   );

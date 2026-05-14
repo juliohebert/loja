@@ -9,7 +9,8 @@ const CarrinhoCompras = ({
   onRemoverItem, 
   onAtualizarQuantidade,
   configuracoes,
-  slug
+  slug,
+  onLimparCarrinho
 }) => {
   const [checkoutAberto, setCheckoutAberto] = useState(false);
 
@@ -29,6 +30,7 @@ const CarrinhoCompras = ({
   const handleCheckoutConcluido = () => {
     setCheckoutAberto(false);
     onFechar();
+    if (onLimparCarrinho) onLimparCarrinho();
   };
 
   if (!aberto) return null;
