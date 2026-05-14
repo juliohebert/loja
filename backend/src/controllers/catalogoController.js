@@ -60,6 +60,7 @@ exports.listarProdutosCatalogo = async (req, res) => {
       order,
       limit: parseInt(limite),
       offset,
+      distinct: true,
       attributes: [
         'id',
         'nome',
@@ -389,6 +390,100 @@ async function buscarTenantPorSlug(slug) {
 
   return config.tenant_id;
 }
+
+/**
+ * Consultar pedidos do catálogo pelo número de telefone do cliente (público)
+ */
+exports.consultarPedidosPorTelefone = async (req, res) => {
+  try {
+    const { telefone } = req.query;
+    const tenantId = req.headers['x-tenant-id'] || 'default';
+
+    if (!telefone || typeof telefone !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Informe um número de telefone'
+      });
+    }
+
+    // Sanitizar: apenas dígitos (evita injeção)
+    const telefoneLimpo = telefone.replace(/\D/g, '');
+
+    if (telefoneLimpo.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Número de telefone inválido'
+      });
+    }
+
+    // Usar os últimos 9 dígitos para cobrir variações de formato (com/sem DDD, +55, etc.)
+    const sufixo = telefoneLimpo.slice(-9);
+
+    // sufixo é garantidamente só dígitos - seguro em literal SQL
+    const pedidos = await PedidoCatalogo.findAll({
+      where: {
+        tenant_id: tenantId,
+        [Op.and]: [
+          PedidoCatalogo.sequelize.literal(
+            `regexp_replace(cliente_telefone, '[^0-9]', '', 'g') LIKE '%${sufixo}'`
+          )
+        ]
+      },
+      attributes: [
+        'id',
+        'numero_pedido',
+        'criado_em',
+        'status',
+        'items',
+        'valor_total',
+        'tipo_entrega',
+        'forma_pagamento',
+        'observacoes'
+      ],
+      order: [['criado_em', 'DESC']],
+      limit: 20
+    });
+
+    res.json({
+      success: true,
+      data: pedidos
+    });
+  } catch (error) {
+    console.error('Erro ao consultar pedidos por telefone:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao consultar pedidos',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Consultar pedidos por telefone — por slug da loja
+ */
+exports.consultarPedidosPorTelefonePorSlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const tenantId = await buscarTenantPorSlug(slug);
+
+    if (!tenantId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Loja não encontrada'
+      });
+    }
+
+    req.headers['x-tenant-id'] = tenantId;
+    return exports.consultarPedidosPorTelefone(req, res);
+  } catch (error) {
+    console.error('Erro ao consultar pedidos por telefone (slug):', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao consultar pedidos',
+      error: error.message
+    });
+  }
+};
 
 /**
  * Listar produtos do catálogo por slug da loja

@@ -18,6 +18,7 @@ export default function Configuracoes() {
   const [logoPreview, setLogoPreview] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [nomeLoja, setNomeLoja] = useState('');
+  const [enderecoLoja, setEnderecoLoja] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [catalogoLink, setCatalogoLink] = useState({ url: '', slug: '' });
   const [catalogoCarregado, setCatalogoCarregado] = useState(false);
@@ -96,12 +97,16 @@ export default function Configuracoes() {
         // Extrair logo_url e nome_loja das configurações
         const logoConfig = data.data.find(c => c.chave === 'logo_url');
         const nomeConfig = data.data.find(c => c.chave === 'nome_loja');
+        const enderecoConfig = data.data.find(c => c.chave === 'endereco_loja');
         
         if (logoConfig && logoConfig.valor) {
           setLogoUrl(logoConfig.valor);
         }
         if (nomeConfig && nomeConfig.valor) {
           setNomeLoja(nomeConfig.valor);
+        }
+        if (enderecoConfig && enderecoConfig.valor) {
+          setEnderecoLoja(enderecoConfig.valor);
         }
       } else {
         setToast({ isOpen: true, message: 'Erro ao carregar configurações', tipo: 'erro' });
@@ -274,6 +279,35 @@ export default function Configuracoes() {
       setToast({ isOpen: true, message: 'Erro ao remover logo', tipo: 'erro' });
     } finally {
       setUploadingLogo(false);
+    }
+  };
+
+  const handleSaveEnderecoLoja = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL + '/api/configurations', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          chave: 'endereco_loja',
+          valor: enderecoLoja,
+          tipo: 'texto',
+          descricao: 'Endereço da loja exibido no catálogo ao cliente escolher retirada'
+        })
+      });
+
+      if (response.ok) {
+        setToast({ isOpen: true, message: 'Endereço da loja atualizado com sucesso!', tipo: 'sucesso' });
+        carregarConfiguracoes();
+      } else {
+        const error = await response.json();
+        setToast({ isOpen: true, message: error.message || 'Erro ao atualizar endereço', tipo: 'erro' });
+      }
+    } catch (error) {
+      console.error('Erro ao salvar endereço da loja:', error);
+      setToast({ isOpen: true, message: 'Erro ao salvar endereço da loja', tipo: 'erro' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -530,6 +564,34 @@ export default function Configuracoes() {
                         className="w-full px-3 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-sm"
                       >
                         <FaSave /> {loading ? 'Salvando...' : 'Salvar Nome'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card do Endereço da Loja */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="text-2xl">📍</div>
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-900">Endereço da Loja</h3>
+                        <p className="text-xs text-gray-600">Exibido no catálogo ao cliente escolher "Retirar na loja"</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <textarea
+                        value={enderecoLoja}
+                        onChange={(e) => setEnderecoLoja(e.target.value)}
+                        placeholder="Ex: Rua das Flores, 123 – Centro, Natal/RN"
+                        className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all resize-none"
+                        rows={2}
+                        maxLength={200}
+                      />
+                      <button
+                        onClick={handleSaveEnderecoLoja}
+                        disabled={loading}
+                        className="w-full px-3 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 font-semibold transition-all shadow-sm"
+                      >
+                        <FaSave /> {loading ? 'Salvando...' : 'Salvar Endereço'}
                       </button>
                     </div>
                   </div>

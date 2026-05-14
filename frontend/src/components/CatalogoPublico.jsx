@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { ShoppingCart, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUp } from 'lucide-react';
+import { ShoppingCart, Search, Filter, X, ChevronLeft, ChevronRight, ArrowUp, ClipboardList, Phone, RotateCcw, Package, CheckCircle, Truck, Clock, XCircle, ChevronDown, ChevronUp, MapPin } from 'lucide-react';
 import CarrinhoCompras from './CarrinhoCompras';
 import { getApiUrl } from '../config/api';
 import { aplicarTemaNoDOM } from '../hooks/useTemaSistema';
@@ -22,6 +22,15 @@ const CatalogoPublico = () => {
   const [ordem, setOrdem] = useState('recentes');
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
+  
+  // Meus Pedidos
+  const [meusPedidosAberto, setMeusPedidosAberto] = useState(false);
+  const [telefoneBusca, setTelefoneBusca] = useState('');
+  const [pedidosCliente, setPedidosCliente] = useState([]);
+  const [buscandoPedidos, setBuscandoPedidos] = useState(false);
+  const [pedidosBuscados, setPedidosBuscados] = useState(false);
+  const [pedidoExpandido, setPedidoExpandido] = useState(null);
+  const telefoneRef = useRef(null);
   
   // Configurações da loja
   const [config, setConfig] = useState({
@@ -166,6 +175,60 @@ const CatalogoPublico = () => {
     ));
   };
 
+  // Buscar pedidos pelo telefone
+  const buscarMeusPedidos = async () => {
+    const telefone = telefoneBusca.replace(/\D/g, '');
+    if (telefone.length < 8) return;
+    setBuscandoPedidos(true);
+    setPedidosBuscados(false);
+    setPedidosCliente([]);
+    try {
+      const url = slug
+        ? getApiUrl(`catalogo/${slug}/pedidos/consulta?telefone=${encodeURIComponent(telefoneBusca)}`)
+        : getApiUrl(`catalogo/pedidos/consulta?telefone=${encodeURIComponent(telefoneBusca)}`);
+      const headers = slug ? {} : { 'x-tenant-id': tenantId };
+      const res = await fetch(url, { headers });
+      const data = await res.json();
+      if (data.success) {
+        setPedidosCliente(data.data);
+      }
+    } catch (e) {
+      console.error('Erro ao buscar pedidos:', e);
+    } finally {
+      setBuscandoPedidos(false);
+      setPedidosBuscados(true);
+    }
+  };
+
+  // Comprar novamente — adiciona itens do pedido ao carrinho
+  const comprarNovamente = (pedido) => {
+    const novoCarrinho = [...carrinho];
+    pedido.items.forEach(item => {
+      const idx = novoCarrinho.findIndex(
+        i => i.produto_id === item.produto_id &&
+             i.tamanho === (item.tamanho || '') &&
+             i.cor === (item.cor || '')
+      );
+      if (idx >= 0) {
+        novoCarrinho[idx] = { ...novoCarrinho[idx], quantidade: novoCarrinho[idx].quantidade + (item.quantidade || 1) };
+      } else {
+        novoCarrinho.push({
+          produto_id: item.produto_id,
+          variacao_id: item.variacao_id || null,
+          nome: item.nome,
+          tamanho: item.tamanho || '',
+          cor: item.cor || '',
+          quantidade: item.quantidade || 1,
+          preco_unitario: parseFloat(item.preco_unitario),
+          imagem_url: item.imagem_url || null
+        });
+      }
+    });
+    setCarrinho(novoCarrinho);
+    setMeusPedidosAberto(false);
+    setTimeout(() => setCarrinhoAberto(true), 150);
+  };
+
   // Limpar filtros
   const limparFiltros = () => {
     setBusca('');
@@ -242,6 +305,13 @@ const CatalogoPublico = () => {
                   <span className="hidden sm:inline">Dúvidas?</span>
                 </a>
               )}
+              <button
+                onClick={() => { setMeusPedidosAberto(true); setPedidosBuscados(false); setPedidosCliente([]); setTelefoneBusca(''); setTimeout(() => telefoneRef.current?.focus(), 100); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+              >
+                <ClipboardList size={16} />
+                Consultar Pedidos
+              </button>
               <button
                 onClick={() => setCarrinhoAberto(true)}
                 className="relative p-2 text-gray-700 hover:text-primary transition-colors"
@@ -492,6 +562,91 @@ const CatalogoPublico = () => {
         </div>
       )}
 
+      {/* Modal Meus Pedidos */}
+      {meusPedidosAberto && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm pt-8 pb-4 px-4" onClick={(e) => { if (e.target === e.currentTarget) setMeusPedidosAberto(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <ClipboardList size={20} className="text-primary" />
+                <h2 className="text-lg font-bold text-gray-900">Consultar Pedidos</h2>
+              </div>
+              <button onClick={() => setMeusPedidosAberto(false)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"><X size={18} /></button>
+            </div>
+
+            {/* Busca por telefone */}
+            <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
+              <p className="text-sm text-gray-600 mb-3">Consulte seus pedidos informando o número de telefone usado no pedido.</p>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    ref={telefoneRef}
+                    type="tel"
+                    value={telefoneBusca}
+                    onChange={(e) => setTelefoneBusca(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && buscarMeusPedidos()}
+                    placeholder="(84) 99999-9999"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none transition-all"
+                  />
+                </div>
+                <button
+                  onClick={buscarMeusPedidos}
+                  disabled={buscandoPedidos || telefoneBusca.replace(/\D/g, '').length < 8}
+                  className="px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
+                >
+                  {buscandoPedidos ? <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> : <Search size={15} />}
+                  Buscar
+                </button>
+              </div>
+            </div>
+
+            {/* Resultados */}
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {buscandoPedidos && (
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <span className="animate-spin inline-block w-8 h-8 border-3 border-primary border-t-transparent rounded-full" />
+                  <p className="text-sm text-gray-500">Buscando seus pedidos...</p>
+                </div>
+              )}
+
+              {!buscandoPedidos && pedidosBuscados && pedidosCliente.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                  <Package size={40} className="text-gray-300" />
+                  <p className="text-gray-500 font-medium">Nenhum pedido encontrado</p>
+                  <p className="text-gray-400 text-sm">Verifique se o número de telefone está correto.</p>
+                </div>
+              )}
+
+              {!buscandoPedidos && !pedidosBuscados && (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                  <ClipboardList size={40} className="text-gray-200" />
+                  <p className="text-gray-400 text-sm">Digite seu telefone para consultar seus pedidos.</p>
+                </div>
+              )}
+
+              {!buscandoPedidos && pedidosCliente.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-500 font-medium mb-2">{pedidosCliente.length} pedido{pedidosCliente.length !== 1 ? 's' : ''} encontrado{pedidosCliente.length !== 1 ? 's' : ''}</p>
+                  {pedidosCliente.map(pedido => (
+                    <PedidoClienteCard
+                      key={pedido.id}
+                      pedido={pedido}
+                      expandido={pedidoExpandido === pedido.id}
+                      onToggle={() => setPedidoExpandido(pedidoExpandido === pedido.id ? null : pedido.id)}
+                      onComprarNovamente={() => comprarNovamente(pedido)}
+                      whatsapp={config.telefone_whatsapp}
+                      enderecoLoja={config.endereco_loja}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Carrinho Sidebar */}
       <CarrinhoCompras
         aberto={carrinhoAberto}
@@ -502,6 +657,125 @@ const CatalogoPublico = () => {
         configuracoes={config}
         slug={slug}
       />
+    </div>
+  );
+};
+
+// Componente Card de Pedido do Cliente
+const STATUS_CONFIG = {
+  novo:        { label: 'Novo',        color: 'bg-blue-100 text-blue-700',    icon: Clock },
+  processando: { label: 'Em preparo',  color: 'bg-yellow-100 text-yellow-700', icon: Clock },
+  separacao:   { label: 'Separando',   color: 'bg-orange-100 text-orange-700', icon: Package },
+  enviado:     { label: 'Enviado',     color: 'bg-indigo-100 text-indigo-700', icon: Truck },
+  entregue:    { label: 'Entregue',    color: 'bg-green-100 text-green-700',  icon: CheckCircle },
+  cancelado:   { label: 'Cancelado',   color: 'bg-red-100 text-red-600',      icon: XCircle },
+};
+
+const FORMA_PAGAMENTO_LABEL = {
+  pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Cartão de Crédito', debito: 'Cartão de Débito'
+};
+
+const PedidoClienteCard = ({ pedido, expandido, onToggle, onComprarNovamente, whatsapp, enderecoLoja }) => {
+  const st = STATUS_CONFIG[pedido.status] || STATUS_CONFIG.novo;
+  const StatusIcon = st.icon;
+  const dataFormatada = new Date(pedido.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const total = parseFloat(pedido.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden">
+      {/* Cabeçalho do card */}
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-gray-900 text-sm">{pedido.numero_pedido}</span>
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${st.color}`}>
+                <StatusIcon size={11} />
+                {st.label}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">{dataFormatada} · {pedido.items?.length || 0} item{(pedido.items?.length || 0) !== 1 ? 's' : ''} · R$ {total}</p>
+          </div>
+        </div>
+        {expandido ? <ChevronUp size={16} className="text-gray-400 shrink-0" /> : <ChevronDown size={16} className="text-gray-400 shrink-0" />}
+      </button>
+
+      {/* Detalhes expandidos */}
+      {expandido && (
+        <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-3">
+          {/* Itens */}
+          <div className="space-y-1.5">
+            {pedido.items?.map((item, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                {item.imagem_url ? (
+                  <img src={item.imagem_url} alt={item.nome} className="w-9 h-9 object-cover rounded-lg shrink-0" onError={(e) => e.target.style.display = 'none'} />
+                ) : (
+                  <div className="w-9 h-9 bg-gray-200 rounded-lg shrink-0 flex items-center justify-center"><Package size={14} className="text-gray-400" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-gray-800 truncate">{item.nome}</p>
+                  <p className="text-xs text-gray-500">{[item.tamanho, item.cor].filter(Boolean).join(' · ')} · {item.quantidade}x R$ {parseFloat(item.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Info pagamento/entrega */}
+          <div className="flex flex-col gap-1 pt-1 border-t border-gray-200">
+            <div className="flex gap-3 text-xs text-gray-500">
+              {pedido.forma_pagamento && <span>{FORMA_PAGAMENTO_LABEL[pedido.forma_pagamento] || pedido.forma_pagamento}</span>}
+              {pedido.tipo_entrega && (
+                <span className="capitalize">
+                  {pedido.tipo_entrega === 'retirada' ? '🏪 Retirada na loja' : '🚚 Entrega'}
+                </span>
+              )}
+            </div>
+            {pedido.tipo_entrega === 'retirada' && enderecoLoja && (
+              <p className="text-xs text-gray-400">📍 {enderecoLoja}</p>
+            )}
+          </div>
+
+          {/* Botões de ação */}
+          <div className="flex gap-2">
+            {pedido.tipo_entrega === 'retirada' && enderecoLoja && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoLoja)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-blue-300 text-blue-600 hover:bg-blue-50 text-sm font-semibold rounded-xl transition-all"
+                title={enderecoLoja}
+              >
+                <MapPin size={14} />
+                <span className="hidden sm:inline">Ver no mapa</span>
+              </a>
+            )}
+            {pedido.status !== 'cancelado' && pedido.items?.length > 0 && (
+              <button
+                onClick={onComprarNovamente}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all"
+              >
+                <RotateCcw size={14} />
+                Comprar novamente
+              </button>
+            )}
+            {whatsapp && (
+              <a
+                href={`https://wa.me/55${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá! Gostaria de falar sobre meu pedido ${pedido.numero_pedido}.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-all"
+                title="Falar com a loja sobre este pedido"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.532 5.848L.057 23.75a.5.5 0 0 0 .612.612l5.902-1.475A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.691-.5-5.241-1.376l-.375-.214-3.882.97.989-3.881-.228-.386A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                <span className="hidden sm:inline">Falar com a loja</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

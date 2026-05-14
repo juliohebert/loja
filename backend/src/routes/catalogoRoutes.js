@@ -25,6 +25,12 @@ router.post('/pedidos', catalogoController.criarPedidoCatalogo);
 // Criar pedido por slug da loja
 router.post('/:slug/pedidos', catalogoController.criarPedidoCatalogoPorSlug);
 
+// Consultar meus pedidos pelo telefone (rota padrão)
+router.get('/pedidos/consulta', catalogoController.consultarPedidosPorTelefone);
+
+// Consultar meus pedidos pelo telefone por slug
+router.get('/:slug/pedidos/consulta', catalogoController.consultarPedidosPorTelefonePorSlug);
+
 // Obter configurações públicas (WhatsApp, nome da loja, etc) - rota padrão
 router.get('/configuracoes', catalogoController.obterConfiguracoesCatalogo);
 

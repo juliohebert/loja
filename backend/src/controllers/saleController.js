@@ -1,4 +1,4 @@
-const { Sale, User, Customer } = require('../models/Schema');
+const { Sale, User, Customer, Variation, Stock, Product } = require('../models/Schema');
 
 /**
  * Listar todas as vendas
@@ -157,6 +157,40 @@ const createSale = async (req, res) => {
     });
 
     console.log('✅ [CREATE SALE] Venda criada com sucesso:', sale.toJSON());
+
+    // Dar baixa no estoque para cada item com variacaoId
+    if (itens && Array.isArray(itens)) {
+      for (const item of itens) {
+        const variacaoId = item.variacaoId || item.variacao_id;
+        if (!variacaoId || item.isAvulso) continue;
+
+        try {
+          const variation = await Variation.findOne({
+            where: { id: variacaoId },
+            include: [{ model: Product, as: 'produto', where: { tenant_id: req.tenantId } }]
+          });
+
+          if (!variation) {
+            console.warn(`⚠️ [CREATE SALE] Variação não encontrada para stock: ${variacaoId}`);
+            continue;
+          }
+
+          const stock = await Stock.findOne({ where: { variacao_id: variacaoId } });
+          if (!stock) {
+            console.warn(`⚠️ [CREATE SALE] Estoque não encontrado para variação: ${variacaoId}`);
+            continue;
+          }
+
+          const qtd = parseInt(item.quantidade) || 1;
+          stock.quantidade = Math.max(0, stock.quantidade - qtd);
+          await stock.save();
+
+          console.log(`✅ [CREATE SALE] Estoque atualizado: variação ${variacaoId} → ${stock.quantidade} unidades`);
+        } catch (stockErr) {
+          console.error(`❌ [CREATE SALE] Erro ao atualizar estoque da variação ${variacaoId}:`, stockErr.message);
+        }
+      }
+    }
 
     res.status(201).json({
       success: true,

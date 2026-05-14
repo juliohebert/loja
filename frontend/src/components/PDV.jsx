@@ -33,6 +33,7 @@ const PDV = () => {
   const [troco, setTroco] = useState('');
   const [modalVariacao, setModalVariacao] = useState({ isOpen: false, produto: null });
   const [configExigirCaixa, setConfigExigirCaixa] = useState(false);
+  const [pedidoCatalogoId, setPedidoCatalogoId] = useState(null);
   const [caixaAberto, setCaixaAberto] = useState(null);
   const [mostrarModalCaixaFechado, setMostrarModalCaixaFechado] = useState(false);
   const [modalInfo, setModalInfo] = useState({ isOpen: false, tipo: 'sucesso', titulo: '', mensagem: '', subtitulo: '' });
@@ -92,6 +93,11 @@ const PDV = () => {
         
         // Preencher carrinho com os itens do catálogo
         setCarrinho(itens);
+        
+        // Salvar ID do pedido do catálogo para atualizar status após a venda
+        if (info.pedidoId) {
+          setPedidoCatalogoId(info.pedidoId);
+        }
         
         // Mostrar notificação
         setModalInfo({
@@ -483,61 +489,6 @@ const PDV = () => {
       totalPago: usarCredito ? calcularTotalComCredito() : calcularTotal()
     };
     
-    // Dar baixa no estoque de cada item
-    try {
-      
-      for (const item of carrinho) {
-        // Pular produtos avulsos (não têm estoque)
-        if (item.isAvulso) {
-          console.log('⚠️ Produto avulso, não dar baixa no estoque:', item.nome);
-          continue;
-        }
-
-        let variacaoId = item.variacaoId;
-
-        // Se não tem variacaoId mas tem produto_id + tamanho + cor (pedido do catálogo antigo),
-        // buscar a variação pela API
-        if (!variacaoId && item.id && item.tamanho && item.cor) {
-          try {
-            const resProduto = await fetch(`${API_URL}/api/products/${item.id}`, { headers: getAuthHeaders() });
-            if (resProduto.ok) {
-              const dadosProduto = await resProduto.json();
-              const variacoes = dadosProduto.data?.variacoes || dadosProduto.variacoes || [];
-              const v = variacoes.find(v =>
-                v.tamanho?.toLowerCase() === item.tamanho?.toLowerCase() &&
-                v.cor?.toLowerCase() === item.cor?.toLowerCase()
-              );
-              if (v) variacaoId = v.id;
-            }
-          } catch (e) {
-            console.error('Erro ao buscar variação para', item.nome, e);
-          }
-        }
-
-        if (!variacaoId) {
-          console.error('Item sem variacaoId e não foi possível resolver:', item);
-          continue;
-        }
-        
-        // Atualizar estoque usando a rota correta
-        const responseEstoque = await fetch(`${API_URL}/api/products/stock/${variacaoId}`, {
-          method: 'PATCH',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            quantity: item.quantidade,
-            operation: 'subtract'
-          })
-        });
-
-        if (!responseEstoque.ok) {
-          const erro = await responseEstoque.text();
-          console.error(`Erro ao atualizar estoque de ${item.nome}:`, erro);
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao dar baixa no estoque:', error);
-    }
-    
     // Registrar venda como lançamento de receita no financeiro
     await registrarVendaNoFinanceiro(venda);
     
@@ -645,7 +596,9 @@ const PDV = () => {
         sku: item.sku,
         quantidade: item.quantidade,
         preco: item.preco,
-        imagem: item.imagem
+        imagem: item.imagem,
+        variacaoId: item.variacaoId || null,
+        isAvulso: item.isAvulso || false
       })),
       formaPagamento: venda.formaPagamento,
       subtotal: venda.subtotal,
@@ -674,6 +627,20 @@ const PDV = () => {
 
       if (responseSale.ok) {
         const saleData = await responseSale.json();
+
+        // Atualizar status do pedido do catálogo para "entregue" após a venda
+        if (pedidoCatalogoId) {
+          try {
+            await fetch(`${API_URL}/api/pedidos-catalogo/${pedidoCatalogoId}/status`, {
+              method: 'PATCH',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({ status: 'entregue', observacoes: 'Venda registrada no PDV' })
+            });
+            setPedidoCatalogoId(null);
+          } catch (err) {
+            console.error('Erro ao atualizar status do pedido do catálogo:', err);
+          }
+        }
       } else {
         console.error('❌ Erro ao salvar venda no banco de dados');
       }

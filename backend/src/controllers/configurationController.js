@@ -235,6 +235,12 @@ exports.initializeDefaultConfigurations = async (req) => {
         valor: '',
         tipo: 'texto',
         descricao: 'Aviso exibido ao cliente quando escolhe entrega no catálogo (ex: Consulte o frete pelo WhatsApp)'
+      },
+      {
+        chave: 'endereco_loja',
+        valor: '',
+        tipo: 'texto',
+        descricao: 'Endereço da loja exibido no catálogo quando o cliente escolhe retirar na loja'
       }
     ];
 

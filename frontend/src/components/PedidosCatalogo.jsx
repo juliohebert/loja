@@ -188,7 +188,8 @@ const PedidosCatalogo = () => {
           cliente_nome: pedido.cliente_nome,
           cliente_telefone: pedido.cliente_telefone,
           numero_pedido: pedido.numero_pedido,
-          observacoes: pedido.observacoes || ''
+          observacoes: pedido.observacoes || '',
+          pedidoId: pedidoId
         }));
         
         // Redirecionar para o PDV
